@@ -1,3 +1,11 @@
+"""
+--- terminalCanvas Python Module ---
+
+Author: RandomMaerks
+Description: A module for creating a canvas and displaying text-based graphics in the terminal
+License: GNU General Public License v3
+"""
+
 import os
 import time
 import sys
@@ -12,19 +20,6 @@ from objects import roundInt
 from vk import VK
 
 os.system("")
-
-
-"""
---- terminalCanvas Python Module ---
-
-Author: RandomMaerks
-Description: A module for creating a canvas and displaying text-based graphics in the terminal
-License: GNU General Public License v3
-
-Credits:   1. Gabriel Gambetta's book "Computer Graphics from Scratch"
-           (https://www.gabrielgambetta.com/computer-graphics-from-scratch)
-"""
-
 
 # ---------------------
 # ANSI escape sequences
@@ -69,6 +64,7 @@ class TCanvas():
             width: int = None, 
             height: int = None
     ) -> None:
+
         if width == None and height == None:
             self.width, self.height = shutil.get_terminal_size()
             self.height *= 2
@@ -182,7 +178,8 @@ class TCanvas():
 
     def background(self, color, clear=True):
         self.backgroundColor = color
-        if clear: self.clear()
+        if clear:
+            self.clear()
 
     def clear(self):
         self.screenPixels = [
@@ -222,30 +219,34 @@ class TCanvas():
             
     # Canvas transformation
     
-    def flip(self, direction:str=None):
+    def flip(self, direction: str = None):
+        width = self.width
+        height = self.height
+        screen = self.screenPixels
+
         if direction in ["h", "horizontal", "y"]:
-            self.screenPixels = [
+            screen = [
                 [
-                    self.screenPixels[y][self.width-x-1] 
-                    for x in range(self.width)
+                    screen[y*width + width-x-1] 
+                    for x in range(width)
                 ]
-                for y in range(self.height)
+                for y in range(height)
                 ]
         elif direction in ["v", "vertical", "x"]:
-            self.screenPixels = [
+            screen = [
                 [
-                    self.screenPixels[self.height-y-1][x]
-                    for x in range(self.width)
+                    screen[(height-y-1)*width + x]
+                    for x in range(width)
                 ]
-                for y in range(self.height)
+                for y in range(height)
                 ]
         else:
-            self.screenPixels = [
+            screen = [
                 [
-                    self.screenPixels[self.height-y-1][self.width-x-1]
-                    for x in range(self.width)
+                    screen[(height-y-1)*width + width-x-1]
+                    for x in range(width)
                 ]
-                for y in range(self.height)
+                for y in range(height)
                 ]
 
     def translate(self, xIndex, yIndex):
