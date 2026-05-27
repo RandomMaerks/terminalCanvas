@@ -4,9 +4,11 @@ import sys
 import shutil
 import ctypes
 
+from PIL import Image
 import numpy as np
 
 import objects
+from objects import roundInt
 from vk import VK
 
 os.system("")
@@ -56,35 +58,6 @@ def getBGColor(color):
 
     red, green, blue = sanitiseColor(color)
     return f"\033[48;2;{red};{green};{blue}m"
-
-# ---------------
-# Other functions
-# ---------------
-
-def interpolate(i0, d0, i1, d1, round=True):
-    if i0 == i1:
-        return [roundInt(d0) if round else d0]
-
-    n = i1 - i0
-    values = [0] * (n + 1)
-
-    r = roundInt if round else lambda x: x
-
-    delta = (d1 - d0) / n
-    d = d0
-
-    for i in range(n + 1):
-        values[i] = r(d)
-        d += delta
-
-    return values
-
-def roundInt(number):
-    try:
-        return int(round(number, 0))
-    except TypeError as e:
-        raise TypeError(repr(e) + f" (offender: {number})")
-
 
 # ---------------
 # Terminal canvas
