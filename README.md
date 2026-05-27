@@ -2,7 +2,7 @@
 
 **terminalCanvas** is a Python library intended for creating graphics and developing visual-rich applications inside the terminal.
 
-![Voxelate, a voxel-based Minecraft-wannabe game](images/readme_voxelate.png)
+![Voxelate, a voxel-based Minecraft-wannabe game](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_voxelate.png)
 
 ## How it works
 
@@ -78,7 +78,7 @@ canvas.show()
 
 This will print everything in `TCanvas.screenPixels` to the terminal.
 
-![An example of the line being drawn on the canvas](images/readme_lineExample.png)
+![An example of the line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_lineExample.png)
 
 Lastly, you should put `canvas.end()` after everything to properly erase everything and restore the cursor.
 
