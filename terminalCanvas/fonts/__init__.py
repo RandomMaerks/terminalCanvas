@@ -1,1 +1,5 @@
-__all__ = []
+from . import minecraft
+
+__all__ = [
+    "minecraft"
+]
