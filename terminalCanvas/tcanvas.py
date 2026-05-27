@@ -7,8 +7,8 @@ import ctypes
 from PIL import Image
 import numpy as np
 
-from .objects import *
-from .vk import *
+from . import objects
+from .vk import VK
 
 os.system("")
 
@@ -27,9 +27,9 @@ SCREEN_CLEAR = "\033[2J"
 # ----------------------------
 
 def sanitiseColor(color):
-    red = max(min(roundInt(color[0]), 255), 0)
-    green = max(min(roundInt(color[1]), 255), 0)
-    blue = max(min(roundInt(color[2]), 255), 0)
+    red = max(min(objects.roundInt(color[0]), 255), 0)
+    green = max(min(objects.roundInt(color[1]), 255), 0)
+    blue = max(min(objects.roundInt(color[2]), 255), 0)
 
     return red, green, blue
 
@@ -102,9 +102,9 @@ class TCanvas():
                 color = tuple(newColor)
                 
             screen[y*width + x] = (
-                roundInt(color[0]),
-                roundInt(color[1]),
-                roundInt(color[2])
+                objects.roundInt(color[0]),
+                objects.roundInt(color[1]),
+                objects.roundInt(color[2])
             )
 
     def draw(self, object):
@@ -318,15 +318,15 @@ class TCanvas3D(TCanvas):
                 if zIndex < self.depthBuffer[y, x]:
                     self.depthBuffer[y, x] = zIndex
                     self.screenPixels[y*self.width + x] = (
-                        roundInt(color[0] * (1 - self.depthIntensity * zIndex)),
-                        roundInt(color[1] * (1 - self.depthIntensity * zIndex)),
-                        roundInt(color[2] * (1 - self.depthIntensity * zIndex))
+                        objects.roundInt(color[0] * (1 - self.depthIntensity * zIndex)),
+                        objects.roundInt(color[1] * (1 - self.depthIntensity * zIndex)),
+                        objects.roundInt(color[2] * (1 - self.depthIntensity * zIndex))
                     )
             else:
                 self.screenPixels[y*self.width + x] = (
-                    roundInt(color[0]),
-                    roundInt(color[1]),
-                    roundInt(color[2])
+                    objects.roundInt(color[0]),
+                    objects.roundInt(color[1]),
+                    objects.roundInt(color[2])
                 )
                 
     def resetDepthBuffer(self):
