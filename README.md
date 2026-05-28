@@ -26,11 +26,11 @@ py -m pip install terminalCanvas
 
 The module uses `Pillow` for image processing, as well as `NumPy` for image-to-array conversion and other array-related operations. They should automatically install along with the main installation.
 
-## Usage
+## Basic usage
 
 The information below is only showing the very basics. For more info, please consult the wiki (doesn't exist yet lol).
 
-### ● Basic 2D canvas
+### ● 2D rendering
 
 Start by importing the main module:
 
