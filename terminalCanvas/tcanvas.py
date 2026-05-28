@@ -26,30 +26,30 @@ SCREEN_CLEAR = "\033[2J"
 # Predefined display functions
 # ----------------------------
 
-def sanitiseColor(color):
+def _sanitiseColor(color):
     red = max(min(objects.roundInt(color[0]), 255), 0)
     green = max(min(objects.roundInt(color[1]), 255), 0)
     blue = max(min(objects.roundInt(color[2]), 255), 0)
 
     return red, green, blue
 
-def getFGColor(color):
+def _getFGColor(color):
     if color == None: return "\033[38;2;0;0;0m"
 
-    red, green, blue = sanitiseColor(color)
+    red, green, blue = _sanitiseColor(color)
     return f"\033[38;2;{red};{green};{blue}m"
 
-def getBGColor(color):
+def _getBGColor(color):
     if color == None: return "\033[48;2;0;0;0m"
 
-    red, green, blue = sanitiseColor(color)
+    red, green, blue = _sanitiseColor(color)
     return f"\033[48;2;{red};{green};{blue}m"
 
 # ---------------
 # Terminal canvas
 # ---------------
 
-class TCanvas():
+class TCanvas:
     def __init__(
             self,
             width: int = None, 
@@ -84,14 +84,14 @@ class TCanvas():
 
     # Display functions
     
-    def putPixel(self, xIndex, yIndex, color=(0,0,0)):
+    def _plot(self, xIndex, yIndex, color=(0,0,0)):
         x = xIndex + self.xOff
         y = yIndex + self.yOff
 
         screen = self.screenPixels
         width = self.width
         
-        if self.inRange(x, y):
+        if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
                 colorBelow = screen[y*width + x]
                 alpha = 1/255 * color[3]
@@ -108,10 +108,10 @@ class TCanvas():
             )
 
     def draw(self, object):
-        putPixel = self.putPixel
+        plot = self._plot
 
         for pixel in object.data:
-            putPixel(*pixel)
+            plot(*pixel)
 
     def show(self, cursor=False):
         display = [CURSOR_HOME] if cursor else [CURSOR_HOME + CURSOR_HIDE]
@@ -124,8 +124,8 @@ class TCanvas():
         sys_write = sys.stdout.write
         sys_flush = sys.stdout.flush
 
-        fg = getFGColor
-        bg = getBGColor
+        fg = _getFGColor
+        bg = _getBGColor
 
         last_p1 = screen[0]
         last_p2 = screen[width]
@@ -198,7 +198,7 @@ class TCanvas():
     def ellipse(self, xStart, yStart, xEnd, yEnd, mode="solid", color=(0,0,0)):
         return objects.TC_Ellipse(xStart, yStart, xEnd, yEnd, mode, color)
 
-    def text(self, xIndex, yIndex, message, font=None, spacing=0, anchor_x="left", anchor_y="top", color=(0,0,0)):
+    def text(self, xIndex, yIndex, message="", font=None, spacing=0, anchor_x="left", anchor_y="top", color=(0,0,0)):
         return objects.TC_Text(xIndex, yIndex, message, font, spacing, anchor_x, anchor_y, color)
 
     def image(self, xIndex, yIndex, image_dir, size=None):
@@ -275,7 +275,7 @@ class TCanvas():
 
     # Other functions
         
-    def inRange(self, xIndex, yIndex, xRStart=None, xREnd=None, yRStart=None, yREnd=None):
+    def _inRange(self, xIndex, yIndex, xRStart=None, xREnd=None, yRStart=None, yREnd=None):
         if not xRStart: xRStart = 0
         if not xREnd: xREnd = self.width
         if not yRStart: yRStart = 0
@@ -297,14 +297,14 @@ class TCanvas3D(TCanvas):
         
     # Display functions
     
-    def putPixel(self, xIndex, yIndex, color=(0,0,0), zIndex=None):
+    def _plot(self, xIndex, yIndex, color=(0,0,0), zIndex=None):
         x = xIndex + self.xOff
         y = yIndex + self.yOff
 
         if len(color) < 3:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
         
-        if self.inRange(x, y):
+        if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
                 colorBelow = self.screenPixels[y*self.width + x]
                 alpha = 1/255 * color[3]
