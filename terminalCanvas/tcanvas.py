@@ -309,7 +309,7 @@ class TCanvas:
     
     # Input
 
-    def keyPressed(self, key: str, map: dict = VK):
+    def keyPressed(self, key: str, map: dict = VK) -> True | False:
         try:
             return ctypes.windll.user32.GetAsyncKeyState(map[key]) & 0x8000
         except KeyError as e:
