@@ -60,7 +60,7 @@ class TCanvas:
             self.width, _ = shutil.get_terminal_size()
         else:
             self.width = width
-            
+
         if height == None:
             _, self.height = shutil.get_terminal_size()
             self.height *= 2
@@ -291,11 +291,15 @@ class TCanvas:
 # ----------------------------
 
 class TCanvas3D(TCanvas):
-    def __init__(self):
-        super().__init__()
+    def __init__(
+            self,
+            width: int = None, 
+            height: int = None
+    ) -> None:
+
+        super().__init__(width, height)
 
         self.depthIntensity = 0
-        
         self.resetDepthBuffer()
         
         
