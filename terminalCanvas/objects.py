@@ -398,53 +398,60 @@ class TC_Text(BaseObject):
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
 
-        message = self.message
+        messages = self.message.split("\n")
         font = self.font
         spacing = self.spacing
         anchor_x, anchor_y = self.anchor_x, self.anchor_y
-        color = self.color
-
-        xCurrent = x1
-
-        textLines = []
-        totalWidth = 0
+        color = self.color        
 
         kerningInfo = font.get("kerning")
+        next_xInfo = font.get("next_x", dict())
+        
+        xCurrent = x1
+        yCurrent = y1
+        
+        for message in messages:
+            textLines = []
+            totalWidth = 0
 
-        for index, char in enumerate(message):
-            if char not in font:
-                xCurrent += 4 + spacing
-                totalWidth += 4 + spacing
-                continue
+            for index, char in enumerate(message):
+                if char not in font:
+                    xCurrent += 4 + spacing
+                    totalWidth += 4 + spacing
+                    continue
 
-            glyph = font.get(char)
-            charWidth = len(glyph[0])
+                glyph = font.get(char)
+                charWidth = len(glyph[0])
+                next_x = next_xInfo.get(char, 0)
 
-            if index > 0 and kerningInfo is not None:
-                kern = kerningInfo.get(f"{message[index-1]}{char}", 0)
-            else:
-                kern = 0
+                if index > 0 and kerningInfo is not None:
+                    kern = kerningInfo.get(f"{message[index-1]}{char}", 0)
+                else:
+                    kern = 0
 
-            for y, row in enumerate(glyph):
-                line = []
-                for x, data in enumerate(row):
-                    line.append([data, xCurrent + x + kern, y1 + y, color])
-                textLines.append(line)
+                for y, row in enumerate(glyph):
+                    line = []
+                    for x, data in enumerate(row):
+                        line.append([data, xCurrent + x + kern, yCurrent + y, color])
+                    textLines.append(line)
 
-            xCurrent += charWidth + spacing + kern
-            totalWidth += charWidth + spacing + kern
+                xCurrent += charWidth + spacing + kern + next_x
+                totalWidth += charWidth + spacing + kern + next_x
+            
+            xCurrent = x1
+            yCurrent += len(glyph)
 
-        if anchor_x == "left": xOff = 0
-        elif anchor_x == "center": xOff = -(totalWidth)//2
-        elif anchor_x == "right": xOff = -(totalWidth)
+            if anchor_x == "left": xOff = 0
+            elif anchor_x == "center": xOff = -(totalWidth)//2
+            elif anchor_x == "right": xOff = -(totalWidth)
 
-        if anchor_y == "top": yOff = 0
-        elif anchor_y == "center": yOff = -len(textLines[0])//2
-        elif anchor_y == "bottom": yOff = -len(textLines[0])
+            if anchor_y == "top": yOff = 0
+            elif anchor_y == "center": yOff = -len(textLines[0])//2
+            elif anchor_y == "bottom": yOff = -len(textLines[0])
 
-        for line in textLines:
-            for data, x, y, color in line:
-                if data == "1": self.add([x + xOff, y + yOff, color])
+            for line in textLines:
+                for data, x, y, color in line:
+                    if data == "1": self.add([x + xOff, y + yOff, color])
 
     def points(self, x1, y1):
         self.x1, self.y1 = x1, y1

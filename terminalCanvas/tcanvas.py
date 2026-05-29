@@ -76,7 +76,7 @@ class TCanvas:
 
         self.backgroundColor = (255, 255, 255)
 
-        print(SCREEN_CLEAR)
+        #print(SCREEN_CLEAR)
         self.clear()
         self.screenBuffer = self.screenPixels
         self.buffered = False
