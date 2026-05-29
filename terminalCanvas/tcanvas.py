@@ -249,7 +249,7 @@ class TCanvas:
             self,
             x1: int | float, y1: int | float,
             image_dir: str,
-            size: float | None = None
+            size: tuple[int, int] | None = None
     ) -> objects.TC_Image:
         return objects.TC_Image(x1, y1, image_dir, size)
 

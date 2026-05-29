@@ -483,7 +483,7 @@ class TC_Image(BaseObject):
             self,
             x1: int | float, y1: int | float,
             image_dir: str,
-            size: float | None = None
+            size: tuple[int, int] | None = None
     ) -> None:
 
         super().__init__()
@@ -504,7 +504,7 @@ class TC_Image(BaseObject):
 
         img = Image.open(image_dir).convert("RGBA")
         if size is not None:
-            img = img.resize(tuple(size))
+            img = img.resize(size)
         res = np.array(img, dtype=np.uint8)
 
         for y in range(len(res)):
