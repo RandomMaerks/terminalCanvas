@@ -26,20 +26,20 @@ _SCREEN_CLEAR = "\033[2J"
 # Predefined display functions
 # ----------------------------
 
-def _sanitiseColor(color):
+def _sanitiseColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
     red = max(min(objects.roundInt(color[0]), 255), 0)
     green = max(min(objects.roundInt(color[1]), 255), 0)
     blue = max(min(objects.roundInt(color[2]), 255), 0)
 
     return red, green, blue
 
-def _getFGColor(color):
+def _getFGColor(color: tuple[int, int, int]) -> str:
     if color == None: return "\033[38;2;0;0;0m"
 
     red, green, blue = _sanitiseColor(color)
     return f"\033[38;2;{red};{green};{blue}m"
 
-def _getBGColor(color):
+def _getBGColor(color: tuple[int, int, int]) -> str:
     if color == None: return "\033[48;2;0;0;0m"
 
     red, green, blue = _sanitiseColor(color)
@@ -88,7 +88,11 @@ class TCanvas:
 
     # Display functions
     
-    def _plot(self, xIndex, yIndex, color=(0,0,0)):
+    def _plot(
+            self,
+            xIndex: int, yIndex: int, 
+            color: tuple[int, int, int, int] = (0, 0, 0, 255)
+    ) -> None:
         x = xIndex + self._xOff
         y = yIndex + self._yOff
 
@@ -111,13 +115,13 @@ class TCanvas:
                 objects.roundInt(color[2])
             )
 
-    def draw(self, object):
+    def draw(self, object) -> None:
         plot = self._plot
 
         for pixel in object.data:
             plot(*pixel)
 
-    def show(self, cursor=False):
+    def show(self, cursor=False) -> None:
         display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
         screen = self._screenPixels
@@ -171,50 +175,95 @@ class TCanvas:
         self._screenBuffer = screen
         self._buffered = True
 
-    def background(self, color: tuple[int, int, int], clear=True):
+    def background(self, color: tuple[int, int, int], clear=True) -> None:
         self._bgColor = color
         if clear:
             self.clear()
 
-    def clear(self):
+    def clear(self) -> None:
         self._screenPixels = [
             self._bgColor for _ in range(self.totalPixels)
             ]
 
-    def end(self):
+    def end(self) -> None:
         print(f"\033[{self.height}H" + _CURSOR_SHOW)
 
 
     # Graphical objects
 
-    def point(self, xIndex, yIndex, color=(0,0,0)):
-        return objects.TC_Point(xIndex, yIndex, color)
+    def point(
+            self,
+            x1: int | float, y1: int | float,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Point:
+        return objects.TC_Point(x1, y1, color)
 
-    def line(self, xStart, yStart, xEnd, yEnd, color=(0,0,0)):
-        return objects.TC_Line(xStart, yStart, xEnd, yEnd, color)
+    def line(
+            self,
+            x1: int | float, y1: int | float,
+            x2: int | float, y2: int | float,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Line:
+        return objects.TC_Line(x1, y1, x2, y2, color)
 
-    def triangle(self, x1, y1, x2, y2, x3, y3, color=(0,0,0)):
+    def triangle(
+            self,
+            x1: int | float, y1: int | float,
+            x2: int | float, y2: int | float,
+            x3: int | float, y3: int | float,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Triangle:
         return objects.TC_Triangle(x1, y1, x2, y2, x3, y3, color)
 
-    def rectangle(self, xStart, yStart, xEnd, yEnd, mode="solid", color=(0,0,0)):
-        return objects.TC_Rectangle(xStart, yStart, xEnd, yEnd, mode, color)
+    def rectangle(
+            self, 
+            x1: int | float, y1: int | float, 
+            x2: int | float, y2: int | float, 
+            mode: str = "solid", 
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Rectangle:
+        return objects.TC_Rectangle(x1, y1, x2, y2, mode, color)
 
-    def ellipse(self, xStart, yStart, xEnd, yEnd, mode="solid", color=(0,0,0)):
-        return objects.TC_Ellipse(xStart, yStart, xEnd, yEnd, mode, color)
+    def ellipse(
+            self,
+            x1: int | float, y1: int | float, 
+            x2: int | float, y2: int | float, 
+            mode: str = "solid", 
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Ellipse:
+        return objects.TC_Ellipse(x1, y1, x2, y1, mode, color)
 
-    def text(self, xIndex, yIndex, message="", font=None, spacing=0, anchor_x="left", anchor_y="top", color=(0,0,0)):
-        return objects.TC_Text(xIndex, yIndex, message, font, spacing, anchor_x, anchor_y, color)
+    def text(
+            self, 
+            x1: int | float, y1: int | float, 
+            message: str = "",
+            font: dict = None, 
+            spacing: int = 0,
+            anchor_x: str = "left",
+            anchor_y: str = "top",
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Text:
+        return objects.TC_Text(x1, y1, message, font, spacing, anchor_x, anchor_y, color)
 
-    def image(self, xIndex, yIndex, image_dir, size=None):
-        return objects.TC_Image(xIndex, yIndex, image_dir, size)
+    def image(
+            self,
+            x1: int | float, y1: int | float,
+            image_dir: str,
+            size: float | None = None
+    ) -> objects.TC_Image:
+        return objects.TC_Image(x1, y1, image_dir, size)
 
-    def sprite(self, xIndex, yIndex, sprite):
-        return objects.TC_Sprite(xIndex, yIndex, sprite)
+    def sprite(
+            self,
+            x1: int | float, y1: int | float,
+            sprite: list[int | float, int | float, tuple[int, int, int, int]]
+    ) -> objects.TC_Sprite:
+        return objects.TC_Sprite(x1, y1, sprite)
         
             
     # Canvas transformation
     
-    def flip(self, direction: str = None):
+    def flip(self, direction: str = None) -> None:
         width = self.width
         height = self.height
         screen = self._screenPixels
@@ -244,14 +293,14 @@ class TCanvas:
                 for y in range(height)
                 ]
 
-    def translate(self, xIndex, yIndex):
+    def translate(self, xIndex: int | float, yIndex: int | float) -> None:
         self._xOff = int(xIndex)
         self._yOff = int(yIndex)
 
 
     # Save image
 
-    def save(self, name=None, ext=".png", dir=""):
+    def save(self, name: str = None, ext: str = ".png", dir: str = "") -> None:
         if name is None:
             name = time.strftime("%Y_%m_%d %H_%M_%S", time.localtime())
             
@@ -270,7 +319,7 @@ class TCanvas:
     
     # Input
 
-    def keyPressed(self, key, map=VK):
+    def keyPressed(self, key: str, map: dict = VK):
         try:
             return ctypes.windll.user32.GetAsyncKeyState(map[key]) & 0x8000
         except KeyError as e:
@@ -279,12 +328,13 @@ class TCanvas:
 
     # Other functions
         
-    def _inRange(self, xIndex, yIndex, xRStart=None, xREnd=None, yRStart=None, yREnd=None):
-        if not xRStart: xRStart = 0
-        if not xREnd: xREnd = self.width
-        if not yRStart: yRStart = 0
-        if not yREnd: yREnd = self.height
-        return xIndex in range(xRStart, xREnd) and yIndex in range(yRStart, yREnd)
+    def _inRange(
+            self,
+            xIndex: int, yIndex: int, 
+            xRStart: int = 0, xREnd: int = self.width,
+            yRStart: int = 0, yREnd: int = self.height
+    ) -> True | False:
+        return xRStart <= xIndex <= xREnd and yRStart <= yIndex <= yREnd
 
 # ----------------------------
 # Terminal canvas, 3D pipeline
@@ -305,7 +355,12 @@ class TCanvas3D(TCanvas):
         
     # Display functions
     
-    def _plot(self, xIndex, yIndex, color=(0,0,0), zIndex=None):
+    def _plot(
+            self,
+            xIndex: int, yIndex: int, 
+            color: tuple[int, int, int, int] = (0, 0, 0, 255), 
+            zIndex: float = None
+    ) -> None:
         x = xIndex + self._xOff
         y = yIndex + self._yOff
 
@@ -337,10 +392,16 @@ class TCanvas3D(TCanvas):
                     objects.roundInt(color[2])
                 )
                 
-    def resetDepthBuffer(self):
+    def resetDepthBuffer(self) -> None:
         self.depthBuffer = np.full((self.height, self.width), np.inf)
 
     # Graphical objects
 
-    def triangle3D(self, x1, y1, z1, x2, y2, z2, x3, y3, z3, color=(0,0,0)):
+    def triangle3D(
+            self,
+            x1: int | float, y1: int | float, z1: float, 
+            x2: int | float, y2: int | float, z2: float, 
+            x3: int | float, y3: int | float, z3: float, 
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Triangle3D:
         return objects.TC_Triangle3D(x1, y1, z1, x2, y2, z2, x3, y3, z3, color)
