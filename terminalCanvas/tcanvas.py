@@ -16,11 +16,11 @@ os.system("")
 # ANSI escape sequences
 # ---------------------
 
-COLOR_RESET = "\033[38;2;255;255;255m\033[48;2;0;0;0m"
-CURSOR_HOME = "\033[H"
-CURSOR_SHOW = "\033[?25h"
-CURSOR_HIDE = "\033[?25l"
-SCREEN_CLEAR = "\033[2J"
+_COLOR_RESET = "\033[38;2;255;255;255m\033[48;2;0;0;0m"
+_CURSOR_HOME = "\033[H"
+_CURSOR_SHOW = "\033[?25h"
+_CURSOR_HIDE = "\033[?25l"
+_SCREEN_CLEAR = "\033[2J"
 
 # ----------------------------
 # Predefined display functions
@@ -72,27 +72,27 @@ class TCanvas:
         self.wCenter = self.width//2
         self.hCenter = self.height//2
 
-        self.screenPixels = []
-        self.screenBuffer = []
+        self._screenPixels = []
+        self._screenBuffer = []
 
-        self.xOff = 0
-        self.yOff = 0
+        self._xOff = 0
+        self._yOff = 0
 
-        self.backgroundColor = (255, 255, 255)
+        self._bgColor = (255, 255, 255)
 
-        #print(SCREEN_CLEAR)
+        #print(_SCREEN_CLEAR)
         self.clear()
-        self.screenBuffer = self.screenPixels
-        self.buffered = False
+        self._screenBuffer = self._screenPixels
+        self._buffered = False
 
 
     # Display functions
     
     def _plot(self, xIndex, yIndex, color=(0,0,0)):
-        x = xIndex + self.xOff
-        y = yIndex + self.yOff
+        x = xIndex + self._xOff
+        y = yIndex + self._yOff
 
-        screen = self.screenPixels
+        screen = self._screenPixels
         width = self.width
         
         if self._inRange(x, y):
@@ -118,10 +118,10 @@ class TCanvas:
             plot(*pixel)
 
     def show(self, cursor=False):
-        display = [CURSOR_HOME] if cursor else [CURSOR_HOME + CURSOR_HIDE]
+        display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
-        screen = self.screenPixels
-        buffer = self.screenBuffer
+        screen = self._screenPixels
+        buffer = self._screenBuffer
         width = self.width
         hCenter = self.hCenter
         append = display.append
@@ -149,7 +149,7 @@ class TCanvas:
                 b1 = buffer[i1]
                 b2 = buffer[i2]
 
-                if not self.buffered:
+                if not self._buffered:
                     if p1 != last_p1 or p2 != last_p2 or y == 0:
                         append(bg(p2) + fg(p1))
                     append("▀")
@@ -163,26 +163,26 @@ class TCanvas:
 
             if y < hCenter-1: append("\n")
 
-        append(COLOR_RESET)
+        append(_COLOR_RESET)
 
         sys_write(''.join(display))
         sys_flush()
 
-        self.screenBuffer = screen
-        self.buffered = True
+        self._screenBuffer = screen
+        self._buffered = True
 
-    def background(self, color, clear=True):
-        self.backgroundColor = color
+    def background(self, color: tuple[int, int, int], clear=True):
+        self._bgColor = color
         if clear:
             self.clear()
 
     def clear(self):
-        self.screenPixels = [
-            self.backgroundColor for _ in range(self.totalPixels)
+        self._screenPixels = [
+            self._bgColor for _ in range(self.totalPixels)
             ]
 
     def end(self):
-        print(f"\033[{self.height}H" + CURSOR_SHOW)
+        print(f"\033[{self.height}H" + _CURSOR_SHOW)
 
 
     # Graphical objects
@@ -217,7 +217,7 @@ class TCanvas:
     def flip(self, direction: str = None):
         width = self.width
         height = self.height
-        screen = self.screenPixels
+        screen = self._screenPixels
 
         if direction in ["h", "horizontal", "y"]:
             screen = [
@@ -245,8 +245,8 @@ class TCanvas:
                 ]
 
     def translate(self, xIndex, yIndex):
-        self.xOff = int(xIndex)
-        self.yOff = int(yIndex)
+        self._xOff = int(xIndex)
+        self._yOff = int(yIndex)
 
 
     # Save image
@@ -260,7 +260,7 @@ class TCanvas:
         height = self.height
         for y in range(height):
             for x in range(width):
-                red, green, blue = self.screenPixels[y*width + x]
+                red, green, blue = self._screenPixels[y*width + x]
                 alpha = 255
                 toNPArray[y, x] = np.array([red, green, blue, alpha])
 
@@ -306,15 +306,15 @@ class TCanvas3D(TCanvas):
     # Display functions
     
     def _plot(self, xIndex, yIndex, color=(0,0,0), zIndex=None):
-        x = xIndex + self.xOff
-        y = yIndex + self.yOff
+        x = xIndex + self._xOff
+        y = yIndex + self._yOff
 
         if len(color) < 3:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
         
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
-                colorBelow = self.screenPixels[y*self.width + x]
+                colorBelow = self._screenPixels[y*self.width + x]
                 alpha = 1/255 * color[3]
                 newColor = [
                     alpha*color[i] + (1-alpha)*colorBelow[i]
@@ -325,13 +325,13 @@ class TCanvas3D(TCanvas):
             if zIndex is not None:
                 if zIndex < self.depthBuffer[y, x]:
                     self.depthBuffer[y, x] = zIndex
-                    self.screenPixels[y*self.width + x] = (
+                    self._screenPixels[y*self.width + x] = (
                         objects.roundInt(color[0] * (1 - self.depthIntensity * zIndex)),
                         objects.roundInt(color[1] * (1 - self.depthIntensity * zIndex)),
                         objects.roundInt(color[2] * (1 - self.depthIntensity * zIndex))
                     )
             else:
-                self.screenPixels[y*self.width + x] = (
+                self._screenPixels[y*self.width + x] = (
                     objects.roundInt(color[0]),
                     objects.roundInt(color[1]),
                     objects.roundInt(color[2])
