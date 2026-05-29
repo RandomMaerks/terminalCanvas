@@ -97,22 +97,25 @@ def from_bdf(font_dir: str) -> list:
                     bitmap = ["."*(glyphXOff + glyphWidth) for _ in range(height)]
                     rowStart = height - glyphHeight - glyphYOff + yOff
 
-                    charData = []
+                    rowData = []
                     binLength = len(data[lineIndex2 + 1].rstrip("\n")) * 4   # each hex digit = 4 binary digits
                     totalWidth = glyphWidth + glyphXOff
 
                     for i in range(glyphHeight):
                         line3 = data[lineIndex2 + 1 + i]
+
+                        if line3.startswith("ENDCHAR"):
+                            break
+
                         d = int(line3, 16)
                         s = format(d, f'0{binLength}b')
                         
                         processed = "."*(glyphXOff) + s
-                        charData.append(
+                        rowData.append(
                             processed[:max(totalWidth, binLength - glyphWidth + glyphXOff + 1)]
                             )
 
-                    for i in range(glyphHeight):
-                        row = charData[i]
+                    for i, row in enumerate(rowData):
                         try: bitmap[rowStart + i] = row.replace("0", ".")
                         except IndexError:
                             print(width, height, xOff, yOff, glyphWidth, glyphHeight, glyphXOff, glyphYOff, i)
