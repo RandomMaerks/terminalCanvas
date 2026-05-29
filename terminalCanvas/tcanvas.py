@@ -56,11 +56,15 @@ class TCanvas:
             height: int = None
     ) -> None:
 
-        if width == None and height == None:
-            self.width, self.height = shutil.get_terminal_size()
-            self.height *= 2
+        if width == None:
+            self.width, _ = shutil.get_terminal_size()
         else:
             self.width = width
+            
+        if height == None:
+            _, self.height = shutil.get_terminal_size()
+            self.height *= 2
+        else:
             self.height = height
 
         self.totalPixels = self.width * self.height
