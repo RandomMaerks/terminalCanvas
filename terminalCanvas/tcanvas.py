@@ -96,12 +96,11 @@ class TCanvas:
         x = xIndex + self._xOff
         y = yIndex + self._yOff
 
-        screen = self._screenPixels
         width = self.width
         
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
-                colorBelow = screen[y*width + x]
+                colorBelow = self._screenPixels[y*width + x]
                 alpha = 1/255 * color[3]
                 newColor = [
                     (alpha*color[i] + (1-alpha)*colorBelow[i])
@@ -109,7 +108,7 @@ class TCanvas:
                 ]
                 color = tuple(newColor)
                 
-            screen[y*width + x] = (
+            self._screenPixels[y*width + x] = (
                 objects.roundInt(color[0]),
                 objects.roundInt(color[1]),
                 objects.roundInt(color[2])
@@ -124,8 +123,6 @@ class TCanvas:
     def show(self, cursor=False) -> None:
         display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
-        screen = self._screenPixels
-        buffer = self._screenBuffer
         width = self.width
         hCenter = self.hCenter
         append = display.append
@@ -135,8 +132,8 @@ class TCanvas:
         fg = _getFGColor
         bg = _getBGColor
 
-        last_p1 = screen[0]
-        last_p2 = screen[width]
+        last_p1 = None
+        last_p2 = None
 
         for y in range(hCenter):
             yIndex = y*2
@@ -147,11 +144,11 @@ class TCanvas:
                 i1 = row1 + x
                 i2 = row2 + x
 
-                p1 = screen[i1]
-                p2 = screen[i2]
+                p1 = self._screenPixels[i1]
+                p2 = self._screenPixels[i2]
 
-                b1 = buffer[i1]
-                b2 = buffer[i2]
+                b1 = self._screenBuffer[i1]
+                b2 = self._screenBuffer[i2]
 
                 if not self._buffered:
                     if p1 != last_p1 or p2 != last_p2 or y == 0:
@@ -172,7 +169,7 @@ class TCanvas:
         sys_write(''.join(display))
         sys_flush()
 
-        self._screenBuffer = screen
+        self._screenBuffer = list(self._screenPixels)
         self._buffered = True
 
     def background(self, color: tuple[int, int, int], clear=True) -> None:
@@ -266,31 +263,24 @@ class TCanvas:
     def flip(self, direction: str = None) -> None:
         width = self.width
         height = self.height
-        screen = self._screenPixels
 
-        if direction in ["h", "horizontal", "y"]:
-            screen = [
-                [
-                    screen[y*width + width-x-1] 
-                    for x in range(width)
+        if direction in ["h"]:
+            self._screenPixels = [
+                self._screenPixels[y*width + x] 
+                for y in range(height)                
+                for x in reversed(range(width))
                 ]
-                for y in range(height)
-                ]
-        elif direction in ["v", "vertical", "x"]:
-            screen = [
-                [
-                    screen[(height-y-1)*width + x]
-                    for x in range(width)
-                ]
-                for y in range(height)
+        elif direction in ["v"]:
+            self._screenPixels = [
+                self._screenPixels[y*width + x]
+                for y in reversed(range(height))
+                for x in range(width)
                 ]
         else:
-            screen = [
-                [
-                    screen[(height-y-1)*width + width-x-1]
-                    for x in range(width)
-                ]
-                for y in range(height)
+            self._screenPixels = [
+                self._screenPixels[y*width + x]
+                for y in reversed(range(height))
+                for x in reversed(range(width))
                 ]
 
     def translate(self, xIndex: int | float, yIndex: int | float) -> None:
@@ -331,10 +321,12 @@ class TCanvas:
     def _inRange(
             self,
             xIndex: int, yIndex: int, 
-            xRStart: int = 0, xREnd: int = self.width,
-            yRStart: int = 0, yREnd: int = self.height
+            xStart: int = 0, xEnd: int = None,
+            yStart: int = 0, yEnd: int = None
     ) -> True | False:
-        return xRStart <= xIndex <= xREnd and yRStart <= yIndex <= yREnd
+        if xEnd is None: xEnd = self.width
+        if yEnd is None: yEnd = self.height
+        return xStart <= xIndex <= xEnd and yStart <= yIndex <= yEnd
 
 # ----------------------------
 # Terminal canvas, 3D pipeline
@@ -364,12 +356,15 @@ class TCanvas3D(TCanvas):
         x = xIndex + self._xOff
         y = yIndex + self._yOff
 
+        width = self.width
+        depthIntensity = self.depthIntensity
+
         if len(color) < 3:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
         
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
-                colorBelow = self._screenPixels[y*self.width + x]
+                colorBelow = self._screenPixels[y*width + x]
                 alpha = 1/255 * color[3]
                 newColor = [
                     alpha*color[i] + (1-alpha)*colorBelow[i]
@@ -380,13 +375,13 @@ class TCanvas3D(TCanvas):
             if zIndex is not None:
                 if zIndex < self.depthBuffer[y, x]:
                     self.depthBuffer[y, x] = zIndex
-                    self._screenPixels[y*self.width + x] = (
-                        objects.roundInt(color[0] * (1 - self.depthIntensity * zIndex)),
-                        objects.roundInt(color[1] * (1 - self.depthIntensity * zIndex)),
-                        objects.roundInt(color[2] * (1 - self.depthIntensity * zIndex))
+                    self._screenPixels[y*width + x] = (
+                        objects.roundInt(color[0] * (1 - depthIntensity * zIndex)),
+                        objects.roundInt(color[1] * (1 - depthIntensity * zIndex)),
+                        objects.roundInt(color[2] * (1 - depthIntensity * zIndex))
                     )
             else:
-                self._screenPixels[y*self.width + x] = (
+                self._screenPixels[y*width + x] = (
                     objects.roundInt(color[0]),
                     objects.roundInt(color[1]),
                     objects.roundInt(color[2])
