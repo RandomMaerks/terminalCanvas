@@ -381,8 +381,6 @@ class TC_Text(BaseObject):
     ) -> None:
 
         super().__init__()
-        
-        if font is None: return
 
         self.x1, self.y1 = x1, y1
         self.message = message
@@ -402,7 +400,9 @@ class TC_Text(BaseObject):
         font = self.font
         spacing = self.spacing
         anchor_x, anchor_y = self.anchor_x, self.anchor_y
-        color = self.color        
+        color = self.color   
+
+        if font is None: return  
 
         kerningInfo = font.get("kerning")
         next_xInfo = font.get("next_x", dict())
@@ -413,6 +413,7 @@ class TC_Text(BaseObject):
         for message in messages:
             textLines = []
             totalWidth = 0
+            glyph = []
 
             for index, char in enumerate(message):
                 if char not in font:

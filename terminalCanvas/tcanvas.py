@@ -93,6 +93,8 @@ class TCanvas:
         self._screenBuffer = self._screenPixels
         self._buffered = False
 
+        self._lastKeyPressed = {}
+
 
     # Display functions
     
@@ -319,14 +321,21 @@ class TCanvas:
     
     # Keyboard & mouse input
 
-    def keyPressed(self, key: str, map: dict = VK) -> bool:
+    def keyPressed(self, key: str, map: dict = VK, hold: bool = True) -> bool:
         vk = map.get(key)
         if vk is None:
             raise KeyError(f"Key {key} has not been defined in selected map.")
 
-        sixteenth_bit = 0x8000
-        return bool(_user32.GetAsyncKeyState(map.get(key)) & sixteenth_bit)
-    
+        current = bool(_user32.GetAsyncKeyState(vk) & 0x8000)
+        previous = self._lastKeyPressed.get(vk, False)
+
+        self._lastKeyPressed[vk] = current
+
+        if hold is True:
+            return current
+        else:
+            return current and not previous
+
     class _point_t(ctypes.Structure):
         _fields_ = [
             ('x', ctypes.c_long),
