@@ -44,19 +44,18 @@ def from_bdf(font_dir: str) -> dict:
     if not font_dir.endswith(".bdf"):
         raise UnsupportedFileTypeError(f"Must be of type '.bdf' for this conversion.")
 
-    with open(font_dir, "r") as font:
-        data = font.readlines()
+    with open(font_dir, "r", encoding="ascii") as font:
+        data = [line.rstrip("\n") for line in font]
 
     font = {
         "kerning" : {},
         "next_x" : {},
+        "offset_x": {},
     }
 
     lineIndex = 0
     lineCount = len(data)
 
-    glyphCount_defined = 0
-    glyphCount_found = 0
     width, height = 0, 0
     xOff, yOff = 0, 0
 
@@ -66,16 +65,19 @@ def from_bdf(font_dir: str) -> dict:
         # Detecting global font info
 
         if line.startswith("FONT "):
-            font["name"] = line.removeprefix("FONT ")
+            font["name"] = line.removeprefix("FONT ") 
         
         elif line.startswith("FONTBOUNDINGBOX "):
             width, height, xOff, yOff = (int(x) for x in line.removeprefix("FONTBOUNDINGBOX ").split())
 
-        elif line.startswith("CHARS "):
-            glyphCount_defined = int(line.removeprefix("CHARS "))
-
         elif line.startswith("STARTCHAR "):
-            glyphName = line.removeprefix("STARTCHAR ")
+            glyphName = line.removeprefix("STARTCHAR ") 
+
+            encoding = None
+            glyph = None
+            glyphWidth = glyphHeight = 0
+            glyphXOff = glyphYOff = 0
+            dwX0 = dwY0 = 0
 
             lineIndex2 = lineIndex + 1
 
@@ -83,9 +85,17 @@ def from_bdf(font_dir: str) -> dict:
                 line2 = data[lineIndex2]
 
                 if line2.startswith("ENCODING "):
-                    encoding = int(line2.removeprefix("ENCODING "))
-                    if encoding == -1: encoding = 1
-                    glyph = chr(encoding)
+                    encodingParts = line2.removeprefix("ENCODING ").split()
+
+                    if len(encodingParts) == 1:
+                        encoding = int(encodingParts[0])
+                    else:
+                        encoding = int(encodingParts[-1])
+
+                    if encoding != -1:
+                        glyph = chr(encoding)
+                    else:
+                        glyph = f"unencoded:{glyphName}"
 
                 elif line2.startswith("BBX "):
                     glyphWidth, glyphHeight, glyphXOff, glyphYOff = (int(x) for x in line2.removeprefix("BBX ").split())
@@ -96,34 +106,43 @@ def from_bdf(font_dir: str) -> dict:
                 elif line2.startswith("BITMAP"):
                     bitmap = [" "*(glyphXOff + glyphWidth) for _ in range(height)]
                     rowStart = height - glyphHeight - glyphYOff + yOff
-
-                    rowData = []
-                    binLength = len(data[lineIndex2 + 1].rstrip("\n")) * 4   # each hex digit = 4 binary digits
                     totalWidth = glyphWidth + glyphXOff
 
-                    for i in range(glyphHeight):
-                        line3 = data[lineIndex2 + 1 + i]
-
-                        if line3.startswith("ENDCHAR"):
-                            break
-
-                        d = int(line3, 16)
-                        s = format(d, f'0{binLength}b')
+                    nextLine = data[lineIndex2 + 1] 
+                    if nextLine != "ENDCHAR":
+                        rowData = []
+                        binLength = len(nextLine) * 4   # each hex digit = 4 binary digits
                         
-                        processed = " "*(glyphXOff) + s
-                        rowData.append(
-                            processed[:max(totalWidth, binLength - glyphWidth + glyphXOff + 1)]
-                            )
+                        for i in range(glyphHeight):
+                            line3 = data[lineIndex2 + 1 + i] 
 
-                    for i, row in enumerate(rowData):
-                        try: bitmap[rowStart + i] = row.replace("0", " ")
-                        except IndexError:
-                            print(width, height, xOff, yOff, glyphWidth, glyphHeight, glyphXOff, glyphYOff, i)
+                            if line3.startswith("ENDCHAR"):
+                                break
+
+                            d = int(line3, 16)
+                            s = format(d, f'0{binLength}b').replace("0", " ")
+                            
+                            processed = " "*(glyphXOff) + s
+                            rowData.append(
+                                processed[:max(totalWidth, binLength - glyphWidth + glyphXOff)]
+                                )
+
+                        for i, row in enumerate(rowData):
+                            try:
+                                bitmap[rowStart + i] = row
+                            except IndexError:
+                                raise InvalidBDFStructure(
+                                    f"Failed while writing a row to glyph {glyph}.\n"
+                                    "Check the following metrics: "
+                                    f"{width=}, {height=}, {xOff=}, {yOff=}, {glyphWidth=}, {glyphHeight=}, {glyphXOff=}, {glyphYOff=}, {i=}"
+                                    )
 
                     font[glyph] = bitmap
                     next_x = dwX0 - (totalWidth)
-                    if next_x != 0: font["next_x"][glyph] = next_x
-                    glyphCount_found += 1
+                    if next_x != 0:
+                        font["next_x"][glyph] = next_x
+                    if glyphXOff != 0:
+                        font["offset_x"][glyph] = glyphXOff
 
                 elif line2.startswith("ENDCHAR"):
                     break
@@ -133,10 +152,7 @@ def from_bdf(font_dir: str) -> dict:
             lineIndex = lineIndex2
 
         elif line.startswith("ENDFONT"):
-            if glyphCount_found == glyphCount_defined: 
-                break
-            else:
-                raise InvalidBDFStructure(f"Font {font_dir} has different glyph count ({glyphCount_found}) than amount of actually defined glyphs ({glyphCount_defined}).")
+            break
 
         lineIndex += 1
 
