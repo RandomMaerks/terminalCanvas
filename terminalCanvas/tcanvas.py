@@ -3,6 +3,7 @@ import time
 import sys
 import shutil
 import ctypes
+from ctypes import wintypes
 
 from PIL import Image
 import numpy as np
@@ -21,6 +22,13 @@ _CURSOR_HOME = "\033[H"
 _CURSOR_SHOW = "\033[?25h"
 _CURSOR_HIDE = "\033[?25l"
 _SCREEN_CLEAR = "\033[2J"
+
+# --------------
+# Caching ctypes
+# --------------
+
+_user32 = ctypes.windll.user32
+_kernel32 = ctypes.windll.kernel32
 
 # ----------------------------
 # Predefined display functions
@@ -160,7 +168,9 @@ class TCanvas:
                 else:
                     if p1 != b1 or p2 != b2:
                         append(f"\033[{y+1};{x+1}H")
-                        append(bg(p2) + fg(p1) + "▀")
+                        append(fg(p1))
+                        append(bg(p2))
+                        append("▀")
 
             if y < hCenter-1: append("\n")
 
@@ -307,14 +317,51 @@ class TCanvas:
         newImage.save(dir + name + ext)
 
     
-    # Input
+    # Keyboard & mouse input
 
-    def keyPressed(self, key: str, map: dict = VK) -> True | False:
-        try:
-            return ctypes.windll.user32.GetAsyncKeyState(map[key]) & 0x8000
-        except KeyError as e:
-            raise KeyError(f"Key {key} has not been configured. ({repr(e)})")
-        
+    def keyPressed(self, key: str, map: dict = VK) -> bool:
+        vk = map.get(key)
+        if vk is None:
+            raise KeyError(f"Key {key} has not been defined in selected map.")
+
+        sixteenth_bit = 0x8000
+        return bool(_user32.GetAsyncKeyState(map.get(key)) & sixteenth_bit)
+    
+    class _point_t(ctypes.Structure):
+        _fields_ = [
+            ('x', ctypes.c_long),
+            ('y', ctypes.c_long)
+        ]
+
+    def getMousePos(self) -> tuple[int, int] | None:
+        point = self._point_t()
+        if not _user32.GetCursorPos(ctypes.pointer(point)):
+            return None
+
+        hwnd = _kernel32.GetConsoleWindow()
+        if not hwnd:
+            return None
+
+        # Get literal coordinates (device resolution)
+        origin = wintypes.POINT(0, 0)
+        if not _user32.ClientToScreen(hwnd, ctypes.byref(origin)):
+            return None
+
+        client = wintypes.RECT()
+        if not _user32.GetClientRect(hwnd, ctypes.byref(client)):
+            return None
+
+        if client.right == 0 or client.bottom == 0:
+            return None
+
+        # Map to canvas coordinates (canvas resolution)
+        wx = client.right // self.width * self.width
+        wy = client.bottom // self.height * self.height
+
+        mx = (point.x - origin.x) / wx * self.width
+        my = (point.y - origin.y) / wy * self.height
+
+        return int(mx), int(my)
 
     # Other functions
         
@@ -326,7 +373,7 @@ class TCanvas:
     ) -> True | False:
         if xEnd is None: xEnd = self.width
         if yEnd is None: yEnd = self.height
-        return xStart <= xIndex <= xEnd and yStart <= yIndex <= yEnd
+        return xStart <= xIndex < xEnd and yStart <= yIndex < yEnd
 
 # ----------------------------
 # Terminal canvas, 3D pipeline

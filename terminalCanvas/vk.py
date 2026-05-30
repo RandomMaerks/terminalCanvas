@@ -2,6 +2,11 @@
 # Alias for keys
 # --------------
 
+"""
+Details about the virtual-key codes can be found here:
+https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
+"""
+
 VK = {
     "LMOUSE": 0x01,    "RMOUSE": 0x02,    "MMOUSE": 0x04,
     "BACK": 0x08,    "TAB": 0x09,    "SHIFT": 0x10,    "CTRL": 0x11,    "ALT": 0x12,
