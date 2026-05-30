@@ -1,6 +1,8 @@
 from PIL import Image
 import numpy as np
 
+from fonts import font_5x7
+
 # ---------------
 # Other functions
 # ---------------
@@ -402,7 +404,8 @@ class TC_Text(BaseObject):
         anchor_x, anchor_y = self.anchor_x, self.anchor_y
         color = self.color   
 
-        if font is None: return  
+        if font is None:
+            font = font_5x7.regular  
 
         kerningInfo = font.get("kerning")
         next_xInfo = font.get("next_x", dict())
