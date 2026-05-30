@@ -65,7 +65,7 @@ class BaseObject:
                     scaled.append([x + i + xShift, y + j + yShift, color])
         self.data = scaled
 
-    def color(self, color):
+    def set_color(self, color: tuple[int, int, int, int]) -> None:
         self.color = color
         self._build()
 
@@ -94,7 +94,7 @@ class TC_Point(BaseObject):
         color = self.color
         self.add([x, y, color])
 
-    def points(self, x1, y1):
+    def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
         self._build()
     
@@ -147,7 +147,7 @@ class TC_Line(BaseObject):
                 error += dx
                 y1 += sy
 
-    def points(self, x1, y1, x2, y2):
+    def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self._build()
@@ -211,7 +211,7 @@ class TC_Triangle(BaseObject):
             for x in range(left, right + 1):
                 self.add([x, y, color])
 
-    def points(self, x1, y1, x2, y2, x3, y3):
+    def set_points(self, x1, y1, x2, y2, x3, y3):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self.x3, self.y3 = x3, y3
@@ -263,7 +263,7 @@ class TC_Rectangle(BaseObject):
                 self.add([x1, y, color])
                 self.add([x2, y, color])
 
-    def points(self, x1, y1, x2, y2):
+    def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self._build()
@@ -363,7 +363,7 @@ class TC_Ellipse(BaseObject):
                 for x in range(-xMax, xMax+1):
                     self.add([cx + x, cy + y, color])
 
-    def points(self, x1, y1, x2, y2):
+    def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self._build()
@@ -453,27 +453,27 @@ class TC_Text(BaseObject):
                 for data, x, y, color in line:
                     if data == "1": self.add([x + xOff, y + yOff, color])
 
-    def points(self, x1, y1):
+    def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
         self._build()
 
-    def message(self, message):
+    def set_message(self, message):
         self.message = message
         self._build()
 
-    def font(self, font):
+    def set_font(self, font):
         self.font = font
         self._build()
 
-    def spacing(self, spacing):
+    def set_spacing(self, spacing):
         self.spacing = spacing
         self._build()
 
-    def anchor_x(self, anchor_x):
+    def set_anchor_x(self, anchor_x):
         self.anchor_x = anchor_x
         self._build()
 
-    def anchor_y(self, anchor_y):
+    def set_anchor_y(self, anchor_y):
         self.anchor_y = anchor_y
         self._build()
 
@@ -511,15 +511,15 @@ class TC_Image(BaseObject):
             for x, color in enumerate(res[y]):
                 self.add([x + x1, y + y1, tuple(color)])
 
-    def points(self, x1, y1):
+    def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
         self._build()
 
-    def image_dir(self, image_dir):
+    def set_image_dir(self, image_dir):
         self.image_dir = image_dir
         self._build()
 
-    def resize(self, size):
+    def set_size(self, size):
         self.size = size
         self._build()
 
@@ -549,11 +549,11 @@ class TC_Sprite(BaseObject):
         for x, y, color in sprite:
             self.add([x + x1, y + y1, color])
 
-    def points(self, x1, y1):
+    def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
         self._build()
 
-    def sprite(self, sprite):
+    def set_sprite(self, sprite):
         self.sprite = sprite
         self._build()
 
@@ -639,7 +639,7 @@ class TC_Triangle3D(BaseObject):
                 z = zSegment[x-left]
                 self.add([x, y, color, z])
 
-    def points(self, x1, y1, z1, x2, y2, z2, x3, y3, z3):
+    def set_points(self, x1, y1, z1, x2, y2, z2, x3, y3, z3):
         self.x1, self.y1, self.z1 = x1, y1, z1
         self.x2, self.y2, self.z2 = x2, y2, z2
         self.x3, self.y3, self.z3 = x3, y3, z3
