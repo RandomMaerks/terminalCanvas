@@ -1,7 +1,7 @@
 from PIL import Image
 import numpy as np
 
-from fonts import font_5x7
+from .fonts import font_5x7
 
 # ---------------
 # Other functions
