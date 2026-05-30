@@ -22,7 +22,11 @@ If this goes on PyPI at some point, install the module by running:
 py -m pip install terminalCanvas
 ```
 
-(otherwise just download the whole thing, go to the main folder and run `pip install .`)
+Otherwise, just do:
+
+```
+py -m pip install git+https://github.com/RandomMaerks/terminalCanvas.git
+```
 
 The module uses `Pillow` for image processing, as well as `NumPy` for image-to-array conversion and other array-related operations. They should automatically install along with the main installation.
 
