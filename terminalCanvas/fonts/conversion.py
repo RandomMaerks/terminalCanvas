@@ -40,7 +40,7 @@ Individual glyph information:
 - ENDFONT                   -> denote end of reading font. error cond. if called before all glyphs have been read
 '''
 
-def from_bdf(font_dir: str) -> list:
+def from_bdf(font_dir: str) -> dict:
     if not font_dir.endswith(".bdf"):
         raise UnsupportedFileTypeError(f"Must be of type '.bdf' for this conversion.")
 
