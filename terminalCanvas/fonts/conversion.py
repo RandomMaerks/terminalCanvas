@@ -141,7 +141,7 @@ def from_bdf(font_dir: str) -> dict:
                     next_x = dwX0 - (totalWidth)
                     if next_x != 0:
                         font["next_x"][glyph] = next_x
-                    if glyphXOff != 0:
+                    if glyphXOff < 0:
                         font["offset_x"][glyph] = glyphXOff
 
                 elif line2.startswith("ENDCHAR"):
