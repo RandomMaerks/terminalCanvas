@@ -94,7 +94,7 @@ def from_bdf(font_dir: str) -> list:
                     dwX0, dwY0 = (int(x) for x in line2.removeprefix("DWIDTH ").split())
 
                 elif line2.startswith("BITMAP"):
-                    bitmap = ["."*(glyphXOff + glyphWidth) for _ in range(height)]
+                    bitmap = [" "*(glyphXOff + glyphWidth) for _ in range(height)]
                     rowStart = height - glyphHeight - glyphYOff + yOff
 
                     rowData = []
@@ -110,18 +110,19 @@ def from_bdf(font_dir: str) -> list:
                         d = int(line3, 16)
                         s = format(d, f'0{binLength}b')
                         
-                        processed = "."*(glyphXOff) + s
+                        processed = " "*(glyphXOff) + s
                         rowData.append(
                             processed[:max(totalWidth, binLength - glyphWidth + glyphXOff + 1)]
                             )
 
                     for i, row in enumerate(rowData):
-                        try: bitmap[rowStart + i] = row.replace("0", ".")
+                        try: bitmap[rowStart + i] = row.replace("0", " ")
                         except IndexError:
                             print(width, height, xOff, yOff, glyphWidth, glyphHeight, glyphXOff, glyphYOff, i)
 
                     font[glyph] = bitmap
-                    font["next_x"][glyph] = dwX0 - (totalWidth)
+                    next_x = dwX0 - (totalWidth)
+                    if next_x != 0: font["next_x"][glyph] = next_x
                     glyphCount_found += 1
 
                 elif line2.startswith("ENDCHAR"):
