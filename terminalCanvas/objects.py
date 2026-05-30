@@ -407,6 +407,7 @@ class TC_Text(BaseObject):
         kerningInfo = font.get("kerning")
         next_xInfo = font.get("next_x", dict())
         offset_xInfo = font.get("offset_x", dict())
+        offset_yInfo = font.get("offset_y", dict())
         
         xCurrent = x1
         yCurrent = y1
@@ -426,6 +427,7 @@ class TC_Text(BaseObject):
                 charWidth = len(glyph[0])
                 next_x = next_xInfo.get(char, 0)
                 offset_x = offset_xInfo.get(char, 0)
+                offset_y = offset_yInfo.get(char, 0)
 
                 if index > 0 and kerningInfo is not None:
                     kern = kerningInfo.get(f"{message[index-1]}{char}", 0)
@@ -438,7 +440,7 @@ class TC_Text(BaseObject):
                         line.append([
                             data, 
                             xCurrent + x + kern + offset_x, 
-                            yCurrent + y, 
+                            yCurrent + y + offset_y,
                             color
                         ])
                     textLines.append(line)

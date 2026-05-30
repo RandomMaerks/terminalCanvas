@@ -51,6 +51,7 @@ def from_bdf(font_dir: str) -> dict:
         "kerning" : {},
         "next_x" : {},
         "offset_x": {},
+        "offset_y": {},
     }
 
     lineIndex = 0
@@ -143,6 +144,8 @@ def from_bdf(font_dir: str) -> dict:
                         font["next_x"][glyph] = next_x
                     if glyphXOff < 0:
                         font["offset_x"][glyph] = glyphXOff
+                    if glyphYOff < 0:
+                        font["offset_y"][glyph] = glyphYOff
 
                 elif line2.startswith("ENDCHAR"):
                     break
