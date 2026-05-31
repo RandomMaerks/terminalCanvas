@@ -1,5 +1,4 @@
-regular = {   'next_x': {},
-    'offset_x': {},
+regular = {
     'name': '-Misc-Fixed-Medium-R-Normal--6-60-75-75-C-40-ISO10646-1',
     '\x00': [   '1 1 ',
                 '    ',
