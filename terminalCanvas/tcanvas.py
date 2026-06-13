@@ -197,6 +197,13 @@ class TCanvas:
     def end(self) -> None:
         print(f"\033[{self.height}H" + _CURSOR_SHOW)
 
+    def space(self) -> tuple[int, int]:
+        xMin, xMax = 0 - self._xOff, self.width - self._xOff
+        yMin, yMax = 0 - self._yOff, self.height - self._yOff
+        for y in range(yMin, yMax):
+            for x in range(xMin, xMax):
+                yield (x, y)
+
 
     # Graphical objects
 
@@ -302,10 +309,7 @@ class TCanvas:
 
     # Save image
 
-    def save(self, name: str = None, ext: str = ".png", dir: str = "") -> None:
-        if name is None:
-            name = time.strftime("%Y_%m_%d %H_%M_%S", time.localtime())
-            
+    def save(self, name: str, size: int = None) -> None:
         toNPArray = np.zeros((self.height, self.width, 4), dtype=np.uint8)
         width = self.width
         height = self.height
@@ -316,7 +320,12 @@ class TCanvas:
                 toNPArray[y, x] = np.array([red, green, blue, alpha])
 
         newImage = Image.fromarray(toNPArray)
-        newImage.save(dir + name + ext)
+        if size is not None:
+            newImage = newImage.resize(
+                (newImage.width * size, newImage.height * size),
+                Image.Resampling.NEAREST
+                )
+        newImage.save(name)
 
     
     # Keyboard & mouse input
