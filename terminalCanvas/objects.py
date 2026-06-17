@@ -449,7 +449,7 @@ class TC_Text(BaseObject):
                     textLines.append(line)
 
                 xCurrent += charWidth + spacing + kern + next_x + offset_x
-                totalWidth += xCurrent
+                totalWidth += charWidth + spacing + kern + next_x + offset_x
             
             xCurrent = x1
             yCurrent += len(glyph)
