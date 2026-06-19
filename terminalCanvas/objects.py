@@ -35,7 +35,7 @@ def roundInt(x):
 # Base object class
 # -----------------
 
-class BaseObject:
+class TC_BaseObject:
     def __init__(self) -> None:
         self.data = []
 
@@ -52,9 +52,12 @@ class BaseObject:
     # Object transformation
 
     def move(self, xShift: int, yShift: int) -> None:
-        for x, y, _ in self.data:
+        moved = []
+        for x, y, color in self.data:
             x += xShift
             y += yShift
+            moved.append([x, y, color])
+        self.data = moved
 
     def scale(self, amount: int) -> None:
         xTop, yTop, _ = min(self.data)
@@ -75,7 +78,7 @@ class BaseObject:
 # 2D objects
 # ----------
     
-class TC_Point(BaseObject):
+class TC_Point(TC_BaseObject):
     def __init__(
             self,
             x1: int | float, y1: int | float,
@@ -101,7 +104,7 @@ class TC_Point(BaseObject):
         self._build()
     
 
-class TC_Line(BaseObject):
+class TC_Line(TC_BaseObject):
     def __init__(
             self,
             x1: int | float, y1: int | float,
@@ -126,7 +129,7 @@ class TC_Line(BaseObject):
         y2 = roundInt(self.y2)
 
         color = self.color
-        
+     
         dx = abs(x2 - x1)
         sx = 1 if x1 < x2 else -1
 
@@ -154,7 +157,7 @@ class TC_Line(BaseObject):
         self.x2, self.y2 = x2, y2
         self._build()
 
-class TC_Triangle(BaseObject):
+class TC_Triangle(TC_BaseObject):
     def __init__(
             self,
             x1: int | float, y1: int | float,
@@ -219,7 +222,7 @@ class TC_Triangle(BaseObject):
         self.x3, self.y3 = x3, y3
         self._build()
 
-class TC_Rectangle(BaseObject):
+class TC_Rectangle(TC_BaseObject):
     def __init__(
             self, 
             x1: int | float, y1: int | float, 
@@ -270,7 +273,7 @@ class TC_Rectangle(BaseObject):
         self.x2, self.y2 = x2, y2
         self._build()
 
-class TC_Ellipse(BaseObject):
+class TC_Ellipse(TC_BaseObject):
     def __init__(
             self,
             x1: int | float, y1: int | float, 
@@ -370,7 +373,7 @@ class TC_Ellipse(BaseObject):
         self.x2, self.y2 = x2, y2
         self._build()
 
-class TC_Text(BaseObject):
+class TC_Text(TC_BaseObject):
     def __init__(
             self, 
             x1: int | float, y1: int | float, 
@@ -491,7 +494,7 @@ class TC_Text(BaseObject):
         self._build()
 
 
-class TC_Image(BaseObject):
+class TC_Image(TC_BaseObject):
     def __init__(
             self,
             x1: int | float, y1: int | float,
@@ -536,7 +539,7 @@ class TC_Image(BaseObject):
         self.size = size
         self._build()
 
-class TC_Sprite(BaseObject):
+class TC_Sprite(TC_BaseObject):
     def __init__(
             self,
             x1: int | float, y1: int | float,
@@ -574,7 +577,7 @@ class TC_Sprite(BaseObject):
 # 3D objects
 # ----------
 
-class TC_Triangle3D(BaseObject):
+class TC_Triangle3D(TC_BaseObject):
     def __init__(
             self,
             x1: int | float, y1: int | float, z1: float, 
