@@ -391,12 +391,12 @@ class TCanvas:
 
     def overlap(
             self,
-            x1: int, y1: int,
+            point: tuple[int, int],
             object
     ) -> bool:
         pixels = tuple((x, y) for x, y, *_ in object.data)
 
-        if (x1, y1) in pixels:
+        if point in pixels:
             return True
         return False
         
