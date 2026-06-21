@@ -53,21 +53,21 @@ class TC_BaseObject:
 
     def move(self, xShift: int, yShift: int) -> None:
         moved = []
-        for x, y, color in self.data:
+        for x, y, color, *_ in self.data:
             x += xShift
             y += yShift
-            moved.append([x, y, color])
+            moved.append([x, y, color, *_])
         self.data = moved
 
     def scale(self, amount: int) -> None:
         xTop, yTop, _ = min(self.data)
         scaled = []
-        for x, y, color in self.data:
+        for x, y, color, *_ in self.data:
             for i in range(amount):
                 for j in range(amount):
                     xShift = (x-xTop) * (amount-1)
                     yShift = (y-yTop) * (amount-1)
-                    scaled.append([x + i + xShift, y + j + yShift, color])
+                    scaled.append([x + i + xShift, y + j + yShift, color, *_])
         self.data = scaled
 
     def set_color(self, color: tuple[int, int, int, int]) -> None:
@@ -273,6 +273,10 @@ class TC_Rectangle(TC_BaseObject):
         self.x2, self.y2 = x2, y2
         self._build()
 
+    def set_mode(self, mode):
+        self.mode = mode
+        self._build()
+
 class TC_Ellipse(TC_BaseObject):
     def __init__(
             self,
@@ -371,6 +375,10 @@ class TC_Ellipse(TC_BaseObject):
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
+        self._build()
+
+    def set_mode(self, mode):
+        self.mode = mode
         self._build()
 
 class TC_Text(TC_BaseObject):
@@ -577,6 +585,12 @@ class TC_Sprite(TC_BaseObject):
 # 3D objects
 # ----------
 
+class TC_Point3D(TC_BaseObject):
+    pass
+
+class TC_Line3D(TC_BaseObject):
+    pass
+
 class TC_Triangle3D(TC_BaseObject):
     def __init__(
             self,
@@ -659,4 +673,167 @@ class TC_Triangle3D(TC_BaseObject):
         self.x1, self.y1, self.z1 = x1, y1, z1
         self.x2, self.y2, self.z2 = x2, y2, z2
         self.x3, self.y3, self.z3 = x3, y3, z3
+        self._build()
+
+# ----------
+# UI objects
+# ----------
+
+class TC_RectangleUI(TC_BaseObject):
+    def __init__(
+            self, 
+            x1: int | float, y1: int | float, 
+            x2: int | float, y2: int | float, 
+            mode: str = "frame",
+            char: str = "█",
+            color: tuple[int, int, int, int] = (255, 255, 255, 255),
+    ) -> None:
+
+        super().__init__()
+
+        self.x1, self.y1 = x1, y1
+        self.x2, self.y2 = x2, y2
+        self.color = color
+        self.mode = mode
+        self.char = char
+        self._build()
+
+    def _build(self):
+        self.data = []
+        
+        x1 = roundInt(self.x1)
+        y1 = roundInt(self.y1)
+
+        x2 = roundInt(self.x2)
+        y2 = roundInt(self.y2)
+
+        color = self.color
+        mode = self.mode
+        char = self.char
+
+        if x1 > x2: x1, x2 = x2, x1
+        if y1 > y2: y1, y2 = y2, y1
+        
+        if mode == "solid":
+            for y in range(y1, y2 + 1):
+                for x in range(x1, x2 + 1):
+                    self.add([x, y, color, char])
+
+        elif mode in (
+            "frame", "frame_bold", "frame_round", "frame_double",
+            "block_out", "block_in", "block_thick", "block_even",
+        ):
+            if mode == "frame":
+                top    = ["┌", "─"]
+                right  = ["┐", "│"]
+                bottom = ["┘", "─"]
+                left   = ["└", "│"]
+            if mode == "frame_bold":
+                top    = ["┏", "━"]
+                right  = ["┓", "┃"]
+                bottom = ["┛", "━"]
+                left   = ["┗", "┃"]
+            if mode == "frame_double":
+                top    = ["╔", "═"]
+                right  = ["╗", "║"]
+                bottom = ["╝", "═"]
+                left   = ["╚", "║"]
+            elif mode == "frame_round":
+                top    = ["╭", "─"]
+                right  = ["╮", "│"]
+                bottom = ["╯", "─"]
+                left   = ["╰", "│"]
+
+            elif mode == "block_out":
+                top    = ["▛", "▀"]
+                right  = ["▜", "▐"]
+                bottom = ["▟", "▄"]
+                left   = ["▙", "▌"]
+            elif mode == "block_in":
+                top    = ["▗", "▄"]
+                right  = ["▖", "▌"]
+                bottom = ["▘", "▀"]
+                left   = ["▝", "▐"]
+            elif mode == "block_thick":
+                top    = ["█", "█"]
+                right  = ["█", "█"]
+                bottom = ["█", "█"]
+                left   = ["█", "█"]
+            elif mode == "block_even":
+                top    = ["█", "▀"]
+                right  = ["█", "█"]
+                bottom = ["█", "▄"]
+                left   = ["█", "█"]
+
+            for x in range(x1, x2):
+                self.add([x, y1, color, top[0] if x==x1 else top[1]])
+                self.add([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1]])
+            
+            for y in range(y1, y2):
+                self.add([x1, y+1, color, left[0] if y+1==y2 else left[1]])
+                self.add([x2, y, color, right[0] if y==y1 else right[1]])
+
+    def set_points(self, x1, y1, x2, y2):
+        self.x1, self.y1 = x1, y1
+        self.x2, self.y2 = x2, y2
+        self._build()
+
+    def set_mode(self, mode):
+        self.mode = mode
+        self._build()
+
+    def set_char(self, char):
+        self.char = char
+        self._build()
+
+class TC_TextUI(TC_BaseObject):
+    def __init__(
+            self, 
+            x1: int | float, y1: int | float, 
+            message: str = "",
+            anchor_x: str = "left",
+            color: tuple[int, int, int, int] = (255, 255, 255, 255),
+    ) -> None:
+
+        super().__init__()
+
+        self.x1, self.y1 = x1, y1
+        self.message = message
+        self.anchor_x = anchor_x
+        self.color = color
+        self._build()
+
+    def _build(self):
+        self.data = []
+        
+        x1 = roundInt(self.x1)
+        y1 = roundInt(self.y1)
+
+        messages = self.message.split("\n")
+        anchor_x = self.anchor_x
+        color = self.color
+        
+        y = 0
+        for message in messages:
+            totalWidth = len(message)
+
+            if anchor_x == "left": xOff = 0
+            elif anchor_x == "center": xOff = -(totalWidth)//2
+            elif anchor_x == "right": xOff = -(totalWidth)
+
+            for x, char in enumerate(message):
+                self.add([x1 + x + xOff, y1 + y, color, char])
+
+            y += 1
+
+    def set_points(self, x1, y1):
+        self.x1, self.y1 = x1, y1
+        self._build()
+
+    def set_message(self, message):
+        self.message = message
+        self._build()
+
+    def set_anchor_x(self, anchor_x):
+        self.anchor_x = anchor_x
         self._build()

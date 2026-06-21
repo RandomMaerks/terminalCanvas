@@ -53,6 +53,17 @@ def _getBGColor(color: tuple[int, int, int]) -> str:
     red, green, blue = _sanitiseColor(color)
     return f"\033[48;2;{red};{green};{blue}m"
 
+def _combineAlpha(
+        c_top: tuple[int, int, int, int],
+        c_bot: tuple[int, int, int]
+) -> tuple[int, int, int]:
+    alpha = 1/255 * c2[3]
+    c_combined = [
+        (alpha*c_top[i] + (1-alpha)*c_bot[i])
+        for i in range(3)
+    ]
+    return tuple(c_combined)
+
 # ---------------
 # Terminal canvas
 # ---------------
@@ -111,12 +122,7 @@ class TCanvas:
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
                 colorBelow = self._screenPixels[y*width + x]
-                alpha = 1/255 * color[3]
-                newColor = [
-                    (alpha*color[i] + (1-alpha)*colorBelow[i])
-                    for i in range(3)
-                ]
-                color = tuple(newColor)
+                color = _combineAlpha(colorBelow, color)
                 
             self._screenPixels[y*width + x] = (
                 objects.roundInt(color[0]),
@@ -382,6 +388,18 @@ class TCanvas:
         return int(mx), int(my)
 
     # Other functions
+
+    def overlap(
+            self,
+            x1: int, y1: int,
+            object
+    ) -> bool:
+        pixels = tuple((x, y) for x, y, *_ in object.data)
+
+        if (x1, y1) in pixels:
+            return True
+        return False
+        
         
     def _inRange(
             self,
@@ -465,3 +483,147 @@ class TCanvas3D(TCanvas):
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_Triangle3D:
         return objects.TC_Triangle3D(x1, y1, z1, x2, y2, z2, x3, y3, z3, color)
+
+# -------------------------------
+# Terminal canvas, 2D, UI-focused
+# -------------------------------
+
+class TCanvasUI(TCanvas):
+    def __init__(
+            self,
+            width: int = None, 
+            height: int = None
+    ) -> None:
+
+        if width == None:
+            self.width, _ = shutil.get_terminal_size()
+        else:
+            self.width = width
+
+        if height == None:
+            _, self.height = shutil.get_terminal_size()
+        else:
+            self.height = height
+
+        self.totalPixels = self.width * self.height
+
+        self.wCenter = self.width//2
+        self.hCenter = self.height//2
+
+        self._screenPixels = []
+        self._screenBuffer = []
+
+        self._xOff = 0
+        self._yOff = 0
+
+        self._bgColor = (0, 0, 0)
+
+        #print(_SCREEN_CLEAR)
+        self.clear()
+        self._screenBuffer = self._screenPixels
+        self._buffered = False
+
+        self._lastKeyPressed = {}
+
+    # Display functions
+
+    def _plot(
+            self,
+            xIndex: int, yIndex: int, 
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+            char: str = "█"
+    ) -> None:
+        x = xIndex + self._xOff
+        y = yIndex + self._yOff
+
+        width = self.width
+        
+        if self._inRange(x, y):
+            if len(color) == 4 and color[3] != 255:
+                colorBelow = self._screenPixels[y*width + x]
+                color = _combineAlpha(color, colorBelow)
+                
+            self._screenPixels[y*width + x] = (
+                objects.roundInt(color[0]),
+                objects.roundInt(color[1]),
+                objects.roundInt(color[2]),
+                char
+            )
+
+    def show(self, cursor=False) -> None:
+        display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
+
+        width = self.width
+        height = self.height
+        append = display.append
+        sys_write = sys.stdout.write
+        sys_flush = sys.stdout.flush
+
+        fg = _getFGColor
+        bg = _getBGColor
+
+        last_p1 = None
+
+        for y in range(height):
+            row1 = y * width
+
+            for x in range(width):
+                i1 = row1 + x
+
+                dp1 = self._screenPixels[i1]
+                db1 = self._screenBuffer[i1]
+
+                p1 = dp1[:3]
+                b1 = db1[:3]
+
+                cp1 = " " if len(dp1) != 4 else dp1[3]
+                cb1 = " " if len(db1) != 4 else db1[3]
+
+                if not self._buffered:
+                    if p1 != last_p1 or y == 0:
+                        append(fg(p1))
+                    append(cp1)
+
+                    last_p1 = p1
+                else:
+                    if p1 != b1 or cp1 != cb1:
+                        append(f"\033[{y+1};{x+1}H")
+                        append(fg(p1))
+                        append(cp1)
+
+            if y < height-1: append("\n")
+
+        append(_COLOR_RESET)
+
+        sys_write(''.join(display))
+        sys_flush()
+
+        self._screenBuffer = list(self._screenPixels)
+        self._buffered = True
+
+    def clear(self) -> None:
+        self._screenPixels = [
+            self._bgColor for _ in range(self.totalPixels)
+            ]
+
+    
+    # Graphical objects
+
+    def rectangleUI(
+            self, 
+            x1: int | float, y1: int | float, 
+            x2: int | float, y2: int | float, 
+            mode: str = "frame",
+            char: str = "█",
+            color: tuple[int, int, int, int] = (255, 255, 255, 255),
+    ) -> objects.TC_RectangleUI:
+        return objects.TC_RectangleUI(x1, y1, x2, y2, mode, char, color)
+
+    def textUI(
+            self, 
+            x1: int | float, y1: int | float, 
+            message: str = "",
+            anchor_x: str = "left",
+            color: tuple[int, int, int, int] = (255, 255, 255, 255),
+    ) -> objects.TC_TextUI:
+        return objects.TC_TextUI(x1, y1, message, anchor_x, color)
