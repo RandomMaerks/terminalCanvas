@@ -318,7 +318,17 @@ class TC_Ellipse(TC_BaseObject):
         rx2 = rx * rx
         ry2 = ry * ry
 
-        if mode == "outline":
+        if mode == "solid":
+            if rx2 == 0 or ry2 == 0:
+                return
+
+            for y in range(-ry, ry + 1):
+                xMax = roundInt(rx * (1 - (y*y)/(ry2))**0.5)
+
+                for x in range(-xMax, xMax+1):
+                    self.add([cx + x, cy + y, color])
+
+        elif mode == "outline":
             x = 0
             y = ry
 
@@ -362,15 +372,6 @@ class TC_Ellipse(TC_BaseObject):
                     dx += 2 * ry2
                     dy -= 2 * rx2
                     d2 += dx - dy + rx2
-
-        elif mode == "solid":
-            if rx2 == 0 or ry2 == 0: return
-
-            for y in range(-ry, ry + 1):
-                xMax = roundInt(rx * (1 - (y*y)/(ry2))**0.5)
-
-                for x in range(-xMax, xMax+1):
-                    self.add([cx + x, cy + y, color])
 
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1

@@ -275,7 +275,7 @@ class TCanvas:
             mode: str = "solid", 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_Ellipse:
-        return objects.TC_Ellipse(x1, y1, x2, y1, mode, color)
+        return objects.TC_Ellipse(x1, y1, x2, y2, mode, color)
 
     def text(
             self, 
@@ -420,6 +420,19 @@ class TCanvas:
 
         if point in pixels:
             return True
+        return False
+
+    def overlap_objects(
+            self,
+            object1,
+            object2
+    ) -> bool:
+        pixels1 = tuple((x, y) for x, y, *_ in object1.data)
+        pixels2 = tuple((x, y) for x, y, *_ in object2.data)
+
+        for point1 in pixels1:
+            if point1 in pixels2:
+                return True
         return False
         
         
