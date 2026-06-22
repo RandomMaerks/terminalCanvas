@@ -121,7 +121,7 @@ class TCanvas:
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
                 colorBelow = self._screenPixels[y*width + x]
-                color = _combineAlpha(colorBelow, color)
+                color = _combineAlpha(color, colorBelow)
                 
             self._screenPixels[y*width + x] = (
                 objects.roundInt(color[0]),
@@ -522,12 +522,7 @@ class TCanvas3D(TCanvas):
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
                 colorBelow = self._screenPixels[y*width + x]
-                alpha = 1/255 * color[3]
-                newColor = [
-                    alpha*color[i] + (1-alpha)*colorBelow[i]
-                    for i in range(3)
-                ]
-                color = tuple(newColor)
+                color = _combineAlpha(color, colorBelow)
                 
             if zIndex is not None:
                 if zIndex < self.depthBuffer[y, x]:
