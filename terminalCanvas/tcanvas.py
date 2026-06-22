@@ -99,7 +99,6 @@ class TCanvas:
 
         self._bgColor = (255, 255, 255)
 
-        #print(_SCREEN_CLEAR)
         self.clear()
         self._screenBuffer = self._screenPixels
         self._buffered = False
@@ -209,6 +208,29 @@ class TCanvas:
         for y in range(yMin, yMax):
             for x in range(xMin, xMax):
                 yield (x, y)
+
+    def resize(self, width: int = None, height: int = None) -> None:
+        if width == None:
+            self.width, _ = shutil.get_terminal_size()
+        else:
+            self.width = width
+
+        if height == None:
+            _, self.height = shutil.get_terminal_size()
+            self.height *= 2
+        else:
+            self.height = height
+
+        self.totalPixels = self.width * self.height
+
+        self.wCenter = self.width//2
+        self.hCenter = self.height//2
+
+        self._screenPixels = []
+        self.clear()
+        self._screenBuffer = self._screenPixels
+
+        self._buffered = False
 
 
     # Graphical objects
@@ -606,6 +628,28 @@ class TCanvasUI(TCanvas):
             self._bgColor for _ in range(self.totalPixels)
             ]
 
+    def resize(self, width: int = None, height: int = None) -> None:
+        if width == None:
+            self.width, _ = shutil.get_terminal_size()
+        else:
+            self.width = width
+
+        if height == None:
+            _, self.height = shutil.get_terminal_size()
+        else:
+            self.height = height
+
+        self.totalPixels = self.width * self.height
+
+        self.wCenter = self.width//2
+        self.hCenter = self.height//2
+
+        self._screenPixels = []
+        self.clear()
+        self._screenBuffer = self._screenPixels
+
+        self._buffered = False
+
     
     # Graphical objects
 
@@ -624,6 +668,9 @@ class TCanvasUI(TCanvas):
             x1: int | float, y1: int | float, 
             message: str = "",
             anchor_x: str = "left",
+            max_width: int = None,
+            max_height: int = None,
+            cutoff: str = "naive",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
     ) -> objects.TC_TextUI:
-        return objects.TC_TextUI(x1, y1, message, anchor_x, color)
+        return objects.TC_TextUI(x1, y1, message, anchor_x, max_width, max_height, cutoff, color)

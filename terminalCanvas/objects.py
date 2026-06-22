@@ -792,6 +792,9 @@ class TC_TextUI(TC_BaseObject):
             x1: int | float, y1: int | float, 
             message: str = "",
             anchor_x: str = "left",
+            max_width: int = None,
+            max_height: int = None,
+            cutoff: str = "naive",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
     ) -> None:
 
@@ -801,6 +804,9 @@ class TC_TextUI(TC_BaseObject):
         self.message = message
         self.anchor_x = anchor_x
         self.color = color
+        self.max_width = max_width
+        self.max_height = max_height
+        self.cutoff = cutoff
         self._build()
 
     def _build(self):
@@ -812,6 +818,49 @@ class TC_TextUI(TC_BaseObject):
         messages = self.message.split("\n")
         anchor_x = self.anchor_x
         color = self.color
+        max_width = self.max_width
+        max_height = self.max_height
+        cutoff = self.cutoff
+
+        if max_width is not None:
+            if max_width <= 0:
+                raise ValueError("max_width must be a positive integer.")
+
+            sepmessages = []
+
+            for message in messages:
+                message_length = len(message)
+
+                if message_length < max_width:
+                    sepmessages.append(message)
+                    continue
+
+                if cutoff == "naive":
+                    separated = [message[x:x+max_width] for x in range(0, len(message), max_width)]
+
+                    for x in separated:
+                        sepmessages.append(x)
+
+                elif cutoff == "whole":
+                    charIndex = 0
+                    message_copy = message
+                    while 0 <= charIndex < len(message_copy):
+                        charIndex = max_width
+                        if charIndex < len(message_copy) and message_copy[charIndex] != " ":
+                            while charIndex > 0 and message_copy[charIndex] != " ":
+                                charIndex -= 1
+                        if charIndex != 0:
+                            sepmessages.append(message_copy[:charIndex].lstrip(" "))
+                            message_copy = message_copy[charIndex:]
+                        else:
+                            sepmessages.append(message_copy[:max_width].lstrip(" "))
+                            message_copy = message_copy[max_width:]
+                    sepmessages.append(message_copy.lstrip(" "))
+                            
+            if max_height is not None and len(sepmessages) > max_height:
+                messages = sepmessages[:max_height+1]
+            else:
+                messages = sepmessages
         
         y = 0
         for message in messages:
@@ -836,4 +885,16 @@ class TC_TextUI(TC_BaseObject):
 
     def set_anchor_x(self, anchor_x):
         self.anchor_x = anchor_x
+        self._build()
+
+    def set_max_width(self, max_width):
+        self.max_width = max_width
+        self._build()
+
+    def set_max_height(self, max_height):
+        self.max_height = max_height
+        self._build()
+
+    def set_cutoff(self, cutoff):
+        self.cutoff = cutoff
         self._build()
