@@ -57,7 +57,7 @@ def _combineAlpha(
         c_top: tuple[int, int, int, int],
         c_bot: tuple[int, int, int]
 ) -> tuple[int, int, int]:
-    alpha = 1/255 * c2[3]
+    alpha = 1/255 * c_top[3]
     c_combined = [
         (alpha*c_top[i] + (1-alpha)*c_bot[i])
         for i in range(3)
@@ -240,15 +240,24 @@ class TCanvas:
             x1: int | float, y1: int | float,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_Point:
-        return objects.TC_Point(x1, y1, color)
+        return objects.TC_Point(
+            x1, y1,
+            color=color
+        )
 
     def line(
             self,
             x1: int | float, y1: int | float,
             x2: int | float, y2: int | float,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
+            antialiasing: bool = False
     ) -> objects.TC_Line:
-        return objects.TC_Line(x1, y1, x2, y2, color)
+        return objects.TC_Line(
+            x1, y1,
+            x2, y2,
+            color=color,
+            antialiasing=antialiasing
+        )
 
     def triangle(
             self,
@@ -257,7 +266,12 @@ class TCanvas:
             x3: int | float, y3: int | float,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_Triangle:
-        return objects.TC_Triangle(x1, y1, x2, y2, x3, y3, color)
+        return objects.TC_Triangle(
+            x1, y1,
+            x2, y2,
+            x3, y3,
+            color=color
+        )
 
     def rectangle(
             self, 
@@ -266,7 +280,12 @@ class TCanvas:
             mode: str = "solid", 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_Rectangle:
-        return objects.TC_Rectangle(x1, y1, x2, y2, mode, color)
+        return objects.TC_Rectangle(
+            x1, y1,
+            x2, y2,
+            mode=mode,
+            color=color
+        )
 
     def ellipse(
             self,
@@ -275,7 +294,12 @@ class TCanvas:
             mode: str = "solid", 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_Ellipse:
-        return objects.TC_Ellipse(x1, y1, x2, y2, mode, color)
+        return objects.TC_Ellipse(
+            x1, y1,
+            x2, y2,
+            mode=mode,
+            color=color
+        )
 
     def text(
             self, 
@@ -287,7 +311,15 @@ class TCanvas:
             anchor_y: str = "top",
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_Text:
-        return objects.TC_Text(x1, y1, message, font, spacing, anchor_x, anchor_y, color)
+        return objects.TC_Text(
+            x1, y1,
+            message=message,
+            font=font,
+            spacing=spacing,
+            anchor_x=anchor_x,
+            anchor_y=anchor_y,
+            color=color
+        )
 
     def image(
             self,
@@ -295,14 +327,21 @@ class TCanvas:
             image_dir: str,
             size: tuple[int, int] | None = None
     ) -> objects.TC_Image:
-        return objects.TC_Image(x1, y1, image_dir, size)
+        return objects.TC_Image(
+            x1, y1,
+            image_dir=image_dir,
+            size=size
+        )
 
     def sprite(
             self,
             x1: int | float, y1: int | float,
             sprite: list[int | float, int | float, tuple[int, int, int, int]]
     ) -> objects.TC_Sprite:
-        return objects.TC_Sprite(x1, y1, sprite)
+        return objects.TC_Sprite(
+            x1, y1,
+            sprite=sprite
+        )
         
             
     # Canvas transformation
@@ -510,6 +549,28 @@ class TCanvas3D(TCanvas):
 
     # Graphical objects
 
+    def point3D(
+            self,
+            x1: int | float, y1: int | float, z1: float,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Point3D:
+        return objects.TC_Point3D(
+            x1, y1, z1,
+            color=color
+        )
+
+    def line3D(
+            self,
+            x1: int | float, y1: int | float, z1: float,
+            x2: int | float, y2: int | float, z2: float,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Line3D:
+        return objects.TC_Line3D(
+            x1, y1, z1,
+            x2, y2, z2,
+            color=color
+        )
+
     def triangle3D(
             self,
             x1: int | float, y1: int | float, z1: float, 
@@ -517,7 +578,12 @@ class TCanvas3D(TCanvas):
             x3: int | float, y3: int | float, z3: float, 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_Triangle3D:
-        return objects.TC_Triangle3D(x1, y1, z1, x2, y2, z2, x3, y3, z3, color)
+        return objects.TC_Triangle3D(
+            x1, y1, z1,
+            x2, y2, z2,
+            x3, y3, z3,
+            color=color
+        )
 
 # -------------------------------
 # Terminal canvas, 2D, UI-focused
@@ -674,7 +740,13 @@ class TCanvasUI(TCanvas):
             char: str = "█",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
     ) -> objects.TC_RectangleUI:
-        return objects.TC_RectangleUI(x1, y1, x2, y2, mode, char, color)
+        return objects.TC_RectangleUI(
+            x1, y1,
+            x2, y2,
+            mode=mode,
+            char=char,
+            color=color
+        )
 
     def textUI(
             self, 
@@ -686,4 +758,12 @@ class TCanvasUI(TCanvas):
             cutoff: str = "naive",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
     ) -> objects.TC_TextUI:
-        return objects.TC_TextUI(x1, y1, message, anchor_x, max_width, max_height, cutoff, color)
+        return objects.TC_TextUI(
+            x1, y1,
+            message=message,
+            anchor_x=anchor_x,
+            max_width=max_width,
+            max_height=max_height,
+            cutoff=cutoff,
+            color=color
+        )

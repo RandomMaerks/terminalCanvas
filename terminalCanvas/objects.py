@@ -110,6 +110,7 @@ class TC_Line(TC_BaseObject):
             x1: int | float, y1: int | float,
             x2: int | float, y2: int | float,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
+            antialiasing: bool = False
     ) -> None:
 
         super().__init__()
@@ -117,6 +118,7 @@ class TC_Line(TC_BaseObject):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self.color = color
+        self.antialiasing = antialiasing
         self._build()
 
     def _build(self):
@@ -137,20 +139,49 @@ class TC_Line(TC_BaseObject):
         sy = 1 if y1 < y2 else -1
 
         error = dx + dy
+
+        if not self.antialiasing:            
+            while True:
+                self.add([x1, y1, color])
+
+                if x1 == x2 and y1 == y2: break
+
+                e2 = 2 * error
+
+                if e2 >= dy:
+                    error += dy
+                    x1 += sx
+                if e2 <= dx:
+                    error += dx
+                    y1 += sy
         
-        while True:
-            self.add([x1, y1, color])
+        else:
+            dy = -dy
 
-            if x1 == x2 and y1 == y2: break
+            ed = 1 if dx + dy == 0 else (dx*dx + dy*dy) ** 0.5
+            r, g, b, *_ = color
+            while True:
+                aa = 255 - (255 * abs(error - dx + dy) / ed)
+                self.add([x1, y1, (r, g, b, aa)])
 
-            e2 = 2 * error
+                e2 = error
+                x3 = x1
 
-            if e2 >= dy:
-                error += dy
-                x1 += sx
-            if e2 <= dx:
-                error += dx
-                y1 += sy
+                if e2 * 2 >= -dx:
+                    if x1 == x2: break
+                    if e2 + dy < ed:
+                        aa = 255 - (255 * (e2 + dy) / ed)
+                        self.add([x1, y1 + sy, (r, g, b, aa)])
+                    error -= dy
+                    x1 += sx
+
+                if e2 * 2 <= dy:
+                    if y1 == y2: break
+                    if dx - e2 < ed:
+                        aa = 255 - (255 * abs(dx - e2) / ed)
+                        self.add([x3 + sx, y1, (r, g, b, aa)])
+                    error += dx
+                    y1 += sy
 
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
@@ -587,10 +618,95 @@ class TC_Sprite(TC_BaseObject):
 # ----------
 
 class TC_Point3D(TC_BaseObject):
-    pass
+    def __init__(
+            self,
+            x1: int | float, y1: int | float, z1: float,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> None:
+
+        super().__init__()
+
+        self.x1, self.y1, self.z1 = x1, y1, z1
+        self.color = color
+        self._build()
+
+    def _build(self):
+        self.data = []
+
+        x = roundInt(self.x1)
+        y = roundInt(self.y1)
+        z = float(self.z1)
+        color = self.color
+        self.add([x, y, color, z])
+
+    def set_points(self, x1, y1, z1):
+        self.x1, self.y1 = x1, y1, z1
+        self._build()
+    
 
 class TC_Line3D(TC_BaseObject):
-    pass
+    def __init__(
+            self,
+            x1: int | float, y1: int | float, z1: float,
+            x2: int | float, y2: int | float, z2: float,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> None:
+
+        super().__init__()
+
+        self.x1, self.y1, self.z1 = x1, y1, z1
+        self.x2, self.y2, self.z2 = x2, y2, z2
+        self.color = color
+        self._build()
+
+    def _build(self):
+        self.data = []
+        
+        x1 = roundInt(self.x1)
+        y1 = roundInt(self.y1)
+        z1 = float(self.z1)
+
+        x2 = roundInt(self.x2)
+        y2 = roundInt(self.y2)
+        z2 = float(self.z2)
+
+        color = self.color
+     
+        dx = abs(x2 - x1)
+        sx = 1 if x1 < x2 else -1
+
+        dy = abs(y2 - y1)
+        sy = 1 if y1 < y2 else -1
+
+        dz = abs(z2 - z1)
+        sz = 1 if z1 < z2 else -1
+
+        dm = max(dx, dy, dz)
+        
+        ex = ey = ez = dm/2
+        for _ in range(dm + 1):
+            self.add([x1, y1, color, z1])
+
+            ex -= dx
+            if ex < 0:
+                ex += dm
+                x1 += sx
+
+            ey -= dy
+            if ey < 0:
+                ey += dm
+                y1 += sy
+            
+            ez -= dz
+            if ez < 0:
+                ez += dm
+                z1 += sz
+
+
+    def set_points(self, x1, y1, z1, x2, y2, z2):
+        self.x1, self.y1, self.z2 = x1, y1, z1
+        self.x2, self.y2, self.z2 = x2, y2, z2
+        self._build()
 
 class TC_Triangle3D(TC_BaseObject):
     def __init__(
