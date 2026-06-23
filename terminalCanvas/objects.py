@@ -81,7 +81,7 @@ class TC_BaseObject:
 class TC_Point(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float,
+            x1: int | float = 0, y1: int | float = 0,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
 
@@ -107,8 +107,8 @@ class TC_Point(TC_BaseObject):
 class TC_Line(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float,
-            x2: int | float, y2: int | float,
+            x1: int | float = 0, y1: int | float = 0,
+            x2: int | float = 0, y2: int | float = 0,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
             antialiasing: bool = False
     ) -> None:
@@ -191,9 +191,9 @@ class TC_Line(TC_BaseObject):
 class TC_Triangle(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float,
-            x2: int | float, y2: int | float,
-            x3: int | float, y3: int | float,
+            x1: int | float = 0, y1: int | float = 0,
+            x2: int | float = 0, y2: int | float = 0,
+            x3: int | float = 0, y3: int | float = 0,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
 
@@ -256,8 +256,8 @@ class TC_Triangle(TC_BaseObject):
 class TC_Rectangle(TC_BaseObject):
     def __init__(
             self, 
-            x1: int | float, y1: int | float, 
-            x2: int | float, y2: int | float, 
+            x1: int | float = 0, y1: int | float = 0, 
+            x2: int | float = 0, y2: int | float = 0, 
             mode: str = "solid", 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
@@ -311,8 +311,8 @@ class TC_Rectangle(TC_BaseObject):
 class TC_Ellipse(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float, 
-            x2: int | float, y2: int | float, 
+            x1: int | float = 0, y1: int | float = 0, 
+            x2: int | float = 0, y2: int | float = 0, 
             mode: str = "solid", 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
@@ -416,7 +416,7 @@ class TC_Ellipse(TC_BaseObject):
 class TC_Text(TC_BaseObject):
     def __init__(
             self, 
-            x1: int | float, y1: int | float, 
+            x1: int | float = 0, y1: int | float = 0, 
             message: str = "",
             font: dict = None, 
             spacing: int = 0,
@@ -537,8 +537,8 @@ class TC_Text(TC_BaseObject):
 class TC_Image(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float,
-            image_dir: str,
+            x1: int | float = 0, y1: int | float = 0,
+            image_dir: str = None,
             size: tuple[int, int] | None = None
     ) -> None:
 
@@ -558,6 +558,9 @@ class TC_Image(TC_BaseObject):
         image_dir = self.image_dir
         size = self.size
 
+        if image_dir is None:
+            return 
+        
         img = Image.open(image_dir).convert("RGBA")
         if size is not None:
             img = img.resize(size)
@@ -582,8 +585,8 @@ class TC_Image(TC_BaseObject):
 class TC_Sprite(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float,
-            sprite: list[int | float, int | float, tuple[int, int, int, int]]
+            x1: int | float = 0, y1: int | float = 0,
+            sprite: list[int | float, int | float, tuple[int, int, int, int]] = None
     ) -> None:
 
         super().__init__()
@@ -599,6 +602,7 @@ class TC_Sprite(TC_BaseObject):
         y1 = roundInt(self.y1)
 
         sprite = self.sprite
+        if sprite is None: sprite = []
 
         xCurrent = x1
 
@@ -620,7 +624,7 @@ class TC_Sprite(TC_BaseObject):
 class TC_Point3D(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float, z1: float,
+            x1: int | float = 0, y1: int | float = 0, z1: float = 0,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
 
@@ -647,8 +651,8 @@ class TC_Point3D(TC_BaseObject):
 class TC_Line3D(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float, z1: float,
-            x2: int | float, y2: int | float, z2: float,
+            x1: int | float = 0, y1: int | float = 0, z1: float = 0,
+            x2: int | float = 0, y2: int | float = 0, z2: float = 0,
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
 
@@ -711,9 +715,9 @@ class TC_Line3D(TC_BaseObject):
 class TC_Triangle3D(TC_BaseObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float, z1: float, 
-            x2: int | float, y2: int | float, z2: float, 
-            x3: int | float, y3: int | float, z3: float, 
+            x1: int | float = 0, y1: int | float = 0, z1: float = 0, 
+            x2: int | float = 0, y2: int | float = 0, z2: float = 0, 
+            x3: int | float = 0, y3: int | float = 0, z3: float = 0, 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
 
@@ -799,8 +803,8 @@ class TC_Triangle3D(TC_BaseObject):
 class TC_RectangleUI(TC_BaseObject):
     def __init__(
             self, 
-            x1: int | float, y1: int | float, 
-            x2: int | float, y2: int | float, 
+            x1: int | float = 0, y1: int | float = 0, 
+            x2: int | float = 0, y2: int | float = 0, 
             mode: str = "frame",
             char: str = "█",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
@@ -906,7 +910,7 @@ class TC_RectangleUI(TC_BaseObject):
 class TC_TextUI(TC_BaseObject):
     def __init__(
             self, 
-            x1: int | float, y1: int | float, 
+            x1: int | float = 0, y1: int | float = 0, 
             message: str = "",
             anchor_x: str = "left",
             max_width: int = None,
