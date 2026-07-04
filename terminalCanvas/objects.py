@@ -1,3 +1,5 @@
+import textwrap
+
 from PIL import Image
 import numpy as np
 
@@ -915,7 +917,7 @@ class TC_TextUI(TC_BaseObject):
             anchor_x: str = "left",
             max_width: int = None,
             max_height: int = None,
-            cutoff: str = "naive",
+            cutoff: str = "whole",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
     ) -> None:
 
@@ -963,20 +965,12 @@ class TC_TextUI(TC_BaseObject):
                         sepmessages.append(x)
 
                 elif cutoff == "whole":
-                    charIndex = 0
-                    message_copy = message
-                    while 0 <= charIndex < len(message_copy):
-                        charIndex = max_width
-                        if charIndex < len(message_copy) and message_copy[charIndex] != " ":
-                            while charIndex > 0 and message_copy[charIndex] != " ":
-                                charIndex -= 1
-                        if charIndex != 0:
-                            sepmessages.append(message_copy[:charIndex].lstrip(" "))
-                            message_copy = message_copy[charIndex:]
-                        else:
-                            sepmessages.append(message_copy[:max_width].lstrip(" "))
-                            message_copy = message_copy[max_width:]
-                    sepmessages.append(message_copy.lstrip(" "))
+                    newtext = textwrap.wrap(
+                        message,
+                        width = max(1, max_width)
+                    )
+                    for text in newtext:
+                        sepmessages.append(text)
                             
             if max_height is not None and len(sepmessages) > max_height:
                 messages = sepmessages[:max_height+1]

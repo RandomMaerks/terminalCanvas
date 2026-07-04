@@ -745,7 +745,7 @@ class TCanvasUI(TCanvas):
             anchor_x: str = "left",
             max_width: int = None,
             max_height: int = None,
-            cutoff: str = "naive",
+            cutoff: str = "whole",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
     ) -> objects.TC_TextUI:
         return objects.TC_TextUI(
