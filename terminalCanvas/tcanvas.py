@@ -430,7 +430,7 @@ class TCanvas:
         new[3] &= ~(termios.ICANON | termios.ECHO)
         termios.tcsetattr(fd, termios.TCSANOW, new)
 
-        oldflags = fcntl.fcntl(fd, fcntl.G_GETFL)
+        oldflags = fcntl.fcntl(fd, fcntl.F_GETFL)
         fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
 
         try:
