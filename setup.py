@@ -5,7 +5,7 @@ with open('README.md', 'r', encoding='utf8') as file:
 
 setuptools.setup(
     name = 'terminalCanvas',
-    version = '0.2.0',
+    version = '0.3.0',
 
     description = 'A module for creating a canvas and displaying text-based graphics in the terminal',
     long_description = readme,

@@ -451,9 +451,9 @@ class TCanvas:
 
     def keyPressed(self, key: str, hold: bool = True) -> bool:
         if input_mode == "Windows":
-            return _keyPressed_WINDOWS(key, hold)
+            return self._keyPressed_WINDOWS(key, hold)
         elif input_mode == "Unix":
-            return _keyPressed_UNIX(key, hold)
+            return self._keyPressed_UNIX(key, hold)
 
     class _point_t(ctypes.Structure):
         _fields_ = [
