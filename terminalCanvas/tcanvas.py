@@ -395,7 +395,9 @@ class TCanvas:
 
     
     # Keyboard & mouse input
-    def _keyPressed_WINDOWS(self, key: str, map: dict = VK_WINDOWS, hold: bool = True) -> bool:
+    def _keyPressed_WINDOWS(self, key: str, hold: bool = True) -> bool:
+        map = VK_WINDOWS
+
         vk = map.get(key)
         if vk is None:
             raise KeyError(f"Key {key} has not been defined in selected map.")
@@ -410,8 +412,9 @@ class TCanvas:
         else:
             return current and not previous
 
-    def _keyPressed_UNIX(self, key: str, map: dict = VK_UNIX, hold: bool = True) -> bool:
+    def _keyPressed_UNIX(self, key: str, hold: bool = True) -> bool:
         # Test function. Fallback for Linux terminals. No guarantee that it actually works
+        map = VK_UNIX
 
         if key in map:
             vk = map[key]
