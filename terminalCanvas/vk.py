@@ -7,7 +7,7 @@ Details about the virtual-key codes can be found here:
 https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes
 """
 
-VK = {
+VK_WINDOWS = {
     "LMOUSE": 0x01,    "RMOUSE": 0x02,    "MMOUSE": 0x04,
     "BACK": 0x08,    "TAB": 0x09,    "SHIFT": 0x10,    "CTRL": 0x11,    "ALT": 0x12,
     "CAPS": 0x14,    "ESC": 0x1B,    "SPACE": 0x20,    "PGUP": 0x21,    "PGDN": 0x22,
@@ -36,4 +36,17 @@ VK = {
     
     "NUMLOCK": 0x90,    "SCROLL": 0x91,    "LSHIFT": 0xA0,    "RSHIFT": 0xA1,
     "LCONTROL": 0xA2,    "RCONTROL": 0xA3,    "LMENU": 0xA4,    "RMENU": 0xA5,
+}
+
+VK_UNIX = {
+    "ENTER": "\n",
+    "TAB": "\t",
+    "SPACE": " ",
+    "ESC": "\x1b",
+    "BACK": "\x7f",
+
+    "UP": "\x1b[A",
+    "DOWN": "\x1b[B",
+    "RIGHT": "\x1b[C",
+    "LEFT": "\x1b[D",
 }

@@ -2,14 +2,23 @@ import os
 import time
 import sys
 import shutil
-import ctypes
-from ctypes import wintypes
+try:
+    # Import ctypes, mainly for user input on Windows
+    import ctypes
+    from ctypes import wintypes
+    _user32 = ctypes.windll.user32
+    _kernel32 = ctypes.windll.kernel32
+    input_mode = "Windows"
+except AttributeError:
+    # Fallback to termios, "should" work on UNIX
+    import termios, fcntl
+    input_mode = "Unix"
 
 from PIL import Image
 import numpy as np
 
 from . import objects
-from .vk import VK
+from .vk import VK_WINDOWS, VK_UNIX
 
 os.system("")
 
@@ -22,13 +31,6 @@ _CURSOR_HOME = "\033[H"
 _CURSOR_SHOW = "\033[?25h"
 _CURSOR_HIDE = "\033[?25l"
 _SCREEN_CLEAR = "\033[2J"
-
-# --------------
-# Caching ctypes
-# --------------
-
-_user32 = ctypes.windll.user32
-_kernel32 = ctypes.windll.kernel32
 
 # ----------------------------
 # Predefined display functions
@@ -393,8 +395,7 @@ class TCanvas:
 
     
     # Keyboard & mouse input
-
-    def keyPressed(self, key: str, map: dict = VK, hold: bool = True) -> bool:
+    def _keyPressed_WINDOWS(self, key: str, map: dict = VK_WINDOWS, hold: bool = True) -> bool:
         vk = map.get(key)
         if vk is None:
             raise KeyError(f"Key {key} has not been defined in selected map.")
@@ -409,6 +410,51 @@ class TCanvas:
         else:
             return current and not previous
 
+    def _keyPressed_UNIX(self, key: str, map: dict = VK_UNIX, hold: bool = True) -> bool:
+        # Test function. Fallback for Linux terminals. No guarantee that it actually works
+
+        if key in map:
+            vk = map[key]
+        elif len(key) == 1:
+            vk = key.lower()
+        else:
+            raise KeyError(f"Key {key} has not been defined in selected map.")
+            
+        fd = sys.stdin.fileno()
+
+        old = termios.tcgetattr(fd)
+        new = termios.tcgetattr(fd)
+        new[3] &= ~(termios.ICANON | termios.ECHO)
+        termios.tcsetattr(fd, termios.TCSANOW, new)
+
+        oldflags = fcntl.fcntl(fd, fcntl.G_GETFL)
+        fcntl.fcntl(fd, fcntl.F_SETFL, oldflags | os.O_NONBLOCK)
+
+        try:
+            try:
+                data = os.read(fd, 8).decode(errors="ignore")
+            except (IOError, BlockingIOError):
+                data = ""
+                
+            current = (data == vk)
+            previous = self._lastKeyPressed.get(vk, False)
+
+            self._lastKeyPressed[vk] = current
+
+            if hold is True:
+                return current
+            else:
+                return current and not previous
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old)
+            fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
+
+    def keyPressed(self, key: str, hold: bool = True) -> bool:
+        if input_mode == "Windows":
+            return _keyPressed_WINDOWS(key, hold)
+        elif input_mode == "Unix":
+            return _keyPressed_UNIX(key, hold)
+
     class _point_t(ctypes.Structure):
         _fields_ = [
             ('x', ctypes.c_long),
@@ -416,6 +462,9 @@ class TCanvas:
         ]
 
     def getMousePos(self) -> tuple[int, int] | None:
+        if input_mode == "Unix":
+            raise OSError("Cannot use getMousePos() on non-Windows system/terminal.")
+
         point = self._point_t()
         if not _user32.GetCursorPos(ctypes.pointer(point)):
             return None
