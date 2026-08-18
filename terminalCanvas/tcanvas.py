@@ -36,7 +36,7 @@ _SCREEN_CLEAR = "\033[2J"
 # Predefined display functions
 # ----------------------------
 
-def _sanitiseColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
+def _sanitizeColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
     red = max(min(objects.roundInt(color[0]), 255), 0)
     green = max(min(objects.roundInt(color[1]), 255), 0)
     blue = max(min(objects.roundInt(color[2]), 255), 0)
@@ -46,13 +46,13 @@ def _sanitiseColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
 def _getFGColor(color: tuple[int, int, int]) -> str:
     if color is None: return "\033[38;2;0;0;0m"
 
-    red, green, blue = _sanitiseColor(color)
+    red, green, blue = _sanitizeColor(color)
     return f"\033[38;2;{red};{green};{blue}m"
 
 def _getBGColor(color: tuple[int, int, int]) -> str:
     if color is None: return "\033[48;2;0;0;0m"
 
-    red, green, blue = _sanitiseColor(color)
+    red, green, blue = _sanitizeColor(color)
     return f"\033[48;2;{red};{green};{blue}m"
 
 def _combineAlpha(
@@ -137,7 +137,7 @@ class TCanvas:
         for pixel in object.data:
             plot(*pixel)
 
-    def show(self, cursor=False) -> None:
+    def show(self, cursor = False) -> None:
         display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
         width = self.width
