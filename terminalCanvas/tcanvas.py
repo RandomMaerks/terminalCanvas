@@ -137,7 +137,7 @@ class TCanvas:
         for pixel in object.data:
             plot(*pixel)
 
-    def show(self, cursor = False) -> None:
+    def show(self, cursor = False, lock_to_terminal: bool = False) -> None:
         display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
         width = self.width
@@ -152,12 +152,19 @@ class TCanvas:
         last_p1 = None
         last_p2 = None
 
+        if lock_to_terminal:
+            term_width, term_height = shutil.get_terminal_size()
+
         for y in range(hCenter):
             yIndex = y*2
             row1 = yIndex * width
             row2 = row1 + width
 
+            if lock_to_terminal and y >= term_height: break
+
             for x in range(width):
+                if lock_to_terminal and x >= term_width: break
+
                 i1 = row1 + x
                 i2 = row2 + x
 
@@ -695,7 +702,7 @@ class TCanvasUI(TCanvas):
                 char
             )
 
-    def show(self, cursor=False) -> None:
+    def show(self, cursor = False, lock_to_terminal: bool = False) -> None:
         display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
         width = self.width
@@ -709,10 +716,17 @@ class TCanvasUI(TCanvas):
 
         last_p1 = None
 
+        if lock_to_terminal:
+            term_width, term_height = shutil.get_terminal_size()
+
         for y in range(height):
             row1 = y * width
 
+            if lock_to_terminal and y >= term_height: break
+
             for x in range(width):
+                if lock_to_terminal and x >= term_width: break
+
                 i1 = row1 + x
 
                 dp1 = self._screenPixels[i1]
