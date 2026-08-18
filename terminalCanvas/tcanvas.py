@@ -153,18 +153,18 @@ class TCanvas:
         last_p2 = None
 
         if lock_to_terminal:
-            term_width, term_height = shutil.get_terminal_size()
+            xRange, yRange = shutil.get_terminal_size()
+            xRange = min(width, xRange)
+            yRange = min(hCenter, (yRange // 2) * 2 - 1)
+        else:
+            xRange, yRange = width, hCenter
 
-        for y in range(hCenter):
+        for y in range(yRange):
             yIndex = y*2
             row1 = yIndex * width
             row2 = row1 + width
 
-            if lock_to_terminal and y >= term_height: break
-
-            for x in range(width):
-                if lock_to_terminal and x >= term_width: break
-
+            for x in range(xRange):
                 i1 = row1 + x
                 i2 = row2 + x
 
@@ -208,8 +208,8 @@ class TCanvas:
             self._bgColor for _ in range(self.totalPixels)
             ]
 
-    def end(self) -> None:
-        print(f"\033[{self.height}H" + _CURSOR_SHOW)
+    def end(self, clear_all: bool = False) -> None:
+        print(f"\033[{self.height}H" + _CURSOR_SHOW + (_SCREEN_CLEAR if clear_all else ''))
 
     def space(self) -> tuple[int, int]:
         xMin, xMax = 0 - self._xOff, self.width - self._xOff
@@ -224,7 +224,7 @@ class TCanvas:
         self.width = tempwidth
 
         if height is None: _, tempheight = shutil.get_terminal_size()
-        else: self.height = height
+        else: tempheight = height
         self.height = tempheight * 2
 
         self.totalPixels = self.width * self.height
@@ -717,14 +717,18 @@ class TCanvasUI(TCanvas):
         last_p1 = None
 
         if lock_to_terminal:
-            term_width, term_height = shutil.get_terminal_size()
+            xRange, yRange = shutil.get_terminal_size()
+            xRange = min(width, xRange)
+            yRange = min(height, (yRange // 2) * 2 - 1)
+        else:
+            xRange, yRange = width, height
 
-        for y in range(height):
+        for y in range(yRange):
             row1 = y * width
 
             if lock_to_terminal and y >= term_height: break
 
-            for x in range(width):
+            for x in range(xRange):
                 if lock_to_terminal and x >= term_width: break
 
                 i1 = row1 + x
@@ -771,7 +775,7 @@ class TCanvasUI(TCanvas):
         self.width = tempwidth
 
         if height is None: _, tempheight = shutil.get_terminal_size()
-        else: self.height = height
+        else: tempheight = height
         self.height = tempheight
 
         self.totalPixels = self.width * self.height
