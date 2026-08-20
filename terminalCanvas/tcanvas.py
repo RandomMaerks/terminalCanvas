@@ -683,7 +683,8 @@ class TCanvasUI(TCanvas):
             self,
             xIndex: int, yIndex: int, 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
-            char: str = "█"
+            char: str = "█",
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
         x = xIndex + self._xOff
         y = yIndex + self._yOff
@@ -692,14 +693,21 @@ class TCanvasUI(TCanvas):
         
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
-                colorBelow = self._screenPixels[y*width + x]
+                colorBelow = self._screenPixels[y*width + x][0:3]
                 color = _combineAlpha(color, colorBelow)
+
+            if len(bgcolor) == 4 and bgcolor[3] != 255:
+                bgcolorBelow = self._screenPixels[y*width + x][4:7]
+                bgcolor = _combineAlpha(bgcolor, bgcolorBelow)
                 
             self._screenPixels[y*width + x] = (
                 objects.roundInt(color[0]),
                 objects.roundInt(color[1]),
                 objects.roundInt(color[2]),
-                char
+                char,
+                objects.roundInt(bgcolor[0]),
+                objects.roundInt(bgcolor[1]),
+                objects.roundInt(bgcolor[2]),
             )
 
     def show(self, cursor = False, lock_to_terminal: bool = False) -> None:
@@ -715,6 +723,7 @@ class TCanvasUI(TCanvas):
         bg = _getBGColor
 
         last_p1 = None
+        last_bgp1 = None
 
         if lock_to_terminal:
             xRange, yRange = shutil.get_terminal_size()
@@ -739,18 +748,25 @@ class TCanvasUI(TCanvas):
                 p1 = dp1[:3]
                 b1 = db1[:3]
 
-                cp1 = " " if len(dp1) != 4 else dp1[3]
-                cb1 = " " if len(db1) != 4 else db1[3]
+                bgp1 = dp1[4:7]
+                bgb1 = db1[4:7]
+
+                cp1 = dp1[3]
+                cb1 = db1[3]
 
                 if not self._buffered:
+                    if bgp1 != last_bgp1 or y == 0:
+                        append(bg(bgp1))
                     if p1 != last_p1 or y == 0:
                         append(fg(p1))
                     append(cp1)
 
                     last_p1 = p1
+                    last_bgp1 = bgp1
                 else:
-                    if p1 != b1 or cp1 != cb1:
+                    if p1 != b1 or bgp1 != bgb1 or cp1 != cb1:
                         append(f"\033[{y+1};{x+1}H")
+                        append(bg(bgp1))
                         append(fg(p1))
                         append(cp1)
 
@@ -766,7 +782,7 @@ class TCanvasUI(TCanvas):
 
     def clear(self) -> None:
         self._screenPixels = [
-            self._bgColor for _ in range(self.totalPixels)
+            self._bgColor + (' ',) + self._bgColor for _ in range(self.totalPixels)
             ]
 
     def resize(self, width: int = None, height: int = None) -> None:
@@ -799,13 +815,15 @@ class TCanvasUI(TCanvas):
             mode: str = "frame",
             char: str = "█",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_RectangleUI:
         return objects.TC_RectangleUI(
             x1=x1, y1=y1,
             x2=x2, y2=y2,
             mode=mode,
             char=char,
-            color=color
+            color=color,
+            bgcolor=bgcolor,
         )
 
     def textUI(
@@ -817,6 +835,7 @@ class TCanvasUI(TCanvas):
             max_height: int = None,
             cutoff: str = "whole",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> objects.TC_TextUI:
         return objects.TC_TextUI(
             x1=x1, y1=y1,
@@ -825,5 +844,6 @@ class TCanvasUI(TCanvas):
             max_width=max_width,
             max_height=max_height,
             cutoff=cutoff,
-            color=color
+            color=color,
+            bgcolor=bgcolor,
         )

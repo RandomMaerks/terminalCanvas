@@ -810,6 +810,7 @@ class TC_RectangleUI(TC_BaseObject):
             mode: str = "frame",
             char: str = "█",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
 
         super().__init__()
@@ -817,6 +818,7 @@ class TC_RectangleUI(TC_BaseObject):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self.color = color
+        self.bgcolor = bgcolor
         self.mode = mode
         self.char = char
         self._build()
@@ -833,6 +835,7 @@ class TC_RectangleUI(TC_BaseObject):
         color = self.color
         mode = self.mode
         char = self.char
+        bgcolor = self.bgcolor
 
         if x1 > x2: x1, x2 = x2, x1
         if y1 > y2: y1, y2 = y2, y1
@@ -889,16 +892,20 @@ class TC_RectangleUI(TC_BaseObject):
                 left   = ["█", "█"]
 
             for x in range(x1, x2):
-                self.add([x, y1, color, top[0] if x==x1 else top[1]])
-                self.add([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1]])
+                self.add([x, y1, color, top[0] if x==x1 else top[1], bgcolor])
+                self.add([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1], bgcolor])
             
             for y in range(y1, y2):
-                self.add([x1, y+1, color, left[0] if y+1==y2 else left[1]])
-                self.add([x2, y, color, right[0] if y==y1 else right[1]])
+                self.add([x1, y+1, color, left[0] if y+1==y2 else left[1], bgcolor])
+                self.add([x2, y, color, right[0] if y==y1 else right[1], bgcolor])
 
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
+        self._build()
+
+    def set_bgcolor(self, bgcolor: tuple[int, int, int, int]):
+        self.bgcolor = bgcolor
         self._build()
 
     def set_mode(self, mode):
@@ -919,6 +926,7 @@ class TC_TextUI(TC_BaseObject):
             max_height: int = None,
             cutoff: str = "whole",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
     ) -> None:
 
         super().__init__()
@@ -927,6 +935,7 @@ class TC_TextUI(TC_BaseObject):
         self.message = message
         self.anchor_x = anchor_x
         self.color = color
+        self.bgcolor = bgcolor
         self.max_width = max_width
         self.max_height = max_height
         self.cutoff = cutoff
@@ -941,6 +950,7 @@ class TC_TextUI(TC_BaseObject):
         messages = self.message.split("\n")
         anchor_x = self.anchor_x
         color = self.color
+        bgcolor = self.bgcolor
         max_width = self.max_width
         max_height = self.max_height
         cutoff = self.cutoff
@@ -986,12 +996,16 @@ class TC_TextUI(TC_BaseObject):
             elif anchor_x == "right": xOff = -(totalWidth)
 
             for x, char in enumerate(message):
-                self.add([x1 + x + xOff, y1 + y, color, char])
+                self.add([x1 + x + xOff, y1 + y, color, char, bgcolor])
 
             y += 1
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
+        self._build()
+
+    def set_bgcolor(self, bgcolor: tuple[int, int, int, int]):
+        self.bgcolor = bgcolor
         self._build()
 
     def set_message(self, message):
