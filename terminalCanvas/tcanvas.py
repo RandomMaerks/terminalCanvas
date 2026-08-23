@@ -684,12 +684,14 @@ class TCanvasUI(TCanvas):
             xIndex: int, yIndex: int, 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
             char: str = "█",
-            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
+            bgcolor: tuple[int, int, int, int] = None,
     ) -> None:
         x = xIndex + self._xOff
         y = yIndex + self._yOff
 
         width = self.width
+
+        if bgcolor is None: bgcolor = color
         
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
@@ -815,7 +817,7 @@ class TCanvasUI(TCanvas):
             mode: str = "frame",
             char: str = "█",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
-            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> objects.TC_RectangleUI:
         return objects.TC_RectangleUI(
             x1=x1, y1=y1,
@@ -835,7 +837,7 @@ class TCanvasUI(TCanvas):
             max_height: int = None,
             cutoff: str = "whole",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
-            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> objects.TC_TextUI:
         return objects.TC_TextUI(
             x1=x1, y1=y1,

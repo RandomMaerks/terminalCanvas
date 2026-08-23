@@ -807,7 +807,7 @@ class TC_RectangleUI(TC_BaseObject):
             mode: str = "frame",
             char: str = "█",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
-            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> None:
 
         super().__init__()
@@ -923,7 +923,7 @@ class TC_TextUI(TC_BaseObject):
             max_height: int = None,
             cutoff: str = "whole",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
-            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 255),
+            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> None:
 
         super().__init__()
