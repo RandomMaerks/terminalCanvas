@@ -452,7 +452,7 @@ class TC_Text(TC_BaseObject):
         if font is None:
             font = font_5x7.regular  
 
-        kerningInfo = font.get("kerning")
+        kerningInfo = font.get("kerning", dict())
         next_xInfo = font.get("next_x", dict())
         offset_xInfo = font.get("offset_x", dict())
         offset_yInfo = font.get("offset_y", dict())
@@ -477,10 +477,7 @@ class TC_Text(TC_BaseObject):
                 offset_x = offset_xInfo.get(char, 0)
                 offset_y = offset_yInfo.get(char, 0)
 
-                if index > 0 and kerningInfo is not None:
-                    kern = kerningInfo.get(f"{message[index-1]}{char}", 0)
-                else:
-                    kern = 0
+                kern = kerningInfo.get(f"{message[index-1]}{char}", 0) if index > 0 else 0
 
                 for y, row in enumerate(glyph):
                     line = []
