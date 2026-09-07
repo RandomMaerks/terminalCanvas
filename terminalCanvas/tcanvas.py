@@ -26,7 +26,7 @@ os.system("")
 # ANSI escape sequences
 # ---------------------
 
-_COLOR_RESET = "\033[38;2;255;255;255m\033[48;2;0;0;0m"
+_COLOR_RESET = "\033[0m"
 _CURSOR_HOME = "\033[H"
 _CURSOR_SHOW = "\033[?25h"
 _CURSOR_HIDE = "\033[?25l"
@@ -105,31 +105,47 @@ class TCanvas:
         self._screenBuffer = self._screenPixels
         self._buffered = False
 
+        self.depthIntensity = 0
+
         self._lastKeyPressed = {}
 
 
     # Display functions
-    
+
     def _plot(
             self,
             xIndex: int, yIndex: int, 
-            color: tuple[int, int, int, int] = (0, 0, 0, 255)
+            color: tuple[int, int, int, int] = (0, 0, 0, 255), 
+            zIndex: float = None
     ) -> None:
         x = xIndex + self._xOff
         y = yIndex + self._yOff
 
         width = self.width
+        depthIntensity = self.depthIntensity
+
+        if len(color) < 3:
+            raise Exception("Missing color arguments. Must be an iterable with RGB values.")
         
         if self._inRange(x, y):
             if len(color) == 4 and color[3] != 255:
                 colorBelow = self._screenPixels[y*width + x]
                 color = _combineAlpha(color, colorBelow)
                 
-            self._screenPixels[y*width + x] = (
-                objects.roundInt(color[0]),
-                objects.roundInt(color[1]),
-                objects.roundInt(color[2])
-            )
+            if zIndex is not None:
+                if zIndex < self.depthBuffer[y, x]:
+                    self.depthBuffer[y, x] = zIndex
+                    self._screenPixels[y*width + x] = (
+                        objects.roundInt(color[0] * (1 - depthIntensity * zIndex)),
+                        objects.roundInt(color[1] * (1 - depthIntensity * zIndex)),
+                        objects.roundInt(color[2] * (1 - depthIntensity * zIndex))
+                    )
+            else:
+                self._screenPixels[y*width + x] = (
+                    objects.roundInt(color[0]),
+                    objects.roundInt(color[1]),
+                    objects.roundInt(color[2])
+                )
 
     def draw(self, object) -> None:
         plot = self._plot
@@ -207,6 +223,7 @@ class TCanvas:
         self._screenPixels = [
             self._bgColor for _ in range(self.totalPixels)
             ]
+        self.resetDepthBuffer()
 
     def end(self, clear_all: bool = False) -> None:
         print(f"\033[{self.height}H" + _CURSOR_SHOW + (_SCREEN_CLEAR if clear_all else ''))
@@ -237,6 +254,9 @@ class TCanvas:
         self._screenBuffer = self._screenPixels
 
         self._buffered = False
+
+    def resetDepthBuffer(self) -> None:
+        self.depthBuffer = np.full((self.height, self.width), np.inf)
 
 
     # Graphical objects
@@ -276,6 +296,42 @@ class TCanvas:
             x1=x1, y1=y1,
             x2=x2, y2=y2,
             x3=x3, y3=y3,
+            color=color
+        )
+
+    def point3D(
+            self,
+            x1: int | float = 0, y1: int | float = 0, z1: float = 0,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Point3D:
+        return objects.TC_Point3D(
+            x1=x1, y1=y1, z1=z1,
+            color=color
+        )
+
+    def line3D(
+            self,
+            x1: int | float = 0, y1: int | float = 0, z1: float = 0,
+            x2: int | float = 0, y2: int | float = 0, z2: float = 0,
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Line3D:
+        return objects.TC_Line3D(
+            x1=x1, y1=y1, z1=z1,
+            x2=x2, y2=y2, z2=z2,
+            color=color
+        )
+
+    def triangle3D(
+            self,
+            x1: int | float = 0, y1: int | float = 0, z1: float = 0, 
+            x2: int | float = 0, y2: int | float = 0, z2: float = 0, 
+            x3: int | float = 0, y3: int | float = 0, z3: float = 0, 
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+    ) -> objects.TC_Triangle3D:
+        return objects.TC_Triangle3D(
+            x1=x1, y1=y1, z1=z1,
+            x2=x2, y2=y2, z2=z2,
+            x3=x3, y3=y3, z3=z3,
             color=color
         )
 
@@ -541,100 +597,6 @@ class TCanvas:
         if yEnd is None: yEnd = self.height
         return xStart <= xIndex < xEnd and yStart <= yIndex < yEnd
 
-# ----------------------------
-# Terminal canvas, 3D pipeline
-# ----------------------------
-
-class TCanvas3D(TCanvas):
-    def __init__(
-            self,
-            width: int = None, 
-            height: int = None,
-    ) -> None:
-
-        super().__init__(width, height)
-
-        self.depthIntensity = 0
-        self.resetDepthBuffer()
-        
-        
-    # Display functions
-    
-    def _plot(
-            self,
-            xIndex: int, yIndex: int, 
-            color: tuple[int, int, int, int] = (0, 0, 0, 255), 
-            zIndex: float = None
-    ) -> None:
-        x = xIndex + self._xOff
-        y = yIndex + self._yOff
-
-        width = self.width
-        depthIntensity = self.depthIntensity
-
-        if len(color) < 3:
-            raise Exception("Missing color arguments. Must be an iterable with RGB values.")
-        
-        if self._inRange(x, y):
-            if len(color) == 4 and color[3] != 255:
-                colorBelow = self._screenPixels[y*width + x]
-                color = _combineAlpha(color, colorBelow)
-                
-            if zIndex is not None:
-                if zIndex < self.depthBuffer[y, x]:
-                    self.depthBuffer[y, x] = zIndex
-                    self._screenPixels[y*width + x] = (
-                        objects.roundInt(color[0] * (1 - depthIntensity * zIndex)),
-                        objects.roundInt(color[1] * (1 - depthIntensity * zIndex)),
-                        objects.roundInt(color[2] * (1 - depthIntensity * zIndex))
-                    )
-            else:
-                self._screenPixels[y*width + x] = (
-                    objects.roundInt(color[0]),
-                    objects.roundInt(color[1]),
-                    objects.roundInt(color[2])
-                )
-                
-    def resetDepthBuffer(self) -> None:
-        self.depthBuffer = np.full((self.height, self.width), np.inf)
-
-    # Graphical objects
-
-    def point3D(
-            self,
-            x1: int | float = 0, y1: int | float = 0, z1: float = 0,
-            color: tuple[int, int, int, int] = (0, 0, 0, 255),
-    ) -> objects.TC_Point3D:
-        return objects.TC_Point3D(
-            x1=x1, y1=y1, z1=z1,
-            color=color
-        )
-
-    def line3D(
-            self,
-            x1: int | float = 0, y1: int | float = 0, z1: float = 0,
-            x2: int | float = 0, y2: int | float = 0, z2: float = 0,
-            color: tuple[int, int, int, int] = (0, 0, 0, 255),
-    ) -> objects.TC_Line3D:
-        return objects.TC_Line3D(
-            x1=x1, y1=y1, z1=z1,
-            x2=x2, y2=y2, z2=z2,
-            color=color
-        )
-
-    def triangle3D(
-            self,
-            x1: int | float = 0, y1: int | float = 0, z1: float = 0, 
-            x2: int | float = 0, y2: int | float = 0, z2: float = 0, 
-            x3: int | float = 0, y3: int | float = 0, z3: float = 0, 
-            color: tuple[int, int, int, int] = (0, 0, 0, 255),
-    ) -> objects.TC_Triangle3D:
-        return objects.TC_Triangle3D(
-            x1=x1, y1=y1, z1=z1,
-            x2=x2, y2=y2, z2=z2,
-            x3=x3, y3=y3, z3=z3,
-            color=color
-        )
 
 # -------------------------------
 # Terminal canvas, 2D, UI-focused
