@@ -412,13 +412,13 @@ class TCanvas:
         width = self.width
         height = self.height
 
-        if direction in ["h"]:
+        if direction in {"h"}:
             self._screenPixels = [
                 self._screenPixels[y*width + x] 
                 for y in range(height)                
                 for x in reversed(range(width))
                 ]
-        elif direction in ["v"]:
+        elif direction in {"v"}:
             self._screenPixels = [
                 self._screenPixels[y*width + x]
                 for y in reversed(range(height))
