@@ -37,14 +37,9 @@ def roundInt(x):
 # Base object class
 # -----------------
 
-class TC_BaseObject:
+class BaseObject:
     def __init__(self) -> None:
         self.data = []
-
-    # Pixel insertion, early removal
-
-    def add(self, pixel: list) -> None:
-        self.data.append(pixel)
 
     # Empty build method
 
@@ -76,11 +71,24 @@ class TC_BaseObject:
         self.color = color
         self._build()
 
+    # Collision detection
+
+    def collides(self, other) -> bool:
+        pixels1 = set((x, y) for x, y, *_ in self.data)
+        pixels2 = set((x, y) for x, y, *_ in other.data)
+
+        return not pixels1.isdisjoint(pixels2)
+
+    def includes(self, point: tuple[int, int]) -> bool:
+        pixels = set((x, y) for x, y, *_ in self.data)
+
+        return point in pixels
+
 # ----------
 # 2D objects
 # ----------
     
-class TC_Point(TC_BaseObject):
+class Point(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0,
@@ -99,14 +107,14 @@ class TC_Point(TC_BaseObject):
         x = roundInt(self.x1)
         y = roundInt(self.y1)
         color = self.color
-        self.add([x, y, color])
+        self.data.append([x, y, color])
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
         self._build()
     
 
-class TC_Line(TC_BaseObject):
+class Line(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0,
@@ -144,7 +152,7 @@ class TC_Line(TC_BaseObject):
 
         if not self.antialiasing:            
             while True:
-                self.add([x1, y1, color])
+                self.data.append([x1, y1, color])
 
                 if x1 == x2 and y1 == y2: break
 
@@ -164,7 +172,7 @@ class TC_Line(TC_BaseObject):
             r, g, b, *_ = color
             while True:
                 aa = 255 - (255 * abs(error - dx + dy) / ed)
-                self.add([x1, y1, (r, g, b, aa)])
+                self.data.append([x1, y1, (r, g, b, aa)])
 
                 e2 = error
                 x3 = x1
@@ -173,7 +181,7 @@ class TC_Line(TC_BaseObject):
                     if x1 == x2: break
                     if e2 + dy < ed:
                         aa = 255 - (255 * (e2 + dy) / ed)
-                        self.add([x1, y1 + sy, (r, g, b, aa)])
+                        self.data.append([x1, y1 + sy, (r, g, b, aa)])
                     error -= dy
                     x1 += sx
 
@@ -181,7 +189,7 @@ class TC_Line(TC_BaseObject):
                     if y1 == y2: break
                     if dx - e2 < ed:
                         aa = 255 - (255 * abs(dx - e2) / ed)
-                        self.add([x3 + sx, y1, (r, g, b, aa)])
+                        self.data.append([x3 + sx, y1, (r, g, b, aa)])
                     error += dx
                     y1 += sy
 
@@ -190,7 +198,7 @@ class TC_Line(TC_BaseObject):
         self.x2, self.y2 = x2, y2
         self._build()
 
-class TC_Triangle(TC_BaseObject):
+class Triangle(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0,
@@ -247,7 +255,7 @@ class TC_Triangle(TC_BaseObject):
             left = xLeft[i]
             right = xRight[i]
             for x in range(left, right + 1):
-                self.add([x, y, color])
+                self.data.append([x, y, color])
 
     def set_points(self, x1, y1, x2, y2, x3, y3):
         self.x1, self.y1 = x1, y1
@@ -255,7 +263,7 @@ class TC_Triangle(TC_BaseObject):
         self.x3, self.y3 = x3, y3
         self._build()
 
-class TC_Rectangle(TC_BaseObject):
+class Rectangle(BaseObject):
     def __init__(
             self, 
             x1: int | float = 0, y1: int | float = 0, 
@@ -290,16 +298,16 @@ class TC_Rectangle(TC_BaseObject):
         if mode == "solid":
             for y in range(y1, y2 + 1):
                 for x in range(x1, x2 + 1):
-                    self.add([x, y, color])
+                    self.data.append([x, y, color])
 
         elif mode == "outline":
             for x in range(x1, x2 + 1):
-                self.add([x, y1, color])
-                self.add([x, y2, color])
+                self.data.append([x, y1, color])
+                self.data.append([x, y2, color])
 
             for y in range(y1 + 1, y2):
-                self.add([x1, y, color])
-                self.add([x2, y, color])
+                self.data.append([x1, y, color])
+                self.data.append([x2, y, color])
 
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
@@ -310,7 +318,7 @@ class TC_Rectangle(TC_BaseObject):
         self.mode = mode
         self._build()
 
-class TC_Ellipse(TC_BaseObject):
+class Ellipse(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0, 
@@ -359,7 +367,7 @@ class TC_Ellipse(TC_BaseObject):
                 xMax = roundInt(rx * (1 - (y*y)/(ry2))**0.5)
 
                 for x in range(-xMax, xMax+1):
-                    self.add([cx + x, cy + y, color])
+                    self.data.append([cx + x, cy + y, color])
 
         elif mode == "outline":
             x = 0
@@ -371,10 +379,10 @@ class TC_Ellipse(TC_BaseObject):
             d1 = ry2 - (rx2 * ry) + (0.25 * rx2)
 
             while dx < dy:
-                self.add([cx + x, cy + y, color])
-                self.add([cx - x, cy + y, color])
-                self.add([cx + x, cy - y, color])
-                self.add([cx - x, cy - y, color])
+                self.data.append([cx + x, cy + y, color])
+                self.data.append([cx - x, cy + y, color])
+                self.data.append([cx + x, cy - y, color])
+                self.data.append([cx - x, cy - y, color])
 
                 if d1 < 0:
                     x += 1
@@ -390,10 +398,10 @@ class TC_Ellipse(TC_BaseObject):
             d2 = ry2 * (x + 0.5)*(x + 0.5) + rx2 * (y - 1)*(y - 1) - rx2 * ry2
 
             while y >= 0:
-                self.add([cx + x, cy + y, color])
-                self.add([cx - x, cy + y, color])
-                self.add([cx + x, cy - y, color])
-                self.add([cx - x, cy - y, color])
+                self.data.append([cx + x, cy + y, color])
+                self.data.append([cx - x, cy + y, color])
+                self.data.append([cx + x, cy - y, color])
+                self.data.append([cx - x, cy - y, color])
 
                 if d2 > 0:
                     y -= 1
@@ -415,7 +423,7 @@ class TC_Ellipse(TC_BaseObject):
         self.mode = mode
         self._build()
 
-class TC_Text(TC_BaseObject):
+class Text(BaseObject):
     def __init__(
             self, 
             x1: int | float = 0, y1: int | float = 0, 
@@ -506,7 +514,7 @@ class TC_Text(TC_BaseObject):
 
             for line in textLines:
                 for data, x, y, color in line:
-                    if data == "1": self.add([x + xOff, y + yOff, color])
+                    if data == "1": self.data.append([x + xOff, y + yOff, color])
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
@@ -533,7 +541,7 @@ class TC_Text(TC_BaseObject):
         self._build()
 
 
-class TC_Image(TC_BaseObject):
+class Image(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0,
@@ -567,7 +575,7 @@ class TC_Image(TC_BaseObject):
 
         for y in range(len(res)):
             for x, color in enumerate(res[y]):
-                self.add([x + x1, y + y1, tuple(color)])
+                self.data.append([x + x1, y + y1, tuple(color)])
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
@@ -581,7 +589,7 @@ class TC_Image(TC_BaseObject):
         self.size = size
         self._build()
 
-class TC_Sprite(TC_BaseObject):
+class Sprite(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0,
@@ -606,7 +614,7 @@ class TC_Sprite(TC_BaseObject):
         xCurrent = x1
 
         for x, y, color in sprite:
-            self.add([x + x1, y + y1, color])
+            self.data.append([x + x1, y + y1, color])
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
@@ -620,7 +628,7 @@ class TC_Sprite(TC_BaseObject):
 # 3D objects
 # ----------
 
-class TC_Point3D(TC_BaseObject):
+class Point3D(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0, z1: float = 0,
@@ -640,14 +648,14 @@ class TC_Point3D(TC_BaseObject):
         y = roundInt(self.y1)
         z = float(self.z1)
         color = self.color
-        self.add([x, y, color, z])
+        self.data.append([x, y, color, z])
 
     def set_points(self, x1, y1, z1):
         self.x1, self.y1 = x1, y1, z1
         self._build()
     
 
-class TC_Line3D(TC_BaseObject):
+class Line3D(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0, z1: float = 0,
@@ -688,7 +696,7 @@ class TC_Line3D(TC_BaseObject):
         
         ex = ey = ez = dm/2
         for _ in range(dm + 1):
-            self.add([x1, y1, color, z1])
+            self.data.append([x1, y1, color, z1])
 
             ex -= dx
             if ex < 0:
@@ -711,7 +719,7 @@ class TC_Line3D(TC_BaseObject):
         self.x2, self.y2, self.z2 = x2, y2, z2
         self._build()
 
-class TC_Triangle3D(TC_BaseObject):
+class Triangle3D(BaseObject):
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0, z1: float = 0, 
@@ -787,7 +795,7 @@ class TC_Triangle3D(TC_BaseObject):
             zSegment = interpolate(left, zLeft[i], right, zRight[i], round=False)
             for x in range(left, right + 1):
                 z = zSegment[x-left]
-                self.add([x, y, color, z])
+                self.data.append([x, y, color, z])
 
     def set_points(self, x1, y1, z1, x2, y2, z2, x3, y3, z3):
         self.x1, self.y1, self.z1 = x1, y1, z1
@@ -799,7 +807,7 @@ class TC_Triangle3D(TC_BaseObject):
 # UI objects
 # ----------
 
-class TC_RectangleUI(TC_BaseObject):
+class RectangleUI(BaseObject):
     def __init__(
             self, 
             x1: int | float = 0, y1: int | float = 0, 
@@ -840,7 +848,7 @@ class TC_RectangleUI(TC_BaseObject):
         if mode == "solid":
             for y in range(y1, y2 + 1):
                 for x in range(x1, x2 + 1):
-                    self.add([x, y, color, char])
+                    self.data.append([x, y, color, char])
 
         elif mode in (
             "frame", "frame_bold", "frame_round", "frame_double",
@@ -889,12 +897,12 @@ class TC_RectangleUI(TC_BaseObject):
                 left   = ["█", "█"]
 
             for x in range(x1, x2):
-                self.add([x, y1, color, top[0] if x==x1 else top[1], bgcolor])
-                self.add([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1], bgcolor])
+                self.data.append([x, y1, color, top[0] if x==x1 else top[1], bgcolor])
+                self.data.append([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1], bgcolor])
             
             for y in range(y1, y2):
-                self.add([x1, y+1, color, left[0] if y+1==y2 else left[1], bgcolor])
-                self.add([x2, y, color, right[0] if y==y1 else right[1], bgcolor])
+                self.data.append([x1, y+1, color, left[0] if y+1==y2 else left[1], bgcolor])
+                self.data.append([x2, y, color, right[0] if y==y1 else right[1], bgcolor])
 
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
@@ -913,7 +921,7 @@ class TC_RectangleUI(TC_BaseObject):
         self.char = char
         self._build()
 
-class TC_TextUI(TC_BaseObject):
+class TextUI(BaseObject):
     def __init__(
             self, 
             x1: int | float = 0, y1: int | float = 0, 
@@ -993,7 +1001,7 @@ class TC_TextUI(TC_BaseObject):
             elif anchor_x == "right": xOff = -(totalWidth)
 
             for x, char in enumerate(message):
-                self.add([x1 + x + xOff, y1 + y, color, char, bgcolor])
+                self.data.append([x1 + x + xOff, y1 + y, color, char, bgcolor])
 
             y += 1
 
