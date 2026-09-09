@@ -599,7 +599,7 @@ class Sprite(BaseObject):
         super().__init__()
 
         self.x1, self.y1 = x1, y1
-        self.sprite = sprite
+        self.sprite = sprite if sprite is not None else []
         self._build()
 
     def _build(self):  
