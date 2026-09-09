@@ -613,7 +613,7 @@ class Sprite(BaseObject):
 
         xCurrent = x1
 
-        for x, y, color in sprite:
+        for x, y, color, *_ in sprite:
             self.data.append([x + x1, y + y1, color])
 
     def set_points(self, x1, y1):
@@ -622,6 +622,11 @@ class Sprite(BaseObject):
 
     def set_sprite(self, sprite):
         self.sprite = sprite
+        self._build()
+
+    def merge(self, other):
+        for x, y, color, *_ in other.data:
+            self.sprite.append([x + x1, y + y1, color])
         self._build()
 
 # ----------

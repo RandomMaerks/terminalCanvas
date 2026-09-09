@@ -390,7 +390,7 @@ class TCanvas:
         if input_mode == "Unix":
             raise OSError("Cannot use getMousePos() on non-Windows system/terminal.")
 
-        point = self._point_t()
+        point = _point_t()
         if not _user32.GetCursorPos(ctypes.pointer(point)):
             return None
 
