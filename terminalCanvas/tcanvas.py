@@ -411,11 +411,8 @@ class TCanvas:
             return None
 
         # Map to canvas coordinates (canvas resolution)
-        wx = client.right // self.width * self.width
-        wy = client.bottom // self.height * self.height
-
-        mx = (point.x - origin.x) / wx * self.width
-        my = (point.y - origin.y) / wy * self.height
+        mx = (point.x - origin.x) / (client.right // self.width)
+        my = (point.y - origin.y) / (client.bottom // self.height)
 
         return int(mx), int(my)
 
