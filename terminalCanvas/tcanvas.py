@@ -66,6 +66,16 @@ def _combineAlpha(
     ]
     return tuple(c_combined)
 
+# ------------------
+# Extraneous classes
+# ------------------
+
+class _point_t(ctypes.Structure):
+    _fields_ = [
+        ('x', ctypes.c_long),
+        ('y', ctypes.c_long)
+    ]
+
 # ---------------
 # Terminal canvas
 # ---------------
@@ -123,6 +133,7 @@ class TCanvas:
 
         width = self.width
         depthIntensity = self.depthIntensity
+        roundInt = objects.roundInt
 
         if len(color) < 3:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
@@ -136,15 +147,15 @@ class TCanvas:
                 if zIndex < self.depthBuffer[y, x]:
                     self.depthBuffer[y, x] = zIndex
                     self._screenPixels[y*width + x] = (
-                        objects.roundInt(color[0] * (1 - depthIntensity * zIndex)),
-                        objects.roundInt(color[1] * (1 - depthIntensity * zIndex)),
-                        objects.roundInt(color[2] * (1 - depthIntensity * zIndex))
+                        roundInt(color[0] * (1 - depthIntensity * zIndex)),
+                        roundInt(color[1] * (1 - depthIntensity * zIndex)),
+                        roundInt(color[2] * (1 - depthIntensity * zIndex))
                     )
             else:
                 self._screenPixels[y*width + x] = (
-                    objects.roundInt(color[0]),
-                    objects.roundInt(color[1]),
-                    objects.roundInt(color[2])
+                    roundInt(color[0]),
+                    roundInt(color[1]),
+                    roundInt(color[2])
                 )
 
     def draw(self, object) -> None:
@@ -311,6 +322,7 @@ class TCanvas:
 
     
     # Keyboard & mouse input
+
     def _keyPressed_WINDOWS(self, key: str, hold: bool = True) -> bool:
         map = VK_WINDOWS
 
@@ -374,12 +386,6 @@ class TCanvas:
         elif input_mode == "Unix":
             return self._keyPressed_UNIX(key=key, hold=hold)
 
-    class _point_t(ctypes.Structure):
-        _fields_ = [
-            ('x', ctypes.c_long),
-            ('y', ctypes.c_long)
-        ]
-
     def getMousePos(self) -> tuple[int, int] | None:
         if input_mode == "Unix":
             raise OSError("Cannot use getMousePos() on non-Windows system/terminal.")
@@ -412,7 +418,7 @@ class TCanvas:
         my = (point.y - origin.y) / wy * self.height
 
         return int(mx), int(my)
-        
+
 
     # Other functions        
         
@@ -468,6 +474,7 @@ class TCanvasUI(TCanvas):
 
         self._lastKeyPressed = {}
 
+
     # Display functions
 
     def _plot(
@@ -481,6 +488,7 @@ class TCanvasUI(TCanvas):
         y = yIndex + self._yOff
 
         width = self.width
+        roundInt = objects.roundInt
 
         if bgcolor is None: bgcolor = color
         
@@ -494,13 +502,13 @@ class TCanvasUI(TCanvas):
                 bgcolor = _combineAlpha(bgcolor, bgcolorBelow)
                 
             self._screenPixels[y*width + x] = (
-                objects.roundInt(color[0]),
-                objects.roundInt(color[1]),
-                objects.roundInt(color[2]),
+                roundInt(color[0]),
+                roundInt(color[1]),
+                roundInt(color[2]),
                 char,
-                objects.roundInt(bgcolor[0]),
-                objects.roundInt(bgcolor[1]),
-                objects.roundInt(bgcolor[2]),
+                roundInt(bgcolor[0]),
+                roundInt(bgcolor[1]),
+                roundInt(bgcolor[2]),
             )
 
     def show(self, cursor = False, lock_to_terminal: bool = False) -> None:
