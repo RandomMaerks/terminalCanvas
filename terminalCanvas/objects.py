@@ -39,15 +39,18 @@ def roundInt(x):
 
 class BaseObject:
     def __init__(self) -> None:
-        self.data = []
+        self._empty()
 
-        self.left = 0
-        self.right = 0
-        self.top = 0
-        self.bottom = 0
+    def _empty(self):
+        '''
+        Refreshes pixel data and edges for building.
+        '''
+
+        self.data = []
+        self.left = self.right = self.top = self.bottom = 0
 
     # Pixel insertion, edge detection
-    
+
     def add(self, pixel: list) -> None:
         self.data.append(pixel)
 
@@ -118,7 +121,7 @@ class Point(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
 
         x = roundInt(self.x1)
         y = roundInt(self.y1)
@@ -148,7 +151,7 @@ class Line(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -232,7 +235,7 @@ class Triangle(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -297,7 +300,7 @@ class Rectangle(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -352,7 +355,7 @@ class Ellipse(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -462,7 +465,7 @@ class Text(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -573,7 +576,7 @@ class Image(BaseObject):
         self._build()
 
     def _build(self):      
-        self.data = []
+        self._empty()
           
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -619,7 +622,7 @@ class Sprite(BaseObject):
         self._build()
 
     def _build(self):  
-        self.data = []
+        self._empty()
               
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -664,7 +667,7 @@ class Point3D(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
 
         x = roundInt(self.x1)
         y = roundInt(self.y1)
@@ -693,7 +696,7 @@ class Line3D(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -759,7 +762,7 @@ class Triangle3D(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -851,7 +854,7 @@ class RectangleUI(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
@@ -969,7 +972,7 @@ class TextUI(BaseObject):
         self._build()
 
     def _build(self):
-        self.data = []
+        self._empty()
         
         x1 = roundInt(self.x1)
         y1 = roundInt(self.y1)
