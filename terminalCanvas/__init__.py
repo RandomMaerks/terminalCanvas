@@ -7,6 +7,7 @@ from .objects import (
     RectangleUI, TextUI,
 )
 from . import fonts
+from .vk import VK_WINDOWS, VK_UNIX
 
 __all__ = [
     "TCanvas",
@@ -26,4 +27,6 @@ __all__ = [
     "RectangleUI",
     "TextUI",
     "fonts",
+    "VK_WINDOWS",
+    "VK_UNIX",
 ]
