@@ -625,6 +625,7 @@ class Sprite(BaseObject):
         self._build()
 
     def merge(self, other):
+        x1, y1 = self.x1, self.y1
         for x, y, color, *_ in other.data:
             self.sprite.append([x + x1, y + y1, color])
         self._build()
