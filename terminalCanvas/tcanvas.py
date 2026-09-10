@@ -37,7 +37,7 @@ _SCREEN_CLEAR = "\033[2J"
 # ----------------------------
 
 def _sanitizeColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
-    '''
+    """
     Bound all input RGB values to a specific range of [0, 255].
 
     Parameters:
@@ -45,7 +45,7 @@ def _sanitizeColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
 
     Returns:
     - tuple[int, int, int]
-    '''
+    """
 
     red = max(min(objects.roundInt(color[0]), 255), 0)
     green = max(min(objects.roundInt(color[1]), 255), 0)
@@ -54,7 +54,7 @@ def _sanitizeColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
     return red, green, blue
 
 def _getFGColor(color: tuple[int, int, int]) -> str:
-    '''
+    """
     Returns the ANSI escape sequence for changing the foreground color.
 
     Parameters:
@@ -62,7 +62,7 @@ def _getFGColor(color: tuple[int, int, int]) -> str:
 
     Returns:
     - str
-    '''
+    """
 
     if color is None: return "\033[38;2;0;0;0m"
 
@@ -70,7 +70,7 @@ def _getFGColor(color: tuple[int, int, int]) -> str:
     return f"\033[38;2;{red};{green};{blue}m"
 
 def _getBGColor(color: tuple[int, int, int]) -> str:
-    '''
+    """
     Returns the ANSI escape sequence for changing the background color.
 
     Parameters:
@@ -78,7 +78,7 @@ def _getBGColor(color: tuple[int, int, int]) -> str:
 
     Returns:
     - str
-    '''
+    """
 
     if color is None: return "\033[48;2;0;0;0m"
 
@@ -89,7 +89,7 @@ def _combineAlpha(
         c_top: tuple[int, int, int, int],
         c_bot: tuple[int, int, int]
 ) -> tuple[int, int, int]:
-    '''
+    """
     Returns the RGB color formed by blending two colors, one of which is translucent (alpha < 255).
 
     `c_top` should be the color laying above `c_bot` and should have an additional value for alpha.
@@ -100,7 +100,7 @@ def _combineAlpha(
 
     Returns:
     - tuple[int, int, int]
-    '''
+    """
 
     alpha = 1/255 * c_top[3]
     c_combined = [
@@ -124,11 +124,42 @@ class _point_t(ctypes.Structure):
 # ---------------
 
 class TCanvas:
+    """
+    The main terminalCanvas class for drawing and displaying the canvas.
+
+    `TCanvas` mainly supports 2D rendering, but 3D is also supported (though very limited).
+
+    To make a canvas, create a new instance of `TCanvas`:
+    `canvas = terminalCanvas.TCanvas()`
+
+    Then, you can use these methods to perform certain actions with the canvas:
+    - `canvas.show()` to show the canvas on the terminal
+    - `canvas.draw()` to draw one of terminalCanvas's object classes such as `Line` or `Triangle`
+    - `canvas.clear()` to clear the canvas
+    - `canvas.background((R, G, B))` to set a background color
+    - `canvas.end()` to properly reset the color modes of the terminal
+
+    There are also certain attributes you can either access or modify:
+    - `canvas.width` and `canvas.height`, the canvas resolution
+    - `canvas.wCenter` and `canvas.hCenter`, half of the canvas' width and height respectively
+    - `canvas.depthIntensity`, the depth intensity for 3D objects. The higher the number, the darker high-z objects are
+    """
+
     def __init__(
             self,
             width: int = None, 
             height: int = None,
     ) -> None:
+        """
+        Initialises `TCanvas`.
+
+        Parameters:
+        - width: int = None
+        - height: int = None
+
+        Returns:
+        - None
+        """
 
         if width is None:
             self.width, _ = shutil.get_terminal_size()
@@ -171,7 +202,7 @@ class TCanvas:
             color: tuple[int, int, int, int] = (0, 0, 0, 255), 
             zIndex: float = None
     ) -> None:
-        '''
+        """
         Plots a pixel to `_screenPixels`, a.k.a. the canvas.
 
         `xIndex`, `yIndex`, and `color` are absolutely necessary since they define where and how to plot the pixel.
@@ -187,7 +218,7 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         x = xIndex + self._xOff
         y = yIndex + self._yOff
@@ -220,7 +251,7 @@ class TCanvas:
                 )
 
     def draw(self, object) -> None:
-        '''
+        """
         Draws the object on the canvas.
         More specifically, this method puts all the pixel data from the object into a helper method that can process these pixels and put them on the canvas.
 
@@ -231,7 +262,7 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         plot = self._plot
 
@@ -239,7 +270,7 @@ class TCanvas:
             plot(*pixel)
 
     def show(self, cursor: bool = False, lock_to_terminal: bool = False) -> None:
-        '''
+        """
         Displays the canvas onto the terminal.
 
         `cursor` shows the cursor while printing to the terminal. By default, this is set to False. This is purely visual and does not affect performance.
@@ -254,7 +285,7 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
@@ -317,7 +348,7 @@ class TCanvas:
         self._buffered = True
 
     def background(self, color: tuple[int, int, int], clear: bool = True) -> None:
-        '''
+        """
         Sets an RGB color to the background.
 
         `clear` runs the `clear()` method, which effectively fills the entire canvas with the background color.
@@ -329,16 +360,16 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         self._bgColor = color
         if clear:
             self.clear()
 
     def clear(self) -> None:
-        '''
+        """
         Clears the canvas. More specifically, it fills the entire canvas with the current background color.
-        '''
+        """
 
         self._screenPixels = [
             self._bgColor for _ in range(self.totalPixels)
@@ -346,7 +377,7 @@ class TCanvas:
         self.resetDepthBuffer()
 
     def end(self, clear_all: bool = False) -> None:
-        '''
+        """
         Allows the terminal to return to its regular state. Particularly useful after using `show()` or after an exception.
         More specifically, it prints out a few ANSI escape sequences to hopefully reset the color modes and cursor visibility state.
 
@@ -357,16 +388,16 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         print(f"\033[{self.height}H" + _CURSOR_SHOW + (_SCREEN_CLEAR if clear_all else ''))
 
     def space(self) -> tuple[int, int]:
-        '''
+        """
         A generator that returns every (x, y) coordinate of the canvas that is currently visible.
 
         This implementation of `space()` iterates through every value of x before iterating to the next value of y.
-        '''
+        """
 
         xMin, xMax = 0 - self._xOff, self.width - self._xOff
         yMin, yMax = 0 - self._yOff, self.height - self._yOff
@@ -375,7 +406,7 @@ class TCanvas:
                 yield (x, y)
 
     def resize(self, width: int = None, height: int = None) -> None:
-        '''
+        """
         Resizes the canvas to the terminal resolution, or to a specific one.
 
         When either `width` or `height` is set to None, the width and height of the terminal will be used instead.
@@ -386,7 +417,7 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         if width is None: tempwidth, _ = shutil.get_terminal_size()
         else: tempwidth = width
@@ -408,12 +439,12 @@ class TCanvas:
         self._buffered = False
 
     def resetDepthBuffer(self) -> None:
-        '''
+        """
         Resets the depth buffer of the canvas. Particularly useful with 3D objects.
 
         This is called automatically by `clear()`.
         Unless there's a specific circumstance where you need to reset the buffer midway through drawing, you don't need to call this method at all.
-        '''
+        """
 
         self.depthBuffer = np.full((self.height, self.width), np.inf)
         
@@ -421,7 +452,7 @@ class TCanvas:
     # Canvas transformation
     
     def flip(self, direction: str = None) -> None:
-        '''
+        """
         Flips the canvas either horizontally, vertically, or both.
 
         `direction` can be either:
@@ -434,7 +465,7 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         width = self.width
         height = self.height
@@ -459,7 +490,7 @@ class TCanvas:
                 ]
 
     def translate(self, xIndex: int, yIndex: int) -> None:
-        '''
+        """
         Translates the canvas or shifts the origin (0, 0) to a new point.
 
         By default, the origin is on the top left.
@@ -476,7 +507,7 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         self._xOff = int(xIndex)
         self._yOff = int(yIndex)
@@ -485,7 +516,7 @@ class TCanvas:
     # Save image
 
     def save(self, dir: str, scale: int = None) -> None:
-        '''
+        """
         Saves the canvas as an image.
 
         `dir` is the directory of the image, and can be relative or absolute.
@@ -499,7 +530,7 @@ class TCanvas:
 
         Returns:
         - None
-        '''
+        """
 
         toNPArray = np.zeros((self.height, self.width, 4), dtype=np.uint8)
         width = self.width
@@ -522,11 +553,11 @@ class TCanvas:
     # Keyboard & mouse input
 
     def _keyPressed_WINDOWS(self, key: str, hold: bool = True) -> bool:
-        '''
+        """
         Returns the pressed state of a key, designated for Windows systems.
 
         Refer to `keyPressed()` for the full description.
-        '''
+        """
 
         map = VK_WINDOWS
 
@@ -545,13 +576,13 @@ class TCanvas:
             return current and not previous
 
     def _keyPressed_UNIX(self, key: str, hold: bool = True) -> bool:
-        '''
+        """
         Returns the pressed state of a key, designated for Unix systems.
 
         This is purely a fallback system. I cannot guarantee that this works.
 
         Refer to `keyPressed()` for the full description.
-        '''
+        """
         map = VK_UNIX
 
         if key in map:
@@ -591,7 +622,7 @@ class TCanvas:
             fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 
     def keyPressed(self, key: str, hold: bool = True) -> bool:
-        '''
+        """
         Returns the pressed state of a key.
 
         `key` is the set alias for the target key to detect. It should be in all caps.
@@ -610,7 +641,7 @@ class TCanvas:
 
         Returns:
         - bool
-        '''
+        """
 
         if input_mode == "Windows":
             return self._keyPressed_WINDOWS(key=key, hold=hold)
@@ -618,7 +649,7 @@ class TCanvas:
             return self._keyPressed_UNIX(key=key, hold=hold)
 
     def getMousePos(self) -> tuple[int, int] | None:
-        '''
+        """
         Returns the coordinate of the mouse on the canvas.
 
         The coordinate can be negative, meaning the mouse is outside the terminal window.
@@ -631,7 +662,7 @@ class TCanvas:
         Returns:
         - tuple[int, int]
         - None
-        '''
+        """
 
         if input_mode == "Unix":
             raise OSError("Cannot use getMousePos() on non-Windows system/terminal.")
@@ -671,7 +702,7 @@ class TCanvas:
             xStart: int = 0, xEnd: int = None,
             yStart: int = 0, yEnd: int = None
     ) -> bool:
-        '''
+        """
         Checks if a pixel is inside the visible boundary of the canvas.
 
         Parameters:
@@ -684,7 +715,7 @@ class TCanvas:
 
         Returns:
         - bool
-        '''
+        """
 
         if xEnd is None: xEnd = self.width
         if yEnd is None: yEnd = self.height
@@ -696,12 +727,43 @@ class TCanvas:
 # -------------------------------
 
 class TCanvasUI(TCanvas):
+    """
+    The terminalCanvas class designated for user interfaces.
+
+    To make a canvas, create a new instance of `TCanvasUI`:
+    `canvas = terminalCanvas.TCanvasUI()`
+
+    Then, you can use these methods to perform certain actions with the canvas:
+    - `canvas.show()` to show the canvas on the terminal
+    - `canvas.draw()` to draw one of terminalCanvas's UI object classes such as `RectangleUI` or `TextUI`
+    - `canvas.clear()` to clear the canvas
+    - `canvas.background((R, G, B))` to set a background color
+    - `canvas.end()` to properly reset the color modes of the terminal
+
+    You can still draw non-UI objects on `TCanvasUI`, but they will be stretched vertically,
+    due to difference in the `show()` method between `TCanvas` and `TCanvasUI`.
+
+    There are also certain attributes you can either access or modify:
+    - `canvas.width` and `canvas.height`, the canvas resolution
+    - `canvas.wCenter` and `canvas.hCenter`, half of the canvas' width and height respectively
+    """
+
     def __init__(
             self,
             width: int = None, 
             height: int = None,
     ) -> None:
+        """
+        Initialises `TCanvasUI`.
 
+        Parameters:
+        - width: int = None
+        - height: int = None
+
+        Returns:
+        - None
+        """
+        
         if width is None:
             self.width, _ = shutil.get_terminal_size()
         else:
@@ -742,7 +804,7 @@ class TCanvasUI(TCanvas):
             char: str = "█",
             bgcolor: tuple[int, int, int, int] = None,
     ) -> None:
-        '''
+        """
         Plots a pixel to `_screenPixels`, a.k.a. the canvas.
 
         `xIndex`, `yIndex`, and `color` are absolutely necessary since they define where and how to plot the pixel.
@@ -761,7 +823,7 @@ class TCanvasUI(TCanvas):
 
         Returns:
         - None
-        '''
+        """
 
         x = xIndex + self._xOff
         y = yIndex + self._yOff
@@ -791,7 +853,7 @@ class TCanvasUI(TCanvas):
             )
 
     def show(self, cursor = False, lock_to_terminal: bool = False) -> None:
-        '''
+        """
         Displays the canvas onto the terminal.
 
         `cursor` shows the cursor while printing to the terminal. By default, this is set to False. This is purely visual and does not affect performance.
@@ -806,7 +868,7 @@ class TCanvasUI(TCanvas):
 
         Returns:
         - None
-        '''
+        """
 
         display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
@@ -878,16 +940,16 @@ class TCanvasUI(TCanvas):
         self._buffered = True
 
     def clear(self) -> None:
-        '''
+        """
         Clears the canvas. More specifically, it fills the entire canvas with the current background color.
-        '''
+        """
 
         self._screenPixels = [
             self._bgColor + (' ',) + self._bgColor for _ in range(self.totalPixels)
             ]
 
     def resize(self, width: int = None, height: int = None) -> None:
-        '''
+        """
         Resizes the canvas to the terminal resolution, or to a specific one.
 
         When either `width` or `height` is set to None, the width and height of the terminal will be used instead.
@@ -898,8 +960,8 @@ class TCanvasUI(TCanvas):
 
         Returns:
         - None
-        '''
-        
+        """
+
         if width is None: tempwidth, _ = shutil.get_terminal_size()
         else: tempwidth = width
         self.width = tempwidth

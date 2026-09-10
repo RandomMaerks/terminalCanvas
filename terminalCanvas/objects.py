@@ -38,20 +38,45 @@ def roundInt(x):
 # -----------------
 
 class BaseObject:
+    """
+    The base object class for all terminalCanvas' objects.
+
+    Mainly for people who want to make shapes and other graphics that can be used in `TCanvas`.
+
+    Public methods:
+    - move(x, y): move the object by some x and y pixels
+    - scale(x): scale the object up by a factor of integer x
+    - set_color((R, G, B[, A])): change the color of the object
+    - collides(other): detect collision of self with other
+    - includes((x, y)): detect coordinate on pixel data of self
+
+    Private methods:
+    - _empty(): reset pixel data and edges
+    - _add(pixel): add pixel to pixel data, as well as updating edges
+    - _build(): recalculate pixel data
+    
+    Attributes:
+    - data: a list of pixels, each of which contains coordinate and color data
+    - left, right, top, bottom: edges of the object
+    """
+
     def __init__(self) -> None:
+        """
+        Initialises `BaseObject`.
+        """
         self._empty()
 
     def _empty(self):
-        '''
+        """
         Refreshes pixel data and edges for building.
-        '''
+        """
 
         self.data = []
         self.left = self.right = self.top = self.bottom = 0
 
     # Pixel insertion, edge detection
 
-    def add(self, pixel: list) -> None:
+    def _add(self, pixel: list) -> None:
         self.data.append(pixel)
 
         x, y, *_ = pixel
@@ -126,7 +151,7 @@ class Point(BaseObject):
         x = roundInt(self.x1)
         y = roundInt(self.y1)
         color = self.color
-        self.add([x, y, color])
+        self._add([x, y, color])
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
@@ -171,7 +196,7 @@ class Line(BaseObject):
 
         if not self.antialiasing:            
             while True:
-                self.add([x1, y1, color])
+                self._add([x1, y1, color])
 
                 if x1 == x2 and y1 == y2: break
 
@@ -191,7 +216,7 @@ class Line(BaseObject):
             r, g, b, *_ = color
             while True:
                 aa = 255 - (255 * abs(error - dx + dy) / ed)
-                self.add([x1, y1, (r, g, b, aa)])
+                self._add([x1, y1, (r, g, b, aa)])
 
                 e2 = error
                 x3 = x1
@@ -200,7 +225,7 @@ class Line(BaseObject):
                     if x1 == x2: break
                     if e2 + dy < ed:
                         aa = 255 - (255 * (e2 + dy) / ed)
-                        self.add([x1, y1 + sy, (r, g, b, aa)])
+                        self._add([x1, y1 + sy, (r, g, b, aa)])
                     error -= dy
                     x1 += sx
 
@@ -208,7 +233,7 @@ class Line(BaseObject):
                     if y1 == y2: break
                     if dx - e2 < ed:
                         aa = 255 - (255 * abs(dx - e2) / ed)
-                        self.add([x3 + sx, y1, (r, g, b, aa)])
+                        self._add([x3 + sx, y1, (r, g, b, aa)])
                     error += dx
                     y1 += sy
 
@@ -274,7 +299,7 @@ class Triangle(BaseObject):
             left = xLeft[i]
             right = xRight[i]
             for x in range(left, right + 1):
-                self.add([x, y, color])
+                self._add([x, y, color])
 
     def set_points(self, x1, y1, x2, y2, x3, y3):
         self.x1, self.y1 = x1, y1
@@ -317,16 +342,16 @@ class Rectangle(BaseObject):
         if mode == "solid":
             for y in range(y1, y2 + 1):
                 for x in range(x1, x2 + 1):
-                    self.add([x, y, color])
+                    self._add([x, y, color])
 
         elif mode == "outline":
             for x in range(x1, x2 + 1):
-                self.add([x, y1, color])
-                self.add([x, y2, color])
+                self._add([x, y1, color])
+                self._add([x, y2, color])
 
             for y in range(y1 + 1, y2):
-                self.add([x1, y, color])
-                self.add([x2, y, color])
+                self._add([x1, y, color])
+                self._add([x2, y, color])
 
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
@@ -386,7 +411,7 @@ class Ellipse(BaseObject):
                 xMax = roundInt(rx * (1 - (y*y)/(ry2))**0.5)
 
                 for x in range(-xMax, xMax+1):
-                    self.add([cx + x, cy + y, color])
+                    self._add([cx + x, cy + y, color])
 
         elif mode == "outline":
             x = 0
@@ -398,10 +423,10 @@ class Ellipse(BaseObject):
             d1 = ry2 - (rx2 * ry) + (0.25 * rx2)
 
             while dx < dy:
-                self.add([cx + x, cy + y, color])
-                self.add([cx - x, cy + y, color])
-                self.add([cx + x, cy - y, color])
-                self.add([cx - x, cy - y, color])
+                self._add([cx + x, cy + y, color])
+                self._add([cx - x, cy + y, color])
+                self._add([cx + x, cy - y, color])
+                self._add([cx - x, cy - y, color])
 
                 if d1 < 0:
                     x += 1
@@ -417,10 +442,10 @@ class Ellipse(BaseObject):
             d2 = ry2 * (x + 0.5)*(x + 0.5) + rx2 * (y - 1)*(y - 1) - rx2 * ry2
 
             while y >= 0:
-                self.add([cx + x, cy + y, color])
-                self.add([cx - x, cy + y, color])
-                self.add([cx + x, cy - y, color])
-                self.add([cx - x, cy - y, color])
+                self._add([cx + x, cy + y, color])
+                self._add([cx - x, cy + y, color])
+                self._add([cx + x, cy - y, color])
+                self._add([cx - x, cy - y, color])
 
                 if d2 > 0:
                     y -= 1
@@ -533,7 +558,7 @@ class Text(BaseObject):
 
             for line in textLines:
                 for data, x, y, color in line:
-                    if data == "1": self.add([x + xOff, y + yOff, color])
+                    if data == "1": self._add([x + xOff, y + yOff, color])
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
@@ -594,7 +619,7 @@ class Image(BaseObject):
 
         for y in range(len(res)):
             for x, color in enumerate(res[y]):
-                self.add([x + x1, y + y1, tuple(color)])
+                self._add([x + x1, y + y1, tuple(color)])
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
@@ -633,7 +658,7 @@ class Sprite(BaseObject):
         xCurrent = x1
 
         for x, y, color, *_ in sprite:
-            self.add([x + x1, y + y1, color])
+            self._add([x + x1, y + y1, color])
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
@@ -673,7 +698,7 @@ class Point3D(BaseObject):
         y = roundInt(self.y1)
         z = float(self.z1)
         color = self.color
-        self.add([x, y, color, z])
+        self._add([x, y, color, z])
 
     def set_points(self, x1, y1, z1):
         self.x1, self.y1 = x1, y1, z1
@@ -721,7 +746,7 @@ class Line3D(BaseObject):
         
         ex = ey = ez = dm/2
         for _ in range(dm + 1):
-            self.add([x1, y1, color, z1])
+            self._add([x1, y1, color, z1])
 
             ex -= dx
             if ex < 0:
@@ -820,7 +845,7 @@ class Triangle3D(BaseObject):
             zSegment = interpolate(left, zLeft[i], right, zRight[i], round=False)
             for x in range(left, right + 1):
                 z = zSegment[x-left]
-                self.add([x, y, color, z])
+                self._add([x, y, color, z])
 
     def set_points(self, x1, y1, z1, x2, y2, z2, x3, y3, z3):
         self.x1, self.y1, self.z1 = x1, y1, z1
@@ -873,7 +898,7 @@ class RectangleUI(BaseObject):
         if mode == "solid":
             for y in range(y1, y2 + 1):
                 for x in range(x1, x2 + 1):
-                    self.add([x, y, color, char])
+                    self._add([x, y, color, char])
 
         elif mode in (
             "frame", "frame_bold", "frame_round", "frame_double",
@@ -922,12 +947,12 @@ class RectangleUI(BaseObject):
                 left   = ["█", "█"]
 
             for x in range(x1, x2):
-                self.add([x, y1, color, top[0] if x==x1 else top[1], bgcolor])
-                self.add([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1], bgcolor])
+                self._add([x, y1, color, top[0] if x==x1 else top[1], bgcolor])
+                self._add([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1], bgcolor])
             
             for y in range(y1, y2):
-                self.add([x1, y+1, color, left[0] if y+1==y2 else left[1], bgcolor])
-                self.add([x2, y, color, right[0] if y==y1 else right[1], bgcolor])
+                self._add([x1, y+1, color, left[0] if y+1==y2 else left[1], bgcolor])
+                self._add([x2, y, color, right[0] if y==y1 else right[1], bgcolor])
 
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
@@ -1026,7 +1051,7 @@ class TextUI(BaseObject):
             elif anchor_x == "right": xOff = -(totalWidth)
 
             for x, char in enumerate(message):
-                self.add([x1 + x + xOff, y1 + y, color, char, bgcolor])
+                self._add([x1 + x + xOff, y1 + y, color, char, bgcolor])
 
             y += 1
 
