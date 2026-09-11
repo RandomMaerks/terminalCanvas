@@ -547,7 +547,7 @@ class TCanvas:
                 (newImage.width * scale, newImage.height * scale),
                 Image.Resampling.NEAREST
                 )
-        newImage.save(name)
+        newImage.save(dir)
 
     
     # Keyboard & mouse input
