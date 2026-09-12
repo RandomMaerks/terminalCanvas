@@ -555,31 +555,39 @@ class TCanvas:
         width = self.width
         height = self.height
 
-        box_size = radius * 2 + 1
-        box_volume = box_size * box_size
-
         new = [None] * self.totalPixels
 
+        pixel_count = (radius * 2 + 1) * 2
+        
         for x, y in self.space():
             all_r = 0
             all_g = 0
             all_b = 0
 
             for dy in range(y - radius, y + radius + 1):
-                for dx in range(x - radius, x + radius + 1):
-                    r, g, b = self._screenPixels[
-                        clamp(0, height - 1, dy) *
-                        width +
-                        clamp(0, width - 1, dx)
-                    ]
-                    all_r += r
-                    all_g += g
-                    all_b += b
+                r, g, b = self._screenPixels[
+                    clamp(0, height - 1, dy) *
+                    width +
+                    clamp(0, width - 1, x)
+                ]
+                all_r += r
+                all_g += g
+                all_b += b
+
+            for dx in range(x - radius, x + radius + 1):
+                r, g, b = self._screenPixels[
+                    clamp(0, height - 1, y) *
+                    width +
+                    clamp(0, width - 1, dx)
+                ]
+                all_r += r
+                all_g += g
+                all_b += b
 
             new[y*width + x] = (
-                all_r // box_volume,
-                all_g // box_volume,
-                all_b // box_volume,
+                all_r // pixel_count,
+                all_g // pixel_count,
+                all_b // pixel_count,
             )
             
         self._screenPixels = new.copy()
