@@ -39,25 +39,35 @@ def roundInt(x):
 
 class BaseObject:
     """
-    The base object class for all terminalCanvas' objects.
-
+    The base object class for all terminalCanvas's objects.
     Mainly for people who want to make shapes and other graphics that can be used in `TCanvas`.
 
+    To make a child object of `BaseObject`, write: `class <ObjectName>(BaseObject):`.
+
+    There are public and private methods that should not be overridden, except for `_build()`.
+
+    `_build()` is a required method which calculates all the pixels that make up the intended object.
+    You must have a `_build()` method for your object and it must have `self._empty()` at the very start.
+    While building, you can use `self._add(x, y, color)` to add a pixel to the pixel data. Color can be RGB or RGBA.
+    Every attribute setter method needs to call `_build()` at least once, preferably at the end.
+
+    You can add more methods like getter or setter methods.
+
     Public methods:
-    - move(x, y): move the object by some x and y pixels
-    - scale(x): scale the object up by a factor of integer x
-    - set_color((R, G, B[, A])): change the color of the object
-    - collides(other): detect collision of self with other
-    - includes((x, y)): detect coordinate on pixel data of self
+    - `move(x, y)`: move the object by some x and y pixels
+    - `scale(x)`: scale the object up by a factor of integer x
+    - `set_color((R, G, B[, A]))`: change the color of the object
+    - `collides(other)`: detect collision of self with other
+    - `includes((x, y))`: detect coordinate on pixel data of self
 
     Private methods:
-    - _empty(): reset pixel data and edges
-    - _add(pixel): add pixel to pixel data, as well as updating edges
-    - _build(): recalculate pixel data
+    - `_empty()`: reset pixel data and edges
+    - `_add(x, y, (R, G, B[, A]))`: add pixel to pixel data, as well as updating edges
+    - `_build()`: recalculate pixel data
     
     Attributes:
-    - data: a list of pixels, each of which contains coordinate and color data
-    - left, right, top, bottom: edges of the object
+    - `data`: a list of pixels, each of which contains coordinate and color data
+    - `left`, `right`, `top`, `bottom`: edges of the object
     """
 
     def __init__(self) -> None:
@@ -159,6 +169,13 @@ class Point(BaseObject):
     
 
 class Line(BaseObject):
+    """
+    Bresenham's line algorithm, with thickness implemented.
+
+    Original implementation from Armin Joachimsmeyer:
+    https://github.com/ArminJo/Arduino-BlueDisplay/blob/master/src/LocalGUI/ThickLine.hpp
+    """
+
     def __init__(
             self,
             x1: int | float = 0, y1: int | float = 0,
