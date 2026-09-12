@@ -241,7 +241,6 @@ class TCanvas:
 
         width = self.width
         depthIntensity = self.depthIntensity
-        roundInt = roundInt
 
         if len(color) < 3:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
@@ -922,7 +921,6 @@ class TCanvasUI(TCanvas):
         y = yIndex + self._yOff
 
         width = self.width
-        roundInt = roundInt
 
         if bgcolor is None: bgcolor = color
         
