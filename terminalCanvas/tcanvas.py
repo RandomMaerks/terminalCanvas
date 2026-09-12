@@ -693,6 +693,25 @@ class TCanvas:
 
         return int(mx), int(my)
 
+    
+    # Window settings
+
+    def setTitle(self, title: str) -> None:
+        """
+        Set a custom title for the terminal.
+
+        Parameters:
+        - title: str
+
+        Returns:
+        - None
+        """
+
+        if input_mode == "Windows":
+            _kernel32.SetConsoleTitleW(title)
+        elif input_mode == "Unix":
+            print(f'\33]0;{title}\a', end='', flush=True)
+
 
     # Other functions        
         
