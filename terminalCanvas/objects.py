@@ -210,12 +210,10 @@ class Line(BaseObject):
                     y1 += sy
         
         else:
-            dy = -dy
-
-            ed = 1 if dx + dy == 0 else (dx*dx + dy*dy) ** 0.5
+            ed = 1 if dx - dy == 0 else (dx*dx + dy*dy) ** 0.5
             r, g, b, *_ = color
             while True:
-                aa = 255 - (255 * abs(error - dx + dy) / ed)
+                aa = 255 - (255 * abs(error - dx - dy) / ed)
                 self._add([x1, y1, (r, g, b, aa)])
 
                 e2 = error
@@ -223,13 +221,13 @@ class Line(BaseObject):
 
                 if e2 * 2 >= -dx:
                     if x1 == x2: break
-                    if e2 + dy < ed:
-                        aa = 255 - (255 * (e2 + dy) / ed)
+                    if e2 - dy < ed:
+                        aa = 255 - (255 * (e2 - dy) / ed)
                         self._add([x1, y1 + sy, (r, g, b, aa)])
-                    error -= dy
+                    error += dy
                     x1 += sx
 
-                if e2 * 2 <= dy:
+                if e2 * 2 <= -dy:
                     if y1 == y2: break
                     if dx - e2 < ed:
                         aa = 255 - (255 * abs(dx - e2) / ed)
