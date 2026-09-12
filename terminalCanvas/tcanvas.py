@@ -538,6 +538,9 @@ class TCanvas:
         width = self.width
 
         for x, y in self.space():
+            if not self._inRange(x, y, x1, x2, y1, y2):
+                continue
+
             r, g, b = self._screenPixels[y*width + x]
             self._screenPixels[y*width + x] = (255 - r, 255 - g, 255 - b)
 
@@ -558,8 +561,12 @@ class TCanvas:
         new = [None] * self.totalPixels
 
         pixel_count = (radius * 2 + 1) * 2
-        
+
         for x, y in self.space():
+            if not self._inRange(x, y, x1, x2, y1, y2):
+                new[y*width + x] = self._screenPixels[y*width + x]
+                continue
+
             all_r = 0
             all_g = 0
             all_b = 0
