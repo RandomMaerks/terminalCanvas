@@ -32,6 +32,32 @@ _CURSOR_SHOW = "\033[?25h"
 _CURSOR_HIDE = "\033[?25l"
 _SCREEN_CLEAR = "\033[2J"
 
+# --------------------
+# Extraneous functions
+# --------------------
+
+def clamp(lo, hi, v):
+    return lo if v < lo else hi if v > hi else v
+
+def map(old_lo, old_hi, new_lo, new_hi, v):
+    if old_lo != old_hi:
+        return (v - old_lo) / (old_hi - old_lo) * (new_hi - new_lo) + new_lo
+    else:
+        return new_lo
+
+def roundInt(x):
+    return objects.roundInt(x)
+
+# ------------------
+# Extraneous classes
+# ------------------
+
+class _point_t(ctypes.Structure):
+    _fields_ = [
+        ('x', ctypes.c_long),
+        ('y', ctypes.c_long)
+    ]
+
 # ----------------------------
 # Predefined display functions
 # ----------------------------
@@ -47,9 +73,9 @@ def _sanitizeColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
     - tuple[int, int, int]
     """
 
-    red = max(min(objects.roundInt(color[0]), 255), 0)
-    green = max(min(objects.roundInt(color[1]), 255), 0)
-    blue = max(min(objects.roundInt(color[2]), 255), 0)
+    red = clamp(0, 255, roundInt(color[0]))
+    green = clamp(0, 255, roundInt(color[1]))
+    blue = clamp(0, 255, roundInt(color[2]))
 
     return red, green, blue
 
@@ -108,16 +134,6 @@ def _combineAlpha(
         for i in range(3)
     ]
     return tuple(c_combined)
-
-# ------------------
-# Extraneous classes
-# ------------------
-
-class _point_t(ctypes.Structure):
-    _fields_ = [
-        ('x', ctypes.c_long),
-        ('y', ctypes.c_long)
-    ]
 
 # ---------------
 # Terminal canvas
@@ -225,7 +241,7 @@ class TCanvas:
 
         width = self.width
         depthIntensity = self.depthIntensity
-        roundInt = objects.roundInt
+        roundInt = roundInt
 
         if len(color) < 3:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
@@ -449,7 +465,7 @@ class TCanvas:
         self.depthBuffer = np.full((self.height, self.width), np.inf)
         
             
-    # Canvas transformation
+    # Transformation & image processing
     
     def flip(self, direction: str = None) -> None:
         """
@@ -511,6 +527,64 @@ class TCanvas:
 
         self._xOff = int(xIndex)
         self._yOff = int(yIndex)
+
+    def invert(
+            self,
+            x1: int = 0, y1: int = 0,
+            x2: int = None, y2: int = None,
+    ) -> None:
+        if x2 is None: x2 = self.width - 1
+        if y2 is None: y2 = self.height - 1
+
+        width = self.width
+
+        for x, y in self.space():
+            r, g, b = self._screenPixels[y*width + x]
+            self._screenPixels[y*width + x] = (255 - r, 255 - g, 255 - b)
+
+        self._buffered = False
+
+    def blur(
+            self,
+            x1: int = 0, y1: int = 0,
+            x2: int = None, y2: int = None,
+            radius: int = 1,
+    ) -> None:
+        if x2 is None: x2 = self.width - 1
+        if y2 is None: y2 = self.height - 1
+
+        width = self.width
+        height = self.height
+
+        box_size = radius * 2 + 1
+        box_volume = box_size * box_size
+
+        new = [None] * self.totalPixels
+
+        for x, y in self.space():
+            all_r = 0
+            all_g = 0
+            all_b = 0
+
+            for dy in range(y - radius, y + radius + 1):
+                for dx in range(x - radius, x + radius + 1):
+                    r, g, b = self._screenPixels[
+                        clamp(0, height - 1, dy) *
+                        width +
+                        clamp(0, width - 1, dx)
+                    ]
+                    all_r += r
+                    all_g += g
+                    all_b += b
+
+            new[y*width + x] = (
+                all_r // box_volume,
+                all_g // box_volume,
+                all_b // box_volume,
+            )
+            
+        self._screenPixels = new.copy()
+        self._buffered = False
 
 
     # Save image
@@ -848,7 +922,7 @@ class TCanvasUI(TCanvas):
         y = yIndex + self._yOff
 
         width = self.width
-        roundInt = objects.roundInt
+        roundInt = roundInt
 
         if bgcolor is None: bgcolor = color
         
@@ -889,7 +963,7 @@ class TCanvasUI(TCanvas):
         - None
         """
 
-        display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
+        display = [_CURSOb_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
         width = self.width
         height = self.height
