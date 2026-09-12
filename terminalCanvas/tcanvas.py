@@ -335,10 +335,7 @@ class TCanvas:
                     last_p2 = p2
                 else:
                     if p1 != b1 or p2 != b2:
-                        append(f"\033[{y+1};{x+1}H")
-                        append(fg(p1))
-                        append(bg(p2))
-                        append("▀")
+                        append(f"\033[{y+1};{x+1}H{fg(p1)}{bg(p2)}▀")
 
             if y < hCenter-1: append("\n")
 
@@ -916,11 +913,7 @@ class TCanvasUI(TCanvas):
         for y in range(yRange):
             row1 = y * width
 
-            if lock_to_terminal and y >= term_height: break
-
             for x in range(xRange):
-                if lock_to_terminal and x >= term_width: break
-
                 i1 = row1 + x
 
                 dp1 = self._screenPixels[i1]
@@ -946,10 +939,7 @@ class TCanvasUI(TCanvas):
                     last_bgp1 = bgp1
                 else:
                     if p1 != b1 or bgp1 != bgb1 or cp1 != cb1:
-                        append(f"\033[{y+1};{x+1}H")
-                        append(bg(bgp1))
-                        append(fg(p1))
-                        append(cp1)
+                        append(f"\033[{y+1};{x+1}H{bg(bgp1)}{fg(p1)}{cp1}")
 
             if y < height-1: append("\n")
 
