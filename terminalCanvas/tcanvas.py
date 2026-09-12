@@ -696,7 +696,7 @@ class TCanvas:
     
     # Window settings
 
-    def setTitle(self, title: str) -> None:
+    def title(self, title: str) -> None:
         """
         Set a custom title for the terminal.
 
