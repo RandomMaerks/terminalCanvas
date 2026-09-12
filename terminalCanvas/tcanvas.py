@@ -532,6 +532,23 @@ class TCanvas:
             x1: int = 0, y1: int = 0,
             x2: int = None, y2: int = None,
     ) -> None:
+        """
+        Inverts the colors of the canvas.
+
+        You can set a specific region to invert using two points (x1, y1) and (x2, y2).
+        By default, (x1, y1) is (0, 0), and (x2, y2) is (None, None), which then becomes
+        (canvas.width - 1, canvas.height - 1), essentially the whole canvas.
+
+        Parameters:
+        - x1: int = 0
+        - y1: int = 0
+        - x2: int = None
+        - y2: int = None
+
+        Returns:
+        - None
+        """
+
         if x2 is None: x2 = self.width - 1
         if y2 is None: y2 = self.height - 1
 
@@ -552,6 +569,24 @@ class TCanvas:
             x2: int = None, y2: int = None,
             radius: int = 1,
     ) -> None:
+        """
+        Applies a box blur effect on the canvas.
+
+        You can set a specific region to invert using two points (x1, y1) and (x2, y2).
+        By default, (x1, y1) is (0, 0), and (x2, y2) is (None, None), which then becomes
+        (canvas.width - 1, canvas.height - 1), essentially the whole canvas.
+
+        Parameters:
+        - x1: int = 0
+        - y1: int = 0
+        - x2: int = None
+        - y2: int = None
+        - radius: int = 1
+
+        Returns:
+        - None
+        """
+
         if x2 is None: x2 = self.width - 1
         if y2 is None: y2 = self.height - 1
 
