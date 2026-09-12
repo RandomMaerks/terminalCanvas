@@ -2,6 +2,8 @@
 
 **terminalCanvas** is a Python library intended for creating graphics and developing visual-rich applications inside the terminal.
 
+***WARNING***: This library is mainly developed and tested on Windows, with all the quirks of the Windows command prompt in mind. Support for Linux terminals is extremely limited.
+
 ![Voxelate, a voxel-based Minecraft-wannabe game](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_voxelate.png)
 
 ## Installation & Requirements
