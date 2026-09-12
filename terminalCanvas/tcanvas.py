@@ -287,7 +287,10 @@ class TCanvas:
         - None
         """
 
-        display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
+        display = [
+            _CURSOR_HOME +
+            (_CURSOR_HIDE if not cursor else '')
+        ]
 
         width = self.width
         hCenter = self.hCenter
