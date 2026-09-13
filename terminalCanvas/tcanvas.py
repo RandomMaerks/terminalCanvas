@@ -66,7 +66,7 @@ def map(v, old_lo, old_hi, new_lo, new_hi):
     The next two parameters are `old_lo` and `old_hi` which represent the lower and upper limits of the old range.
     The last two, `new_lo` and `new_hi`, represent the limits of the new range.
 
-    For example, `map(0, 1, 0, 255, 0.04)` returns 10.2.
+    For example, `map(0.05, 0, 1, 0, 255)` returns 12.75.
 
     This value is calculated using the formula:
     `(v - old_lo) / (old_hi - old_lo) * (new_hi - new_lo) + new_lo`.
