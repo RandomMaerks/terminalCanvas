@@ -41,6 +41,16 @@ Individual glyph information:
 '''
 
 def from_bdf(font_dir: str) -> dict:
+    """
+    Read through a BDF font and convert it to a Python dict to be used with `Text`.
+
+    Parameters:
+    - font_dir: str
+
+    Returns:
+    - dict
+    """
+
     if not font_dir.endswith(".bdf"):
         raise UnsupportedFileTypeError(f"Must be of type '.bdf' for this conversion.")
 
