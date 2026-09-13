@@ -824,6 +824,50 @@ class TCanvas:
         elif input_mode == "Unix":
             return self._keyPressed_UNIX(key=key, hold=hold)
 
+    def _getCharacter(self) -> str:
+        """
+        [TEST METHOD] Get the output character from a key press.
+
+        Uses the `msvcrt` module, which is exclusively for Windows.
+
+        If a key does not have a character representation, like `DELETE` or `UP`,
+        its alias will be returned.
+
+        NOTE: This call is not asynchronous. It will block the entire program
+        until a key has been detected.
+
+        Parameters:
+        - None
+
+        Returns:
+        - str
+        """
+
+        import msvcrt
+
+        bytestr = msvcrt.getch()
+
+        if bytestr == b'\x08': return "BACK"
+        if bytestr == b'\r': return "\n"
+
+        if bytestr != b'\xe0':
+            try:
+                return bytestr.decode(encoding="utf-8")
+            except UnicodeDecodeError as e:
+                raise Exception(repr(e))
+
+        else:
+            next_bytestr = msvcrt.getch()
+
+            if next_bytestr == b'S': return "DELETE"
+
+            if next_bytestr == b'H': return "UP"
+            if next_bytestr == b'M': return "LEFT"
+            if next_bytestr == b'P': return "DOWN"
+            if next_bytestr == b'K': return "RIGHT"
+
+            return ""
+
     def getMousePos(self) -> tuple[int, int]:
         """
         Returns the coordinate of the mouse on the canvas.
