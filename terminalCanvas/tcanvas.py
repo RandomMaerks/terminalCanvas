@@ -824,7 +824,7 @@ class TCanvas:
         elif input_mode == "Unix":
             return self._keyPressed_UNIX(key=key, hold=hold)
 
-    def getMousePos(self) -> tuple[int, int] | None:
+    def getMousePos(self) -> tuple[int, int]:
         """
         Returns the coordinate of the mouse on the canvas.
 
@@ -837,37 +837,36 @@ class TCanvas:
 
         Returns:
         - tuple[int, int]
-        - None
         """
 
-        if input_mode == "Unix":
+        if input_mode != "Windows":
             raise OSError("Cannot use getMousePos() on non-Windows system/terminal.")
 
         point = _point_t()
         if not _user32.GetCursorPos(ctypes.pointer(point)):
-            return None
+            return (0, 0)
 
         hwnd = _kernel32.GetConsoleWindow()
         if not hwnd:
-            return None
+            return (0, 0)
 
         # Get literal coordinates (device resolution)
         origin = wintypes.POINT(0, 0)
         if not _user32.ClientToScreen(hwnd, ctypes.byref(origin)):
-            return None
+            return (0, 0)
 
         client = wintypes.RECT()
         if not _user32.GetClientRect(hwnd, ctypes.byref(client)):
-            return None
+            return (0, 0)
 
         if client.right == 0 or client.bottom == 0:
-            return None
+            return (0, 0)
 
         # Map to canvas coordinates (canvas resolution)
-        mx = (point.x - origin.x) / (client.right // self.width)
-        my = (point.y - origin.y) / (client.bottom // self.height)
+        mx = (point.x - origin.x) // (client.right // self.width)
+        my = (point.y - origin.y) // (client.bottom // self.height)
 
-        return int(mx), int(my)
+        return (mx, my)
 
     
     # Window settings
