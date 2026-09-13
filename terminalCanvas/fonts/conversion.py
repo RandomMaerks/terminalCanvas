@@ -4,9 +4,9 @@ class UnsupportedFileTypeError(Exception):
 class InvalidBDFStructure(Exception):
     pass
 
-# ---------------------------------
-# BDF to TC_Text-usable dict format
-# ---------------------------------
+# ------------------------------
+# BDF to Text-usable dict format
+# ------------------------------
 
 '''
 More details on the Bitmap Distribution Format (BDF) can be found on
