@@ -19,7 +19,7 @@ import numpy as np
 
 from . import objects
 from .vk import VK_WINDOWS, VK_UNIX
-from helper import *
+from .helper import *
 
 os.system("")
 

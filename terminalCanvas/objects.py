@@ -4,7 +4,7 @@ from PIL import Image
 import numpy as np
 
 from .fonts import font_5x7
-from helper import *
+from .helper import *
 
 # -----------------
 # Base object class
