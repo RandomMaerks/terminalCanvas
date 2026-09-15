@@ -4,34 +4,7 @@ from PIL import Image
 import numpy as np
 
 from .fonts import font_5x7
-
-# ---------------
-# Other functions
-# ---------------
-
-def interpolate(i0, d0, i1, d1, round=True):
-    if i0 == i1:
-        return [roundInt(d0) if round else d0]
-
-    n = i1 - i0
-    values = [0] * (n + 1)
-
-    r = roundInt if round else lambda x: x
-
-    delta = (d1 - d0) / n
-    d = d0
-
-    for i in range(n + 1):
-        values[i] = r(d)
-        d += delta
-
-    return values
-
-def roundInt(x):
-    try:
-        return int(x + 0.5) if x >= 0 else int(x - 0.5)
-    except TypeError as e:
-        raise TypeError(repr(e) + f" (offender: {x})")
+from helper import *
 
 # -----------------
 # Base object class
