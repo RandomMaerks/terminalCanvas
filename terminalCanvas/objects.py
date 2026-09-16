@@ -1346,6 +1346,9 @@ class Camera:
             [sin(ax)*sin(az) - cos(ax)*sin(ay)*cos(az), sin(ax)*cos(az) - cos(ax)*sin(ay)*sin(az), cos(ax)*cos(ay)]
         ])
 
+        has_2p = any(isinstance(object, x) for x in {Line3D, Triangle3D})
+        has_3p = any(isinstance(object, x) for x in {Triangle3D})
+
         # Translate
 
         points = []
@@ -1354,12 +1357,12 @@ class Camera:
         new_point1 = (point1 - pos) @ rotMatrix.T
         points.append(new_point1)
 
-        if any(isinstance(object, x) for x in {Line3D, Triangle3D}):
+        if has_2p:
             point2 = np.array([object.x2, object.y2, object.z2])
             new_point2 = (point2 - pos) @ rotMatrix.T
             points.append(new_point2)
 
-        if any(isinstance(object, x) for x in {Triangle3D}):
+        if has_3p:
             point3 = np.array([object.x3, object.y3, object.z3])  
             new_point3 = (point3 - pos) @ rotMatrix.T
             points.append(new_point3)        
@@ -1378,14 +1381,14 @@ class Camera:
         
         new_object = copy(object)
         new_object.x1, new_object.y1, new_object.z1 = points[0]
-        if any(isinstance(object, x) for x in {Line3D, Triangle3D}):
+        if has_2p:
             new_object.x2, new_object.y2, new_object.z2 = points[1]
-        if any(isinstance(object, x) for x in {Triangle3D}):
+        if has_3p:
             new_object.x3, new_object.y3, new_object.z3 = points[2]
         
         # Ignore triangle if its normal is facing away
 
-        if isinstance(object, Triangle3D) and new_object.normal() <= 0: return
+        if has_3p and new_object.normal() <= 0: return
 
         # Project
 
@@ -1395,14 +1398,14 @@ class Camera:
 
         new_object.x1, new_object.y1, new_object.z1 = p_x1, -p_y1, p_z1
 
-        if any(isinstance(object, x) for x in {Line3D, Triangle3D}):
+        if has_2p:
             p_z2 = max(new_object.z2, 0.0005)
             p_x2 = (new_object.x2 * d) / p_z2 * hR
             p_y2 = (new_object.y2 * d) / p_z2 * vR
 
             new_object.x2, new_object.y2, new_object.z2 = p_x2, -p_y2, p_z2
 
-        if any(isinstance(object, x) for x in {Triangle3D}):
+        if has_3p:
             p_z3 = max(new_object.z3, 0.0005)
             p_x3 = (new_object.x3 * d) / p_z3 * hR
             p_y3 = (new_object.y3 * d) / p_z3 * vR
