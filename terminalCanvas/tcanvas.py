@@ -238,12 +238,12 @@ class TCanvas:
             if zIndex is not None:
                 if zIndex < self.depthBuffer[y, x]:
                     self.depthBuffer[y, x] = zIndex
-                    self._screenPixels[y*width + x] = (
+                    self._screenPixels[y*width + x] = tuple(
                         roundInt(color[i] * (1 - depthIntensity * zIndex))
                         for i in range(3)
                     )
             else:
-                self._screenPixels[y*width + x] = (
+                self._screenPixels[y*width + x] = tuple(
                     roundInt(color[i])
                     for i in range(3)
                 )
