@@ -714,7 +714,10 @@ class TCanvas:
         height = self.height
         for y in range(height):
             for x in range(width):
-                red, green, blue = self._screenPixels[y*width + x]
+                red, green, blue = tuple(
+                    clamp(x, 0, 255)
+                    for x in self._screenPixels[y*width + x]
+                )
                 alpha = 255
                 toNPArray[y, x] = np.array([red, green, blue, alpha])
 
