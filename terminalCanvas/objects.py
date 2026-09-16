@@ -1322,7 +1322,7 @@ class Camera:
 
     def draw(
             self,
-            object,
+            object: BaseObject,
             canvas: TCanvas,
             defensive_clipping: bool = False,
     ) -> None:
