@@ -1,4 +1,6 @@
 import textwrap
+from math import sin, cos, pi, sqrt
+from copy import copy
 
 from PIL import Image
 import numpy as np
@@ -106,7 +108,9 @@ class BaseObject:
 
         return not pixels1.isdisjoint(pixels2)
 
-    def includes(self, point: tuple[int, int]) -> bool:
+    # Other methods
+
+    def __contains__(self, point: tuple[int, int]) -> bool:
         pixels = set((x, y) for x, y, *_ in self.data)
 
         return point in pixels
@@ -139,6 +143,12 @@ class Point(BaseObject):
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
         self._build()
+
+    def __copy__(self):
+        return Point(
+            x1 = self.x1, y1 = self.y1,
+            color = self.color
+        )
     
 
 class Line(BaseObject):
@@ -327,6 +337,14 @@ class Line(BaseObject):
         self.thickness = thickness
         self._build()
 
+    def __copy__(self):
+        return Line(
+            x1 = self.x1, y1 = self.y1,
+            x2 = self.x2, y2 = self.y2,
+            color = self.color,
+            thickness = self.thickness
+        )
+
 class Triangle(BaseObject):
     def __init__(
             self,
@@ -392,6 +410,14 @@ class Triangle(BaseObject):
         self.x3, self.y3 = x3, y3
         self._build()
 
+    def __copy__(self):
+        return Triangle(
+            x1 = self.x1, y1 = self.y1,
+            x2 = self.x2, y2 = self.y2,
+            x3 = self.x3, y3 = self.y3,
+            color = self.color
+        )
+
 class Rectangle(BaseObject):
     def __init__(
             self, 
@@ -446,6 +472,14 @@ class Rectangle(BaseObject):
     def set_mode(self, mode):
         self.mode = mode
         self._build()
+
+    def __copy__(self):
+        return Rectangle(
+            x1 = self.x1, y1 = self.y1,
+            x2 = self.x2, y2 = self.y2,
+            mode = self.mode,
+            color = self.color
+        )
 
 class Ellipse(BaseObject):
     def __init__(
@@ -551,6 +585,14 @@ class Ellipse(BaseObject):
     def set_mode(self, mode):
         self.mode = mode
         self._build()
+
+    def __copy__(self):
+        return Ellipse(
+            x1 = self.x1, y1 = self.y1,
+            x2 = self.x2, y2 = self.y2,
+            mode = self.mode,
+            color = self.color
+        )
 
 class Text(BaseObject):
     def __init__(
@@ -669,6 +711,16 @@ class Text(BaseObject):
         self.anchor_y = anchor_y
         self._build()
 
+    def __copy__(self):
+        return Text(
+            x1 = self.x1, y1 = self.y1,
+            message = self.message,
+            font = self.font,
+            spacing = self.spacing,
+            anchor_x = self.anchor_x, anchor_y = self.anchor_y,
+            color = self.color
+        )
+
 
 class Image(BaseObject):
     def __init__(
@@ -718,6 +770,13 @@ class Image(BaseObject):
         self.size = size
         self._build()
 
+    def __copy__(self):
+        return Image(
+            x1 = self.x1, y1 = self.y1,
+            image_dir = self.image_dir,
+            size = self.size
+        )
+
 class Sprite(BaseObject):
     def __init__(
             self,
@@ -759,6 +818,12 @@ class Sprite(BaseObject):
             self.sprite.append([x + x1, y + y1, color])
         self._build()
 
+    def __copy__(self):
+        return Sprite(
+            x1 = self.x1, y1 = self.y1,
+            sprite = self.sprite
+        )
+
 # ----------
 # 3D objects
 # ----------
@@ -788,7 +853,12 @@ class Point3D(BaseObject):
     def set_points(self, x1, y1, z1):
         self.x1, self.y1 = x1, y1, z1
         self._build()
-    
+
+    def __copy__(self):
+        return Point3D(
+            x1 = self.x1, y1 = self.y1, z1 = self.z1,
+            color = self.color
+        )    
 
 class Line3D(BaseObject):
     def __init__(
@@ -830,7 +900,7 @@ class Line3D(BaseObject):
         dm = max(dx, dy, dz)
         
         ex = ey = ez = dm/2
-        for _ in range(dm + 1):
+        for _ in range(int(dm) + 1):
             self._add([x1, y1, color, z1])
 
             ex -= dx
@@ -848,11 +918,17 @@ class Line3D(BaseObject):
                 ez += dm
                 z1 += sz
 
-
     def set_points(self, x1, y1, z1, x2, y2, z2):
         self.x1, self.y1, self.z2 = x1, y1, z1
         self.x2, self.y2, self.z2 = x2, y2, z2
         self._build()
+
+    def __copy__(self):
+        return Line3D(
+            x1 = self.x1, y1 = self.y1, z1 = self.z1,
+            x2 = self.x2, y2 = self.y2, z2 = self.z2,
+            color = self.color
+        )
 
 class Triangle3D(BaseObject):
     def __init__(
@@ -937,6 +1013,23 @@ class Triangle3D(BaseObject):
         self.x2, self.y2, self.z2 = x2, y2, z2
         self.x3, self.y3, self.z3 = x3, y3, z3
         self._build()
+
+    def normal(self) -> float:
+        p1 = np.array([self.x1, self.y1, self.z1])
+        p2 = np.array([self.x2, self.y2, self.z2])
+        p3 = np.array([self.x3, self.y3, self.z3])
+
+        normal = np.cross(p2 - p1, p3 - p1)
+
+        return np.dot(p1, normal)
+
+    def __copy__(self):
+        return Triangle3D(
+            x1 = self.x1, y1 = self.y1, z1 = self.z1,
+            x2 = self.x2, y2 = self.y2, z2 = self.z2,
+            x3 = self.x3, y3 = self.y3, z3 = self.z3,
+            color = self.color
+        )
 
 # ----------
 # UI objects
@@ -1056,6 +1149,16 @@ class RectangleUI(BaseObject):
         self.char = char
         self._build()
 
+    def __copy__(self):
+        return RectangleUI(
+            x1 = self.x1, y1 = self.y1,
+            x2 = self.x2, y2 = self.y2,
+            mode = self.mode,
+            char = self.char,
+            color = self.color,
+            bgcolor = self.bgcolor
+        )
+
 class TextUI(BaseObject):
     def __init__(
             self, 
@@ -1167,3 +1270,227 @@ class TextUI(BaseObject):
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff
         self._build()
+
+    def __copy__(self):
+        return TextUI(
+            x1 = self.x1, y1 = self.y1,
+            message = self.message,
+            anchor_x = self.anchor_x, anchor_y = self.anchor_y,
+            max_width = self.max_width, max_height = self.max_height,
+            cutoff = self.cutoff,
+            color = self.color,
+            bgcolor = self.bgcolor
+        )
+
+# ---------
+# 3D camera
+# ---------
+
+class Camera:
+    def __init__(
+            self,
+            width: int, height: int,
+            x: float = 0.0, y: float = 0.0, z: float = 0.0,
+            ax: float = 0.0, ay: float = 0.0, az: float = 0.0,
+            viewportDistance: float = 1.0,
+    ) -> None:
+        self.width, self.height = width, height
+
+        self.position = np.array([x, y, z])
+        self.angle = np.array([ax, ay, az])
+
+        if self.width >= self.height:
+            self.hFOV, self.vFOV = self.width / self.height, 1
+        else:
+            self.hFOV, self.vFOV = 1, self.height / self.width
+
+        self.hRatio = width / self.hFOV
+        self.vRatio = height / self.vFOV
+
+        self.viewportDistance = viewportDistance
+
+        sqrt2rec = 1 / sqrt(2)
+
+        nearPlane   = np.array([0.0      , 0.0      , 1.0     ])
+        leftPlane   = np.array([sqrt2rec , 0.0      , sqrt2rec])
+        rightPlane  = np.array([-sqrt2rec, 0.0      , sqrt2rec])
+        bottomPlane = np.array([0.0      , sqrt2rec , sqrt2rec])
+        topPlane    = np.array([0.0      , -sqrt2rec, sqrt2rec])
+
+        self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
+        self.clippingDistances = (self.viewportDistance, 0.0, 0.0, 0.0, 0.0)
+
+    def draw(
+            self,
+            object,
+            canvas: TCanvas,
+            defensive_clipping: bool = False,
+    ) -> None:
+        width, height = self.width, self.height
+        pos = self.position
+        ax, ay, az = self.angle
+        d = self.viewportDistance
+        hR, vR = self.hRatio, self.vRatio
+        clippingNormals = self.clippingNormals
+        clippingDistances = self.clippingDistances
+        wCenter, hCenter = canvas.wCenter, canvas.hCenter
+
+        try:
+            object.z1
+        except AttributeError:
+            raise TypeError(f"{type(object)} is not a 3D object, thus cannot be used with Camera.")
+
+        rotMatrix = np.array([
+            [cos(ay)*cos(az)                          ,-cos(ay)*sin(az)                          , sin(ay)        ],
+            [cos(ax)*sin(az) + sin(ax)*sin(ay)*cos(az), cos(ax)*cos(az) - sin(ax)*sin(ay)*sin(az),-sin(ax)*cos(ay)],
+            [sin(ax)*sin(az) - cos(ax)*sin(ay)*cos(az), sin(ax)*cos(az) - cos(ax)*sin(ay)*sin(az), cos(ax)*cos(ay)]
+        ])
+
+        # Translate
+
+        points = []
+
+        point1 = np.array([object.x1, object.y1, object.z1])
+        new_point1 = (point1 - pos) @ rotMatrix.T
+        points.append(new_point1)
+
+        if any(isinstance(object, x) for x in {Line3D, Triangle3D}):
+            point2 = np.array([object.x2, object.y2, object.z2])
+            new_point2 = (point2 - pos) @ rotMatrix.T
+            points.append(new_point2)
+
+        if any(isinstance(object, x) for x in {Triangle3D}):
+            point3 = np.array([object.x3, object.y3, object.z3])  
+            new_point3 = (point3 - pos) @ rotMatrix.T
+            points.append(new_point3)        
+
+        # Clip
+
+        # TODO: Properly implement clipping
+        for normal, distance in zip(clippingNormals, clippingDistances):
+            point_plane_distance = tuple(
+                np.dot(normal, point) + distance
+                for point in points
+            )
+
+            if defensive_clipping and any(d <= 0 for d in point_plane_distance): return
+            elif not defensive_clipping and all(d <= 0 for d in point_plane_distance): return
+        
+        new_object = copy(object)
+        new_object.x1, new_object.y1, new_object.z1 = points[0]
+        if any(isinstance(object, x) for x in {Line3D, Triangle3D}):
+            new_object.x2, new_object.y2, new_object.z2 = points[1]
+        if any(isinstance(object, x) for x in {Triangle3D}):
+            new_object.x3, new_object.y3, new_object.z3 = points[2]
+        
+        # Ignore triangle if its normal is facing away
+
+        if isinstance(object, Triangle3D) and new_object.normal() <= 0: return
+
+        # Project
+
+        p_z1 = max(new_object.z1, 0.0005)
+        p_x1 = (new_object.x1 * d) / p_z1 * hR
+        p_y1 = (new_object.y1 * d) / p_z1 * vR
+
+        new_object.x1, new_object.y1, new_object.z1 = p_x1, -p_y1, p_z1
+
+        if any(isinstance(object, x) for x in {Line3D, Triangle3D}):
+            p_z2 = max(new_object.z2, 0.0005)
+            p_x2 = (new_object.x2 * d) / p_z2 * hR
+            p_y2 = (new_object.y2 * d) / p_z2 * vR
+
+            new_object.x2, new_object.y2, new_object.z2 = p_x2, -p_y2, p_z2
+
+        if any(isinstance(object, x) for x in {Triangle3D}):
+            p_z3 = max(new_object.z3, 0.0005)
+            p_x3 = (new_object.x3 * d) / p_z3 * hR
+            p_y3 = (new_object.y3 * d) / p_z3 * vR
+
+            new_object.x3, new_object.y3, new_object.z3 = p_x3, -p_y3, p_z3
+
+        new_object._build()
+
+        # Drawing and finalising
+
+        temp_xOff, temp_yOff = canvas._xOff, canvas._yOff
+        canvas.translate(wCenter, hCenter)
+        canvas.draw(new_object)
+        canvas.translate(temp_xOff, temp_yOff)
+
+    def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
+        self.position += np.array([x, y, z])
+
+    def rotate(self, ax: float = 0.0, ay: float = 0.0, az: float = 0.0) -> None:
+        self.angle += np.array([ax, ay, az])
+
+    def detectInput(
+            self,
+            canvas: TCanvas,
+            movementSpeed: float = 0.1,
+            rotationSpeed: float = pi/120,
+            keymap: dict = None,
+    ) -> None:
+        yaw = self.angle[1]
+
+        forward = np.array([-sin(yaw), 0, cos(yaw)])
+        right = np.array([cos(yaw), 0, sin(yaw)])
+
+        if keymap is None:
+            keymap = {
+                "forward": "W",
+                "backward": "S",
+                "left": "A",
+                "right": "D",
+                "up": "Q",
+                "down": "E",
+
+                "lookup": "I",
+                "lookdown": "K",
+                "turnleft": "J",
+                "turnright": "L",
+                "counterclockwise": "U",
+                "clockwise": "O",
+            }
+        
+        if canvas.keyPressed(keymap["forward"]):
+            self.position += forward * movementSpeed
+        if canvas.keyPressed(keymap["backward"]):
+            self.position -= forward * movementSpeed
+
+        if canvas.keyPressed(keymap["left"]):
+            self.position -= right * movementSpeed
+        if canvas.keyPressed(keymap["right"]):
+            self.position += right * movementSpeed
+
+        if canvas.keyPressed(keymap["up"]):
+            self.position[1] += movementSpeed
+        if canvas.keyPressed(keymap["down"]):
+            self.position[1] -= movementSpeed
+
+        ax = ay = az = 0
+
+        if canvas.keyPressed(keymap["lookup"]):
+            ax = rotationSpeed
+        if canvas.keyPressed(keymap["lookdown"]):
+            ax = -rotationSpeed
+
+        if canvas.keyPressed(keymap["turnleft"]):
+            ay = rotationSpeed
+        if canvas.keyPressed(keymap["turnright"]):
+            ay = -rotationSpeed
+
+        if canvas.keyPressed(keymap["counterclockwise"]):
+            az = rotationSpeed
+        if canvas.keyPressed(keymap["clockwise"]):
+            az = -rotationSpeed
+
+        self.rotate(ax, ay, az)
+
+    def __copy__(self):
+        return Camera(
+            width = self.width, height = self.height,
+            x = self.position[0], y = self.position[1], z = self.position[2],
+            ax = self.angle[0], ay = self.angle[1], az = self.angle[2],
+            viewportDistance = self.viewportDistance
+        )
