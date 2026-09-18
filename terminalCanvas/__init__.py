@@ -2,7 +2,7 @@ from .tcanvas import (
     TCanvas, TCanvasUI
 )
 from .objects import (
-    BaseObject,
+    Coord, BaseObject,
     Point, Line, Rectangle, Triangle, Ellipse,
     Polygon, Text, Image, Sprite,
     Point3D, Line3D, Triangle3D,
@@ -21,6 +21,7 @@ __all__ = [
     "clamp",
     "map",
 
+    "Coord",
     "BaseObject",
     "Point",
     "Line",
