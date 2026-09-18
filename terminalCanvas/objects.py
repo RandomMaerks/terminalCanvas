@@ -172,7 +172,7 @@ class Line(BaseObject):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self.color = color
-        self.thickness = thickness
+        self.thickness = max(0, thickness)
         self._build()
 
     def _build(self):
@@ -184,7 +184,7 @@ class Line(BaseObject):
         x2 = roundInt(self.x2)
         y2 = roundInt(self.y2)
 
-        thickness = max(roundInt(self.thickness), 1)
+        thickness = self.thickness
 
         color = self.color
 
@@ -334,7 +334,7 @@ class Line(BaseObject):
         self._build()
 
     def set_thickness(self, thickness):
-        self.thickness = thickness
+        self.thickness = max(0, thickness)
         self._build()
 
     def __copy__(self):
@@ -351,7 +351,7 @@ class Triangle(BaseObject):
             x1: int | float = 0, y1: int | float = 0,
             x2: int | float = 0, y2: int | float = 0,
             x3: int | float = 0, y3: int | float = 0,
-            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+            color: tuple[int, int, int, int] = (0, 0, 0, 255)
     ) -> None:
 
         super().__init__()
@@ -425,6 +425,7 @@ class Rectangle(BaseObject):
             x2: int | float = 0, y2: int | float = 0, 
             mode: str = "solid", 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
+            thickness: int = 1,
     ) -> None:
 
         super().__init__()
@@ -433,6 +434,7 @@ class Rectangle(BaseObject):
         self.x2, self.y2 = x2, y2
         self.color = color
         self.mode = mode
+        self.thickness = clamp(thickness, 0, min(x2 - x1, y2 - y1))
         self._build()
 
     def _build(self):
@@ -446,6 +448,7 @@ class Rectangle(BaseObject):
 
         color = self.color
         mode = self.mode
+        thickness = self.thickness
 
         if x1 > x2: x1, x2 = x2, x1
         if y1 > y2: y1, y2 = y2, y1
@@ -456,13 +459,14 @@ class Rectangle(BaseObject):
                     self._add([x, y, color])
 
         elif mode == "outline":
-            for x in range(x1, x2 + 1):
-                self._add([x, y1, color])
-                self._add([x, y2, color])
+            for t in range(thickness):
+                for x in range(x1 + t, x2 - t + 1):
+                    self._add([x, y1 + t, color])
+                    self._add([x, y2 - t, color])
 
-            for y in range(y1 + 1, y2):
-                self._add([x1, y, color])
-                self._add([x2, y, color])
+                for y in range(y1 + t + 1, y2 - t):
+                    self._add([x1 + t, y, color])
+                    self._add([x2 - t, y, color])
 
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
@@ -471,6 +475,10 @@ class Rectangle(BaseObject):
 
     def set_mode(self, mode):
         self.mode = mode
+        self._build()
+
+    def set_thickness(self, thickness):
+        self.thickness = clamp(thickness, 0, min(x2 - x1, y2 - y1))
         self._build()
 
     def __copy__(self):
