@@ -471,8 +471,8 @@ class Polygon(BaseObject):
         lines = {}
 
         for i in range(n):
-            x1, y1 = [roundInt(_) for _ in points[i]]
-            x2, y2 = [roundInt(_) for _ in points[i+1 if i < n-1 else 0]]
+            x1, y1 = round(Coord(*points[i]))
+            x2, y2 = round(Coord(*points[i+1 if i < n-1 else 0]))
             
             if y2 < y1:
                 x1, x2 = x2, x1
@@ -481,8 +481,8 @@ class Polygon(BaseObject):
             x12 = interpolate(y1, x1, y2, x2)
             for y in range(y1, y2 + 1):
                 if y not in lines.keys():
-                    lines[y] = list()
-                lines[y].append(x12[y - y1])
+                    lines[y] = set()
+                lines[y].add(x12[y - y1])
 
         for y, all_x in lines.items():
             xs = min(all_x)
@@ -496,7 +496,7 @@ class Polygon(BaseObject):
                 if parity == 1:
                     self._add([x, y, color])
 
-    def add_points(self, point):
+    def add_point(self, point):
         self.points.append(point)
         self._modified = True
 
