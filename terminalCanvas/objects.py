@@ -149,7 +149,7 @@ class BaseObject:
         """
         Initialises `BaseObject`.
         """
-        self._modified = True
+        self._modified = False
         self._empty()
 
     def _empty(self):
@@ -230,7 +230,7 @@ class Point(BaseObject):
 
         self.p1 = Coord(x1, y1)
         self.color = color
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -272,7 +272,7 @@ class Line(BaseObject):
         self.p2 = Coord(x2, y2)
         self.color = color
         self.thickness = max(0, thickness)
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -453,7 +453,7 @@ class Polygon(BaseObject):
 
         self.points = points if points is not None else []
         self.color = color
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -524,7 +524,7 @@ class Triangle(BaseObject):
         self.p2 = Coord(x2, y2)
         self.p3 = Coord(x3, y3)
         self.color = color
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -594,7 +594,7 @@ class Rectangle(BaseObject):
         self.color = color
         self.mode = mode
         self.thickness = clamp(thickness, 0, min(x2 - x1, y2 - y1))
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -660,7 +660,7 @@ class Ellipse(BaseObject):
         self.p2 = Coord(x2, y2)
         self.color = color
         self.mode = mode
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -775,7 +775,7 @@ class Text(BaseObject):
         self.spacing = spacing
         self.anchor_x, self.anchor_y = anchor_x, anchor_y
         self.color = color
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -895,7 +895,7 @@ class Image(BaseObject):
         self.p1 = Coord(x1, y1)
         self.image_dir = image_dir
         self.size = size
-        self._modified = True
+        self._build()
 
     def _build(self):      
         self._empty()
@@ -947,7 +947,7 @@ class Sprite(BaseObject):
 
         self.p1 = Coord(x1, y1)
         self.sprite = sprite if sprite is not None else []
-        self._modified = True
+        self._build()
 
     def _build(self):  
         self._empty()
@@ -997,7 +997,7 @@ class Point3D(BaseObject):
 
         self.p1 = Coord(x1, y1, z1)
         self.color = color
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -1029,7 +1029,7 @@ class Line3D(BaseObject):
         self.p1 = Coord(x1, y1, z1)
         self.p2 = Coord(x2, y2, z2)
         self.color = color
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -1072,7 +1072,7 @@ class Line3D(BaseObject):
     def set_points(self, x1, y1, z1, x2, y2, z2):
         self.p1 = Coord(x1, y1, z1)
         self.p2 = Coord(x2, y2, z2)
-        self._modified = True
+        self._build()
 
     def __copy__(self):
         return Line3D(
@@ -1096,7 +1096,7 @@ class Triangle3D(BaseObject):
         self.p2 = Coord(x2, y2, z2)
         self.p3 = Coord(x3, y3, z3)
         self.color = color
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -1197,7 +1197,7 @@ class RectangleUI(BaseObject):
         self.bgcolor = bgcolor
         self.mode = mode
         self.char = char
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
@@ -1322,7 +1322,7 @@ class TextUI(BaseObject):
         self.max_width = max_width
         self.max_height = max_height
         self.cutoff = cutoff
-        self._modified = True
+        self._build()
 
     def _build(self):
         self._empty()
