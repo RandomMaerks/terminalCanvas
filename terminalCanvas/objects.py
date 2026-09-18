@@ -478,11 +478,11 @@ class Polygon(BaseObject):
                 x1, x2 = x2, x1
                 y1, y2 = y2, y1
 
-            x12 = interpolate(y1, x1, y2, x2)
-            for y in range(y1, y2 + 1):
+            x12 = interpolate(y1, x1, y2, x2)[:-1]
+            for y in range(y1, y2):
                 if y not in lines.keys():
-                    lines[y] = set()
-                lines[y].add(x12[y - y1])
+                    lines[y] = list()
+                lines[y].append(x12[y - y1])
 
         for y, all_x in lines.items():
             xs = min(all_x)
@@ -490,10 +490,9 @@ class Polygon(BaseObject):
 
             parity = -1
             for x in range(xs, xx + 1):
-                if x in all_x:
+                if x in all_x and all_x.count(x) % 2 != 0:
                     parity = -parity
-                
-                if parity == 1:
+                if parity == 1 or x in all_x:
                     self._add([x, y, color])
 
     def add_point(self, point):
