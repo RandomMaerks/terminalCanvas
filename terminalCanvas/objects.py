@@ -24,7 +24,10 @@ class BaseObject:
     `_build()` is a required method which calculates all the pixels that make up the intended object.
     You must have a `_build()` method for your object and it must have `self._empty()` at the very start.
     While building, you can use `self._add(x, y, color)` to add a pixel to the pixel data. Color can be RGB or RGBA.
-    Every attribute setter method needs to call `_build()` at least once, preferably at the end.
+
+    There is also the `_modified` attribute, denoting the necessity to be rebuilt when drawn to the canvas.
+    When it is drawn, this attribute changes to `False` and will stay as `False` until an attribute is changed where it is set to `True`.
+    Every attribute setter method needs to set `_modified` to `True` at the end, otherwise the changes will not apply.
 
     You can add more methods like getter or setter methods.
 
@@ -43,12 +46,14 @@ class BaseObject:
     Attributes:
     - `data`: a list of pixels, each of which contains coordinate and color data
     - `left`, `right`, `top`, `bottom`: edges of the object
+    - `_modified`: state of object, whether its attributes have been modified
     """
 
     def __init__(self) -> None:
         """
         Initialises `BaseObject`.
         """
+        self._modified = True
         self._empty()
 
     def _empty(self):
@@ -78,27 +83,26 @@ class BaseObject:
     # Object transformation
 
     def move(self, xShift: int, yShift: int) -> None:
-        moved = []
-        for x, y, color, *_ in self.data:
-            x += xShift
-            y += yShift
-            moved.append([x, y, color, *_])
-        self.data = moved
+        self.data = [
+            [x + xShift, y + yShift, color, *_]
+            for x, y, color, *_ in self.data
+        ]
 
     def scale(self, amount: int) -> None:
-        xTop, yTop, _ = min(self.data)
+        xAnchor = (self.right - self.left) // 2
+        yAnchor = (self.bottom - self.top) // 2
         scaled = []
         for x, y, color, *_ in self.data:
+            xShift = (x - xAnchor) * (amount - 1)
+            yShift = (y - yAnchor) * (amount - 1)
             for i in range(amount):
                 for j in range(amount):
-                    xShift = (x-xTop) * (amount-1)
-                    yShift = (y-yTop) * (amount-1)
                     scaled.append([x + i + xShift, y + j + yShift, color, *_])
         self.data = scaled
 
     def set_color(self, color: tuple[int, int, int, int]) -> None:
         self.color = color
-        self._build()
+        self._modified = True
 
     # Collision detection
 
@@ -130,7 +134,7 @@ class Point(BaseObject):
 
         self.x1, self.y1 = x1, y1
         self.color = color
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -142,7 +146,7 @@ class Point(BaseObject):
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Point(
@@ -173,7 +177,7 @@ class Line(BaseObject):
         self.x2, self.y2 = x2, y2
         self.color = color
         self.thickness = max(0, thickness)
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -331,11 +335,11 @@ class Line(BaseObject):
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
-        self._build()
+        self._modified = True
 
     def set_thickness(self, thickness):
         self.thickness = max(0, thickness)
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Line(
@@ -357,7 +361,7 @@ class Polygon(BaseObject):
 
         self.points = points if points is not None else []
         self.color = color
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -402,15 +406,15 @@ class Polygon(BaseObject):
 
     def add_points(self, point):
         self.points.append(point)
-        self._build()
+        self._modified = True
 
     def set_points(self, points):
         self.points = points
-        self._build()
+        self._modified = True
 
     def set_point(self, point, index):
         self.points[index] = point
-        self._build()
+        self._modified = True
 
         
 class Triangle(BaseObject):
@@ -428,7 +432,7 @@ class Triangle(BaseObject):
         self.x2, self.y2 = x2, y2
         self.x3, self.y3 = x3, y3
         self.color = color
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -476,7 +480,7 @@ class Triangle(BaseObject):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
         self.x3, self.y3 = x3, y3
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Triangle(
@@ -503,7 +507,7 @@ class Rectangle(BaseObject):
         self.color = color
         self.mode = mode
         self.thickness = clamp(thickness, 0, min(x2 - x1, y2 - y1))
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -539,15 +543,15 @@ class Rectangle(BaseObject):
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
-        self._build()
+        self._modified = True
 
     def set_mode(self, mode):
         self.mode = mode
-        self._build()
+        self._modified = True
 
     def set_thickness(self, thickness):
         self.thickness = clamp(thickness, 0, min(x2 - x1, y2 - y1))
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Rectangle(
@@ -572,7 +576,7 @@ class Ellipse(BaseObject):
         self.x2, self.y2 = x2, y2
         self.color = color
         self.mode = mode
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -656,11 +660,11 @@ class Ellipse(BaseObject):
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
-        self._build()
+        self._modified = True
 
     def set_mode(self, mode):
         self.mode = mode
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Ellipse(
@@ -690,7 +694,7 @@ class Text(BaseObject):
         self.spacing = spacing
         self.anchor_x, self.anchor_y = anchor_x, anchor_y
         self.color = color
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -765,27 +769,27 @@ class Text(BaseObject):
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
-        self._build()
+        self._modified = True
 
     def set_message(self, message):
         self.message = message
-        self._build()
+        self._modified = True
 
     def set_font(self, font):
         self.font = font
-        self._build()
+        self._modified = True
 
     def set_spacing(self, spacing):
         self.spacing = spacing
-        self._build()
+        self._modified = True
 
     def set_anchor_x(self, anchor_x):
         self.anchor_x = anchor_x
-        self._build()
+        self._modified = True
 
     def set_anchor_y(self, anchor_y):
         self.anchor_y = anchor_y
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Text(
@@ -811,7 +815,7 @@ class Image(BaseObject):
         self.x1, self.y1 = x1, y1
         self.image_dir = image_dir
         self.size = size
-        self._build()
+        self._modified = True
 
     def _build(self):      
         self._empty()
@@ -836,15 +840,15 @@ class Image(BaseObject):
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
-        self._build()
+        self._modified = True
 
     def set_image_dir(self, image_dir):
         self.image_dir = image_dir
-        self._build()
+        self._modified = True
 
     def set_size(self, size):
         self.size = size
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Image(
@@ -864,7 +868,7 @@ class Sprite(BaseObject):
 
         self.x1, self.y1 = x1, y1
         self.sprite = sprite if sprite is not None else []
-        self._build()
+        self._modified = True
 
     def _build(self):  
         self._empty()
@@ -882,17 +886,17 @@ class Sprite(BaseObject):
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
-        self._build()
+        self._modified = True
 
     def set_sprite(self, sprite):
         self.sprite = sprite
-        self._build()
+        self._modified = True
 
     def merge(self, other):
         x1, y1 = self.x1, self.y1
         for x, y, color, *_ in other.data:
             self.sprite.append([x + x1, y + y1, color])
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Sprite(
@@ -915,7 +919,7 @@ class Point3D(BaseObject):
 
         self.x1, self.y1, self.z1 = x1, y1, z1
         self.color = color
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -928,7 +932,7 @@ class Point3D(BaseObject):
 
     def set_points(self, x1, y1, z1):
         self.x1, self.y1 = x1, y1, z1
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Point3D(
@@ -949,7 +953,7 @@ class Line3D(BaseObject):
         self.x1, self.y1, self.z1 = x1, y1, z1
         self.x2, self.y2, self.z2 = x2, y2, z2
         self.color = color
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -997,7 +1001,7 @@ class Line3D(BaseObject):
     def set_points(self, x1, y1, z1, x2, y2, z2):
         self.x1, self.y1, self.z2 = x1, y1, z1
         self.x2, self.y2, self.z2 = x2, y2, z2
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return Line3D(
@@ -1021,7 +1025,7 @@ class Triangle3D(BaseObject):
         self.x2, self.y2, self.z2 = x2, y2, z2
         self.x3, self.y3, self.z3 = x3, y3, z3
         self.color = color
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -1088,7 +1092,7 @@ class Triangle3D(BaseObject):
         self.x1, self.y1, self.z1 = x1, y1, z1
         self.x2, self.y2, self.z2 = x2, y2, z2
         self.x3, self.y3, self.z3 = x3, y3, z3
-        self._build()
+        self._modified = True
 
     def normal(self) -> float:
         p1 = np.array([self.x1, self.y1, self.z1])
@@ -1130,7 +1134,7 @@ class RectangleUI(BaseObject):
         self.bgcolor = bgcolor
         self.mode = mode
         self.char = char
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -1211,19 +1215,19 @@ class RectangleUI(BaseObject):
     def set_points(self, x1, y1, x2, y2):
         self.x1, self.y1 = x1, y1
         self.x2, self.y2 = x2, y2
-        self._build()
+        self._modified = True
 
     def set_bgcolor(self, bgcolor: tuple[int, int, int, int]):
         self.bgcolor = bgcolor
-        self._build()
+        self._modified = True
 
     def set_mode(self, mode):
         self.mode = mode
-        self._build()
+        self._modified = True
 
     def set_char(self, char):
         self.char = char
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return RectangleUI(
@@ -1258,7 +1262,7 @@ class TextUI(BaseObject):
         self.max_width = max_width
         self.max_height = max_height
         self.cutoff = cutoff
-        self._build()
+        self._modified = True
 
     def _build(self):
         self._empty()
@@ -1321,31 +1325,31 @@ class TextUI(BaseObject):
 
     def set_points(self, x1, y1):
         self.x1, self.y1 = x1, y1
-        self._build()
+        self._modified = True
 
     def set_bgcolor(self, bgcolor: tuple[int, int, int, int]):
         self.bgcolor = bgcolor
-        self._build()
+        self._modified = True
 
     def set_message(self, message):
         self.message = message
-        self._build()
+        self._modified = True
 
     def set_anchor_x(self, anchor_x):
         self.anchor_x = anchor_x
-        self._build()
+        self._modified = True
 
     def set_max_width(self, max_width):
         self.max_width = max_width
-        self._build()
+        self._modified = True
 
     def set_max_height(self, max_height):
         self.max_height = max_height
-        self._build()
+        self._modified = True
 
     def set_cutoff(self, cutoff):
         self.cutoff = cutoff
-        self._build()
+        self._modified = True
 
     def __copy__(self):
         return TextUI(

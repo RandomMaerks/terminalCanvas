@@ -264,6 +264,10 @@ class TCanvas:
 
         plot = self._plot
 
+        if object._modified:
+            object._build()
+            object._modified = False
+
         for pixel in object.data:
             plot(*pixel)
 
