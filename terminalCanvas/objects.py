@@ -1293,6 +1293,7 @@ class Camera:
             x: float = 0.0, y: float = 0.0, z: float = 0.0,
             ax: float = 0.0, ay: float = 0.0, az: float = 0.0,
             viewportDistance: float = 1.0,
+            backfaceCulling: bool = True,
     ) -> None:
         self.width, self.height = width, height
 
@@ -1319,6 +1320,8 @@ class Camera:
 
         self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
         self.clippingDistances = (self.viewportDistance, 0.0, 0.0, 0.0, 0.0)
+
+        self.backfaceCulling = backfaceCulling
 
     def draw(
             self,
@@ -1386,9 +1389,9 @@ class Camera:
         if has_3p:
             new_object.x3, new_object.y3, new_object.z3 = points[2]
         
-        # Ignore triangle if its normal is facing away
+        # Backface culling
 
-        if has_3p and new_object.normal() <= 0: return
+        if self.backfaceCulling and has_3p and new_object.normal() <= 0: return
 
         # Project
 
