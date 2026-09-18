@@ -8,6 +8,102 @@ import numpy as np
 from .fonts import font_5x7
 from .helper import *
 
+# ----------------
+# Coordinate class
+# ----------------
+
+class Coord:
+    """
+    The coordinate class for all terminalCanvas's objects.
+    """
+
+    def __init__(
+            self,
+            x: int | float,
+            y: int | float,
+            z: int | float | None = None
+    ) -> None:
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def __iter__(self):
+        if self.z is None:
+            for a in (self.x, self.y):
+                yield a
+        else:
+            for a in (self.x, self.y, self.z):
+                yield a
+
+    # Dimension
+
+    def dim(self):
+        return self.__len__()
+
+    def __len__(self):
+        return 2 if self.z is None else 3
+
+    # Math operations
+
+    def __add__(self, other):
+        return Coord(
+            self.x + other.x,
+            self.y + other.y,
+            None if self.z is None and other.z is None else self.z + other.z
+        )
+
+    def __sub__(self, other):
+        return Coord(
+            self.x - other.x,
+            self.y - other.y,
+            None if self.z is None and other.z is None else self.z - other.z
+        )
+
+    def __neg__(self):
+        return Coord(
+            -self.x,
+            -self.y,
+            None if self.z is None else -self.z
+        )
+
+    def __round__(self):
+        return Coord(roundInt(self.x), roundInt(self.y), self.z)
+
+    # Comparisons
+
+    def __eq__(self, other):
+        if self.z is None or other.z is None:
+            return all(self.x == other.x, self.y == other.y)
+        return all(self.x == other.x, self.y == other.y, self.z == other.z)
+
+    def __lt__(self, other):
+        if self.z is None or other.z is None:
+            return all(self.x < other.x, self.y < other.y)
+        return all(self.x < other.x, self.y < other.y, self.z < other.z)
+
+    def __gt__(self, other):
+        if self.z is None or other.z is None:
+            return all(self.x > other.x, self.y > other.y)
+        return all(self.x > other.x, self.y > other.y, self.z > other.z)
+
+    def __le__(self, other):
+        if self.z is None or other.z is None:
+            return all(self.x <= other.x, self.y <= other.y)
+        return all(self.x <= other.x, self.y <= other.y, self.z <= other.z)
+
+    def __gt__(self, other):
+        if self.z is None or other.z is None:
+            return all(self.x >= other.x, self.y >= other.y)
+        return all(self.x >= other.x, self.y >= other.y, self.z >= other.z)
+
+    def __repr__(self):
+        if self.z is None:
+            return f"({self.x}, {self.y})"
+        return f"({self.x}, {self.y}, {self.z})"
+
+    def __copy__(self):
+        return Coord(x = self.x, y = self.y, z = self.z)
+
 # -----------------
 # Base object class
 # -----------------
@@ -132,25 +228,24 @@ class Point(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self.color = color
         self._modified = True
 
     def _build(self):
         self._empty()
 
-        x = roundInt(self.x1)
-        y = roundInt(self.y1)
+        x, y = round(self.p1)
         color = self.color
         self._add([x, y, color])
 
     def set_points(self, x1, y1):
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self._modified = True
 
     def __copy__(self):
         return Point(
-            x1 = self.x1, y1 = self.y1,
+            *self.p1,
             color = self.color
         )
     
@@ -173,8 +268,8 @@ class Line(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
         self.color = color
         self.thickness = max(0, thickness)
         self._modified = True
@@ -182,11 +277,8 @@ class Line(BaseObject):
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
-
-        x2 = roundInt(self.x2)
-        y2 = roundInt(self.y2)
+        x1, y1 = round(self.p1)
+        x2, y2 = round(self.p2)
 
         thickness = self.thickness
 
@@ -333,8 +425,8 @@ class Line(BaseObject):
                 self._add([x1, y1, color])        
 
     def set_points(self, x1, y1, x2, y2):
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
         self._modified = True
 
     def set_thickness(self, thickness):
@@ -343,8 +435,8 @@ class Line(BaseObject):
 
     def __copy__(self):
         return Line(
-            x1 = self.x1, y1 = self.y1,
-            x2 = self.x2, y2 = self.y2,
+            *self.p1,
+            *self.p2,
             color = self.color,
             thickness = self.thickness
         )
@@ -428,23 +520,18 @@ class Triangle(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
-        self.x3, self.y3 = x3, y3
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
+        self.p3 = Coord(x3, y3)
         self.color = color
         self._modified = True
 
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
-        
-        x2 = roundInt(self.x2)
-        y2 = roundInt(self.y2)
-    
-        x3 = roundInt(self.x3)
-        y3 = roundInt(self.y3)
+        x1, y1 = round(self.p1)
+        x2, y2 = round(self.p2)
+        x3, y3 = round(self.p3)
 
         color = self.color
 
@@ -477,15 +564,15 @@ class Triangle(BaseObject):
                 self._add([x, y, color])
 
     def set_points(self, x1, y1, x2, y2, x3, y3):
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
-        self.x3, self.y3 = x3, y3
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
+        self.p3 = Coord(x3, y3)
         self._modified = True
 
     def __copy__(self):
         return Triangle(
-            x1 = self.x1, y1 = self.y1,
-            x2 = self.x2, y2 = self.y2,
+            *self.p1,
+            *self.p2,
             x3 = self.x3, y3 = self.y3,
             color = self.color
         )
@@ -502,8 +589,8 @@ class Rectangle(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
         self.color = color
         self.mode = mode
         self.thickness = clamp(thickness, 0, min(x2 - x1, y2 - y1))
@@ -512,11 +599,8 @@ class Rectangle(BaseObject):
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
-
-        x2 = roundInt(self.x2)
-        y2 = roundInt(self.y2)
+        x1, y1 = round(self.p1)
+        x2, y2 = round(self.p2)
 
         color = self.color
         mode = self.mode
@@ -541,8 +625,8 @@ class Rectangle(BaseObject):
                     self._add([x2 - t, y, color])
 
     def set_points(self, x1, y1, x2, y2):
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
         self._modified = True
 
     def set_mode(self, mode):
@@ -555,8 +639,8 @@ class Rectangle(BaseObject):
 
     def __copy__(self):
         return Rectangle(
-            x1 = self.x1, y1 = self.y1,
-            x2 = self.x2, y2 = self.y2,
+            *self.p1,
+            *self.p2,
             mode = self.mode,
             color = self.color
         )
@@ -572,8 +656,8 @@ class Ellipse(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
         self.color = color
         self.mode = mode
         self._modified = True
@@ -581,11 +665,8 @@ class Ellipse(BaseObject):
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
-
-        x2 = roundInt(self.x2)
-        y2 = roundInt(self.y2)
+        x1, y1 = round(self.p1)
+        x2, y2 = round(self.p2)
 
         color = self.color
         mode = self.mode
@@ -658,8 +739,8 @@ class Ellipse(BaseObject):
                     d2 += dx - dy + rx2
 
     def set_points(self, x1, y1, x2, y2):
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
         self._modified = True
 
     def set_mode(self, mode):
@@ -668,8 +749,8 @@ class Ellipse(BaseObject):
 
     def __copy__(self):
         return Ellipse(
-            x1 = self.x1, y1 = self.y1,
-            x2 = self.x2, y2 = self.y2,
+            *self.p1,
+            *self.p2,
             mode = self.mode,
             color = self.color
         )
@@ -688,7 +769,7 @@ class Text(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self.message = message
         self.font = font
         self.spacing = spacing
@@ -699,8 +780,7 @@ class Text(BaseObject):
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
+        x1, y1 = round(self.p1)
 
         messages = self.message.split("\n")
         font = self.font
@@ -768,7 +848,7 @@ class Text(BaseObject):
                     if data == "1": self._add([x + xOff, y + yOff, color])
 
     def set_points(self, x1, y1):
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self._modified = True
 
     def set_message(self, message):
@@ -793,7 +873,7 @@ class Text(BaseObject):
 
     def __copy__(self):
         return Text(
-            x1 = self.x1, y1 = self.y1,
+            *self.p1,
             message = self.message,
             font = self.font,
             spacing = self.spacing,
@@ -812,7 +892,7 @@ class Image(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self.image_dir = image_dir
         self.size = size
         self._modified = True
@@ -820,8 +900,7 @@ class Image(BaseObject):
     def _build(self):      
         self._empty()
           
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
+        x1, y1 = round(self.p1)
 
         image_dir = self.image_dir
         size = self.size
@@ -839,7 +918,7 @@ class Image(BaseObject):
                 self._add([x + x1, y + y1, tuple(color)])
 
     def set_points(self, x1, y1):
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self._modified = True
 
     def set_image_dir(self, image_dir):
@@ -852,7 +931,7 @@ class Image(BaseObject):
 
     def __copy__(self):
         return Image(
-            x1 = self.x1, y1 = self.y1,
+            *self.p1,
             image_dir = self.image_dir,
             size = self.size
         )
@@ -866,15 +945,14 @@ class Sprite(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self.sprite = sprite if sprite is not None else []
         self._modified = True
 
     def _build(self):  
         self._empty()
               
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
+        x1, y1 = round(self.p1)
 
         sprite = self.sprite
         if sprite is None: sprite = []
@@ -885,7 +963,7 @@ class Sprite(BaseObject):
             self._add([x + x1, y + y1, color])
 
     def set_points(self, x1, y1):
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self._modified = True
 
     def set_sprite(self, sprite):
@@ -900,7 +978,7 @@ class Sprite(BaseObject):
 
     def __copy__(self):
         return Sprite(
-            x1 = self.x1, y1 = self.y1,
+            *self.p1,
             sprite = self.sprite
         )
 
@@ -917,26 +995,24 @@ class Point3D(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1, self.z1 = x1, y1, z1
+        self.p1 = Coord(x1, y1, z1)
         self.color = color
         self._modified = True
 
     def _build(self):
         self._empty()
 
-        x = roundInt(self.x1)
-        y = roundInt(self.y1)
-        z = float(self.z1)
+        x, y, z = round(self.p1)
         color = self.color
         self._add([x, y, color, z])
 
     def set_points(self, x1, y1, z1):
-        self.x1, self.y1 = x1, y1, z1
+        self.p1 = Coord(x1, y1, z1)
         self._modified = True
 
     def __copy__(self):
         return Point3D(
-            x1 = self.x1, y1 = self.y1, z1 = self.z1,
+            *self.p1,
             color = self.color
         )    
 
@@ -950,21 +1026,16 @@ class Line3D(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1, self.z1 = x1, y1, z1
-        self.x2, self.y2, self.z2 = x2, y2, z2
+        self.p1 = Coord(x1, y1, z1)
+        self.p2 = Coord(x2, y2, z2)
         self.color = color
         self._modified = True
 
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
-        z1 = float(self.z1)
-
-        x2 = roundInt(self.x2)
-        y2 = roundInt(self.y2)
-        z2 = float(self.z2)
+        x1, y1, z1 = round(self.p1)
+        x2, y2, z2 = round(self.p2)
 
         color = self.color
      
@@ -999,14 +1070,14 @@ class Line3D(BaseObject):
                 z1 += sz
 
     def set_points(self, x1, y1, z1, x2, y2, z2):
-        self.x1, self.y1, self.z2 = x1, y1, z1
-        self.x2, self.y2, self.z2 = x2, y2, z2
+        self.p1 = Coord(x1, y1, z1)
+        self.p2 = Coord(x2, y2, z2)
         self._modified = True
 
     def __copy__(self):
         return Line3D(
-            x1 = self.x1, y1 = self.y1, z1 = self.z1,
-            x2 = self.x2, y2 = self.y2, z2 = self.z2,
+            *self.p1,
+            *self.p2,
             color = self.color
         )
 
@@ -1021,26 +1092,18 @@ class Triangle3D(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1, self.z1 = x1, y1, z1
-        self.x2, self.y2, self.z2 = x2, y2, z2
-        self.x3, self.y3, self.z3 = x3, y3, z3
+        self.p1 = Coord(x1, y1, z1)
+        self.p2 = Coord(x2, y2, z2)
+        self.p3 = Coord(x3, y3, z3)
         self.color = color
         self._modified = True
 
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
-        z1 = float(self.z1)
-        
-        x2 = roundInt(self.x2)
-        y2 = roundInt(self.y2)
-        z2 = float(self.z2)
-    
-        x3 = roundInt(self.x3)
-        y3 = roundInt(self.y3)
-        z3 = float(self.z3)
+        x1, y1, z1 = round(self.p1)
+        x2, y2, z2 = round(self.p2)
+        x3, y3, z3 = round(self.p3)
 
         color = self.color
 
@@ -1089,15 +1152,15 @@ class Triangle3D(BaseObject):
                 self._add([x, y, color, z])
 
     def set_points(self, x1, y1, z1, x2, y2, z2, x3, y3, z3):
-        self.x1, self.y1, self.z1 = x1, y1, z1
-        self.x2, self.y2, self.z2 = x2, y2, z2
-        self.x3, self.y3, self.z3 = x3, y3, z3
+        self.p1 = Coord(x1, y1, z1)
+        self.p2 = Coord(x2, y2, z2)
+        self.p3 = Coord(x3, y3, z3)
         self._modified = True
 
     def normal(self) -> float:
-        p1 = np.array([self.x1, self.y1, self.z1])
-        p2 = np.array([self.x2, self.y2, self.z2])
-        p3 = np.array([self.x3, self.y3, self.z3])
+        p1 = np.array([*self.p1])
+        p2 = np.array([*self.p2])
+        p3 = np.array([*self.p3])
 
         normal = np.cross(p2 - p1, p3 - p1)
 
@@ -1105,9 +1168,9 @@ class Triangle3D(BaseObject):
 
     def __copy__(self):
         return Triangle3D(
-            x1 = self.x1, y1 = self.y1, z1 = self.z1,
-            x2 = self.x2, y2 = self.y2, z2 = self.z2,
-            x3 = self.x3, y3 = self.y3, z3 = self.z3,
+            *self.p1,
+            *self.p2,
+            *self.p3,
             color = self.color
         )
 
@@ -1128,8 +1191,8 @@ class RectangleUI(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
         self.color = color
         self.bgcolor = bgcolor
         self.mode = mode
@@ -1139,11 +1202,8 @@ class RectangleUI(BaseObject):
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
-
-        x2 = roundInt(self.x2)
-        y2 = roundInt(self.y2)
+        x1, y1 = round(self.p1)
+        x2, y2 = round(self.p2)
 
         color = self.color
         mode = self.mode
@@ -1213,8 +1273,8 @@ class RectangleUI(BaseObject):
                 self._add([x2, y, color, right[0] if y==y1 else right[1], bgcolor])
 
     def set_points(self, x1, y1, x2, y2):
-        self.x1, self.y1 = x1, y1
-        self.x2, self.y2 = x2, y2
+        self.p1 = Coord(x1, y1)
+        self.p2 = Coord(x2, y2)
         self._modified = True
 
     def set_bgcolor(self, bgcolor: tuple[int, int, int, int]):
@@ -1231,8 +1291,8 @@ class RectangleUI(BaseObject):
 
     def __copy__(self):
         return RectangleUI(
-            x1 = self.x1, y1 = self.y1,
-            x2 = self.x2, y2 = self.y2,
+            *self.p1,
+            *self.p2,
             mode = self.mode,
             char = self.char,
             color = self.color,
@@ -1254,7 +1314,7 @@ class TextUI(BaseObject):
 
         super().__init__()
 
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self.message = message
         self.anchor_x = anchor_x
         self.color = color
@@ -1267,8 +1327,7 @@ class TextUI(BaseObject):
     def _build(self):
         self._empty()
         
-        x1 = roundInt(self.x1)
-        y1 = roundInt(self.y1)
+        x1, y1 = round(self.p1)
 
         messages = self.message.split("\n")
         anchor_x = self.anchor_x
@@ -1324,7 +1383,7 @@ class TextUI(BaseObject):
             y += 1
 
     def set_points(self, x1, y1):
-        self.x1, self.y1 = x1, y1
+        self.p1 = Coord(x1, y1)
         self._modified = True
 
     def set_bgcolor(self, bgcolor: tuple[int, int, int, int]):
@@ -1353,7 +1412,7 @@ class TextUI(BaseObject):
 
     def __copy__(self):
         return TextUI(
-            x1 = self.x1, y1 = self.y1,
+            *self.p1,
             message = self.message,
             anchor_x = self.anchor_x, anchor_y = self.anchor_y,
             max_width = self.max_width, max_height = self.max_height,
@@ -1418,9 +1477,7 @@ class Camera:
         clippingDistances = self.clippingDistances
         wCenter, hCenter = canvas.wCenter, canvas.hCenter
 
-        try:
-            object.z1
-        except AttributeError:
+        if object.p1.z is None:
             raise TypeError(f"{type(object)} is not a 3D object, thus cannot be used with Camera.")
 
         rotMatrix = np.array([
@@ -1436,72 +1493,70 @@ class Camera:
 
         points = []
 
-        point1 = np.array([object.x1, object.y1, object.z1])
+        point1 = np.array([*object.p1])
         new_point1 = (point1 - pos) @ rotMatrix.T
-        points.append(new_point1)
+        points.append(Coord(*new_point1))
 
         if has_2p:
-            point2 = np.array([object.x2, object.y2, object.z2])
+            point2 = np.array([*object.p2])
             new_point2 = (point2 - pos) @ rotMatrix.T
-            points.append(new_point2)
+            points.append(Coord(*new_point2))
 
         if has_3p:
-            point3 = np.array([object.x3, object.y3, object.z3])  
+            point3 = np.array([*object.p3])  
             new_point3 = (point3 - pos) @ rotMatrix.T
-            points.append(new_point3)        
+            points.append(Coord(*new_point3))
 
         # Clip
 
         # TODO: Properly implement clipping
         for normal, distance in zip(clippingNormals, clippingDistances):
             point_plane_distance = tuple(
-                np.dot(normal, point) + distance
+                np.dot(normal, tuple(point)) + distance
                 for point in points
             )
 
             if defensive_clipping and any(d <= 0 for d in point_plane_distance): return
             elif not defensive_clipping and all(d <= 0 for d in point_plane_distance): return
         
-        new_object = copy(object)
-        new_object.x1, new_object.y1, new_object.z1 = points[0]
-        if has_2p:
-            new_object.x2, new_object.y2, new_object.z2 = points[1]
-        if has_3p:
-            new_object.x3, new_object.y3, new_object.z3 = points[2]
+        new_obj = copy(object)
+        new_obj.p1 = points[0]
+        if has_2p: new_obj.p2 = points[1]
+        if has_3p: new_obj.p3 = points[2]
         
         # Backface culling
 
-        if self.backfaceCulling and has_3p and new_object.normal() <= 0: return
+        if self.backfaceCulling and has_3p and new_obj.normal() <= 0: return
 
         # Project
 
-        p_z1 = max(new_object.z1, 0.0005)
-        p_x1 = (new_object.x1 * d) / p_z1 * hR
-        p_y1 = (new_object.y1 * d) / p_z1 * vR
+        p_z1 = max(new_obj.p1.z, 0.0005)
+        p_x1 = (new_obj.p1.x * d) / p_z1 * hR
+        p_y1 = (new_obj.p1.y * d) / p_z1 * vR
 
-        new_object.x1, new_object.y1, new_object.z1 = p_x1, -p_y1, p_z1
+        new_obj.p1 = Coord(p_x1, -p_y1, p_z1)
 
         if has_2p:
-            p_z2 = max(new_object.z2, 0.0005)
-            p_x2 = (new_object.x2 * d) / p_z2 * hR
-            p_y2 = (new_object.y2 * d) / p_z2 * vR
+            p_z2 = max(new_obj.p2.z, 0.0005)
+            p_x2 = (new_obj.p2.x * d) / p_z2 * hR
+            p_y2 = (new_obj.p2.y * d) / p_z2 * vR
 
-            new_object.x2, new_object.y2, new_object.z2 = p_x2, -p_y2, p_z2
+            new_obj.p2 = Coord(p_x2, -p_y2, p_z2)
 
         if has_3p:
-            p_z3 = max(new_object.z3, 0.0005)
-            p_x3 = (new_object.x3 * d) / p_z3 * hR
-            p_y3 = (new_object.y3 * d) / p_z3 * vR
+            p_z3 = max(new_obj.p3.z, 0.0005)
+            p_x3 = (new_obj.p3.x * d) / p_z3 * hR
+            p_y3 = (new_obj.p3.y * d) / p_z3 * vR
 
-            new_object.x3, new_object.y3, new_object.z3 = p_x3, -p_y3, p_z3
+            new_obj.p3 = Coord(p_x3, -p_y3, p_z3)
 
-        new_object._build()
+        new_obj._dirty = True
 
         # Drawing and finalising
 
         temp_xOff, temp_yOff = canvas._xOff, canvas._yOff
         canvas.translate(wCenter, hCenter)
-        canvas.draw(new_object)
+        canvas.draw(new_obj)
         canvas.translate(temp_xOff, temp_yOff)
 
     def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
