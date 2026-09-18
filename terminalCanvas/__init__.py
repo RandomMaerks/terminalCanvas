@@ -4,7 +4,7 @@ from .tcanvas import (
 from .objects import (
     BaseObject,
     Point, Line, Rectangle, Triangle, Ellipse,
-    Text, Image, Sprite,
+    Polygon, Text, Image, Sprite,
     Point3D, Line3D, Triangle3D,
     RectangleUI, TextUI,
     Camera
@@ -25,6 +25,7 @@ __all__ = [
     "Point",
     "Line",
     "Rectangle",
+    "Polygon",
     "Triangle",
     "Ellipse",
     "Text",
