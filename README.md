@@ -40,7 +40,7 @@ To create an entire canvas, we just need to fill up every space in the terminal 
 
 The information below is only showing the very basics. For more info, please consult the wiki (doesn't exist yet lol).
 
-### ● 2D & 3D rendering
+### ● 2D rendering
 
 Start by importing the main module. For convenience, set a short alias for the module, `tc` for example.
 
@@ -78,7 +78,7 @@ To create a graphical object such as a line, you can call the `Line` class:
 line = tc.Line(0, 0, canvas.width, canvas.height, color=(255, 0, 0))
 ```
 
-This will create an instance of the `Line` class which includes the line's pixel data, its attributes, and additional setter methods to modify them. Other objects include `Point`, `Point3D`, `Line3D`, `Rectangle`, `Triangle`, `Triangle3D`, `Ellipse`, `Text`, `Image`, and `Sprite`. Their attributes do not need to be set right from the start; you can simply create an instance of any object with absolutely no arguments.
+This will create an instance of the `Line` class which includes the line's pixel data, its attributes, and additional setter methods to modify them. Other objects include `Point`, `Point3D`, `Line3D`, `Rectangle`, `Polygon`, `Triangle`, `Triangle3D`, `Ellipse`, `Text`, `Image`, and `Sprite`. Their attributes do not need to be set right from the start; you can simply create an instance of any object with absolutely no arguments.
 
 Anyway, we've created an object, but it's not on the canvas yet. To actually draw the line, use the `draw()` method:
 
