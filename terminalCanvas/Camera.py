@@ -2,8 +2,8 @@ from math import sin, cos, pi, sqrt
 from copy import copy
 import numpy as np
 
-from ..Coord import Coord
-from ..helper import *
+from .Coord import Coord
+from .helper import *
 
 class Camera:
     def __init__(

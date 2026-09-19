@@ -3,6 +3,7 @@ from .tcanvas import (
 )
 from .objects import *
 from .Coord import Coord
+from .Camera import Camera
 from . import fonts
 from .helper import roundInt, clamp, map
 from .vk import VK_WINDOWS, VK_UNIX
@@ -10,13 +11,10 @@ from .vk import VK_WINDOWS, VK_UNIX
 __all__ = [
     "TCanvas",
     "TCanvasUI",
-    
-    "roundInt",
-    "clamp",
-    "map",
 
     "Coord",
     "BaseObject",
+    "Camera",
 
     "Point",
     "Line",
@@ -33,11 +31,13 @@ __all__ = [
     "Triangle3D",
     "RectangleUI",
     "TextUI",
-    
-    "Camera"
 
     "fonts",
     
     "VK_WINDOWS",
     "VK_UNIX",
+
+    "roundInt",
+    "clamp",
+    "map",
 ]
