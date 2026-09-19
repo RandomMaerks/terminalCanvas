@@ -83,4 +83,9 @@ def interpolate(i0, d0, i1, d1, round = True) -> list:
         d += delta
 
     return values
-    
+
+def range_float(start: float, stop: float, step: float):
+    curr = start
+    while curr <= stop:
+        yield curr
+        curr += step

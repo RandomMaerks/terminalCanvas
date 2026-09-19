@@ -2,10 +2,6 @@ import numpy as np
 
 from .helper import *
 
-# ----------------
-# Coordinate class
-# ----------------
-
 class Coord:
     """
     The coordinate class for all terminalCanvas's objects.
