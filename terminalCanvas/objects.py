@@ -7,102 +7,7 @@ import numpy as np
 
 from .fonts import font_5x7
 from .helper import *
-
-# ----------------
-# Coordinate class
-# ----------------
-
-class Coord:
-    """
-    The coordinate class for all terminalCanvas's objects.
-    """
-
-    def __init__(
-            self,
-            x: int | float,
-            y: int | float,
-            z: int | float | None = None
-    ) -> None:
-        self.x = x
-        self.y = y
-        self.z = z
-
-    def __iter__(self):
-        if self.z is None:
-            for a in (self.x, self.y):
-                yield a
-        else:
-            for a in (self.x, self.y, self.z):
-                yield a
-
-    # Dimension
-
-    def dim(self):
-        return self.__len__()
-
-    def __len__(self):
-        return 2 if self.z is None else 3
-
-    # Math operations
-
-    def __add__(self, other):
-        return Coord(
-            self.x + other.x,
-            self.y + other.y,
-            None if self.z is None and other.z is None else self.z + other.z
-        )
-
-    def __sub__(self, other):
-        return Coord(
-            self.x - other.x,
-            self.y - other.y,
-            None if self.z is None and other.z is None else self.z - other.z
-        )
-
-    def __neg__(self):
-        return Coord(
-            -self.x,
-            -self.y,
-            None if self.z is None else -self.z
-        )
-
-    def __round__(self):
-        return Coord(roundInt(self.x), roundInt(self.y), self.z)
-
-    # Comparisons
-
-    def __eq__(self, other):
-        if self.z is None or other.z is None:
-            return all(self.x == other.x, self.y == other.y)
-        return all(self.x == other.x, self.y == other.y, self.z == other.z)
-
-    def __lt__(self, other):
-        if self.z is None or other.z is None:
-            return all(self.x < other.x, self.y < other.y)
-        return all(self.x < other.x, self.y < other.y, self.z < other.z)
-
-    def __gt__(self, other):
-        if self.z is None or other.z is None:
-            return all(self.x > other.x, self.y > other.y)
-        return all(self.x > other.x, self.y > other.y, self.z > other.z)
-
-    def __le__(self, other):
-        if self.z is None or other.z is None:
-            return all(self.x <= other.x, self.y <= other.y)
-        return all(self.x <= other.x, self.y <= other.y, self.z <= other.z)
-
-    def __gt__(self, other):
-        if self.z is None or other.z is None:
-            return all(self.x >= other.x, self.y >= other.y)
-        return all(self.x >= other.x, self.y >= other.y, self.z >= other.z)
-
-    def __repr__(self):
-        if self.z is None:
-            return f"({self.x}, {self.y})"
-        return f"({self.x}, {self.y}, {self.z})"
-
-    def __copy__(self):
-        return Coord(x = self.x, y = self.y, z = self.z)
+from .coord import Coord
 
 # -----------------
 # Base object class
@@ -1156,15 +1061,6 @@ class Triangle3D(BaseObject):
         self.p3 = Coord(x3, y3, z3)
         self._modified = True
 
-    def normal(self) -> float:
-        p1 = np.array([*self.p1])
-        p2 = np.array([*self.p2])
-        p3 = np.array([*self.p3])
-
-        normal = np.cross(p2 - p1, p3 - p1)
-
-        return np.dot(p1, normal)
-
     def __copy__(self):
         return Triangle3D(
             *self.p1,
@@ -1476,7 +1372,7 @@ class Camera:
         clippingDistances = self.clippingDistances
         wCenter, hCenter = canvas.wCenter, canvas.hCenter
 
-        if object.p1.z is None:
+        if object.p1.dim() == 2:
             raise TypeError(f"{type(object)} is not a 3D object, thus cannot be used with Camera.")
 
         rotMatrix = np.array([
@@ -1492,66 +1388,50 @@ class Camera:
 
         points = []
 
-        point1 = np.array([*object.p1])
-        new_point1 = (point1 - pos) @ rotMatrix.T
-        points.append(Coord(*new_point1))
+        new_point1 = (object.p1 - pos) @ rotMatrix.T
+        points.append(new_point1)
 
         if has_2p:
-            point2 = np.array([*object.p2])
-            new_point2 = (point2 - pos) @ rotMatrix.T
-            points.append(Coord(*new_point2))
+            new_point2 = (object.p2 - pos) @ rotMatrix.T
+            points.append(new_point2)
 
         if has_3p:
-            point3 = np.array([*object.p3])  
-            new_point3 = (point3 - pos) @ rotMatrix.T
-            points.append(Coord(*new_point3))
+            new_point3 = (object.p3 - pos) @ rotMatrix.T
+            points.append(new_point3)
 
         # Clip
 
         # TODO: Properly implement clipping
         for normal, distance in zip(clippingNormals, clippingDistances):
             point_plane_distance = tuple(
-                np.dot(normal, tuple(point)) + distance
+                np.dot(normal, point) + distance
                 for point in points
             )
 
             if defensive_clipping and any(d <= 0 for d in point_plane_distance): return
             elif not defensive_clipping and all(d <= 0 for d in point_plane_distance): return
+
+        # Backface culling
+
+        if self.backfaceCulling and has_3p and self._normal(*points) <= 0: return
         
+        # Project
+
+        for i, point in enumerate(points):
+            z = max(point[2], 0.0005)
+            x = (point[0] * d) / z * hR
+            y = (point[1] * d) / z * vR
+
+            points[i] = Coord(x, -y, z)
+
         new_obj = copy(object)
         new_obj.p1 = points[0]
         if has_2p: new_obj.p2 = points[1]
         if has_3p: new_obj.p3 = points[2]
-        
-        # Backface culling
-
-        if self.backfaceCulling and has_3p and new_obj.normal() <= 0: return
-
-        # Project
-
-        p_z1 = max(new_obj.p1.z, 0.0005)
-        p_x1 = (new_obj.p1.x * d) / p_z1 * hR
-        p_y1 = (new_obj.p1.y * d) / p_z1 * vR
-
-        new_obj.p1 = Coord(p_x1, -p_y1, p_z1)
-
-        if has_2p:
-            p_z2 = max(new_obj.p2.z, 0.0005)
-            p_x2 = (new_obj.p2.x * d) / p_z2 * hR
-            p_y2 = (new_obj.p2.y * d) / p_z2 * vR
-
-            new_obj.p2 = Coord(p_x2, -p_y2, p_z2)
-
-        if has_3p:
-            p_z3 = max(new_obj.p3.z, 0.0005)
-            p_x3 = (new_obj.p3.x * d) / p_z3 * hR
-            p_y3 = (new_obj.p3.y * d) / p_z3 * vR
-
-            new_obj.p3 = Coord(p_x3, -p_y3, p_z3)
-
-        new_obj._dirty = True
 
         # Drawing and finalising
+
+        new_obj._modified = True
 
         temp_xOff, temp_yOff = canvas._xOff, canvas._yOff
         canvas.translate(wCenter, hCenter)
@@ -1634,3 +1514,8 @@ class Camera:
             ax = self.angle[0], ay = self.angle[1], az = self.angle[2],
             viewportDistance = self.viewportDistance
         )
+
+    def _normal(self, p1, p2, p3) -> float:
+        normal = np.cross(p2 - p1, p3 - p1)
+
+        return np.dot(p1, normal)
