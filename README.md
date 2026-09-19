@@ -12,19 +12,19 @@
 
 ## Installation & Requirements
 
-The `terminalCanvas` module currently requires Python of **version 3.10 and up**, although I've only tested on Python 3.11.
-
-If this goes on PyPI at some point, install the module by running:
+Install `terminalCanvas` through PyPI (change the `py` alias if needed):
 
 ```
 py -m pip install terminalCanvas
 ```
 
-Otherwise, install it using Git:
+Or, if you want to install it using Git:
 
 ```
 py -m pip install git+https://github.com/RandomMaerks/terminalCanvas.git
 ```
+
+The `terminalCanvas` module currently requires Python of **version 3.10 and up**, although I've only tested on Python 3.11.
 
 The module uses `Pillow` for image processing, as well as `NumPy` for image-to-array conversion and other array-related operations. They should automatically install along with the main installation.
 
