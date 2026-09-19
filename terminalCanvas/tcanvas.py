@@ -248,28 +248,39 @@ class TCanvas:
                     for i in range(3)
                 )
 
-    def draw(self, object) -> None:
+    def draw(
+            self,
+            object: BaseObject,
+            camera: Camera | None = None
+    ) -> None:
         """
         Draws the object on the canvas.
         More specifically, this method puts all the pixel data from the object into a helper method that can process these pixels and put them on the canvas.
 
         `object` must be an instance of one of the few classes that define shapes, text and images, such as `Line` or `Triangle`.
 
+        You can also put a camera for 3D objects. Objects will be translated into the 3D space and projected onto the camera.
+
         Parameters:
-        - object
+        - object: BaseObject
+        - camera: Camera | None = None
 
         Returns:
         - None
         """
 
-        plot = self._plot
+        if camera is not None:
+            camera._draw(object, self)
+        
+        else:
+            plot = self._plot
 
-        if object._modified:
-            object._build()
-            object._modified = False
+            if object._modified:
+                object._build()
+                object._modified = False
 
-        for pixel in object.data:
-            plot(*pixel)
+            for pixel in object.data:
+                plot(*pixel)
 
     def show(self, cursor: bool = False, lock_to_terminal: bool = False) -> None:
         """

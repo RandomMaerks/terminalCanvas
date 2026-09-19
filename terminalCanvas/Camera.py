@@ -8,25 +8,14 @@ from .helper import *
 class Camera:
     def __init__(
             self,
-            width: int, height: int,
             x: float = 0.0, y: float = 0.0, z: float = 0.0,
             ax: float = 0.0, ay: float = 0.0, az: float = 0.0,
             viewportDistance: float = 1.0,
             backfaceCulling: bool = True,
     ) -> None:
-    
-        self.width, self.height = width, height
 
         self.position = np.array([x, y, z])
         self.angle = np.array([ax, ay, az])
-
-        if self.width >= self.height:
-            self.hFOV, self.vFOV = self.width / self.height, 1
-        else:
-            self.hFOV, self.vFOV = 1, self.height / self.width
-
-        self.hRatio = width / self.hFOV
-        self.vRatio = height / self.vFOV
 
         self.viewportDistance = viewportDistance
 
@@ -39,90 +28,11 @@ class Camera:
         topPlane    = np.array([0.0      , -sqrt2rec, sqrt2rec])
 
         self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
-        self.clippingDistances = (self.viewportDistance, 0.0, 0.0, 0.0, 0.0)
+        self.clippingDistances = (-self.viewportDistance, 0.0, 0.0, 0.0, 0.0)
 
         self.backfaceCulling = backfaceCulling
 
-    def draw(
-            self,
-            object: BaseObject,
-            canvas: TCanvas,
-            defensive_clipping: bool = False,
-    ) -> None:
-        width, height = self.width, self.height
-        pos = self.position
-        ax, ay, az = self.angle
-        d = self.viewportDistance
-        hR, vR = self.hRatio, self.vRatio
-        clippingNormals = self.clippingNormals
-        clippingDistances = self.clippingDistances
-        wCenter, hCenter = canvas.wCenter, canvas.hCenter
-
-        if object.p1.dim() == 2:
-            raise TypeError(f"{type(object)} is not a 3D object, thus cannot be used with Camera.")
-
-        rotMatrix = np.array([
-            [cos(ay)*cos(az)                          ,-cos(ay)*sin(az)                          , sin(ay)        ],
-            [cos(ax)*sin(az) + sin(ax)*sin(ay)*cos(az), cos(ax)*cos(az) - sin(ax)*sin(ay)*sin(az),-sin(ax)*cos(ay)],
-            [sin(ax)*sin(az) - cos(ax)*sin(ay)*cos(az), sin(ax)*cos(az) - cos(ax)*sin(ay)*sin(az), cos(ax)*cos(ay)]
-        ])
-
-        has_2p = hasattr(object, "p2")
-        has_3p = hasattr(object, "p3")
-
-        # Translate
-
-        points = []
-
-        new_point1 = (object.p1 - pos) @ rotMatrix.T
-        points.append(new_point1)
-
-        if has_2p:
-            new_point2 = (object.p2 - pos) @ rotMatrix.T
-            points.append(new_point2)
-
-        if has_3p:
-            new_point3 = (object.p3 - pos) @ rotMatrix.T
-            points.append(new_point3)
-
-        # Clip
-
-        # TODO: Properly implement clipping
-        for normal, distance in zip(clippingNormals, clippingDistances):
-            point_plane_distance = tuple(
-                np.dot(normal, point) + distance
-                for point in points
-            )
-
-            if defensive_clipping and any(d <= 0 for d in point_plane_distance): return
-            elif not defensive_clipping and all(d <= 0 for d in point_plane_distance): return
-
-        # Backface culling
-
-        if self.backfaceCulling and has_3p and self._normal(*points) <= 0: return
-        
-        # Project
-
-        for i, point in enumerate(points):
-            z = max(point[2], 0.0005)
-            x = (point[0] * d) / z * hR
-            y = (point[1] * d) / z * vR
-
-            points[i] = Coord(x, -y, z)
-
-        new_obj = copy(object)
-        new_obj.p1 = points[0]
-        if has_2p: new_obj.p2 = points[1]
-        if has_3p: new_obj.p3 = points[2]
-
-        # Drawing and finalising
-
-        new_obj._modified = True
-
-        temp_xOff, temp_yOff = canvas._xOff, canvas._yOff
-        canvas.translate(wCenter, hCenter)
-        canvas.draw(new_obj)
-        canvas.translate(temp_xOff, temp_yOff)
+    # Camera transformation
 
     def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
         self.position += np.array([x, y, z])
@@ -192,6 +102,91 @@ class Camera:
             az = -rotationSpeed
 
         self.rotate(ax, ay, az)
+
+    # Object translation and projection
+
+    def _draw(self, object: BaseObject, canvas: TCanvas) -> None:
+        width, height = canvas.width, canvas.height
+        wCenter, hCenter = canvas.wCenter, canvas.hCenter
+
+        hR, vR = (width, height) if width >= height else (height, width)
+
+        pos = self.position
+        ax, ay, az = self.angle
+
+        d = self.viewportDistance
+        clippingNormals = self.clippingNormals
+        clippingDistances = self.clippingDistances        
+
+        if object.p1.dim() == 2:
+            raise TypeError(f"{type(object)} is not a 3D object, thus cannot be used with Camera.")
+
+        sin_ax, sin_ay, sin_az = sin(ax), sin(ay), sin(az)
+        cos_ax, cos_ay, cos_az = cos(ax), cos(ay), cos(az)
+
+        rotMatrix = np.array([
+            [cos_ay * cos_az                           ,-cos_ay * sin_az                           , sin_ay         ],
+            [cos_ax * sin_az + sin_ax * sin_ay * cos_az, cos_ax * cos_az - sin_ax * sin_ay * sin_az,-sin_ax * cos_ay],
+            [sin_ax * sin_az - cos_ax * sin_ay * cos_az, sin_ax * cos_az - cos_ax * sin_ay * sin_az, cos_ax * cos_ay]
+        ])
+
+        has_2p = hasattr(object, "p2")
+        has_3p = hasattr(object, "p3")
+
+        # Translate
+
+        points = []
+
+        new_point1 = (object.p1 - pos) @ rotMatrix.T
+        points.append(new_point1)
+
+        if has_2p:
+            new_point2 = (object.p2 - pos) @ rotMatrix.T
+            points.append(new_point2)
+
+        if has_3p:
+            new_point3 = (object.p3 - pos) @ rotMatrix.T
+            points.append(new_point3)
+
+        # Clip
+
+        # TODO: Properly implement clipping
+        for normal, distance in zip(clippingNormals, clippingDistances):
+            point_plane_distance = tuple(
+                np.dot(normal, point) + distance
+                for point in points
+            )
+
+            if all(d <= 0 for d in point_plane_distance): return
+
+        # Backface culling
+
+        if self.backfaceCulling and has_3p and self._normal(*points) <= 0: return
+        
+        # Project
+
+        for i, point in enumerate(points):
+            z = max(point[2], d)
+            x = (point[0] * d) / z * hR
+            y = (point[1] * d) / z * vR
+
+            points[i] = Coord(x, -y, z)
+
+        new_obj = copy(object)
+        new_obj.p1 = points[0]
+        if has_2p: new_obj.p2 = points[1]
+        if has_3p: new_obj.p3 = points[2]
+
+        # Drawing and finalising
+
+        new_obj._modified = True
+
+        temp_xOff, temp_yOff = canvas._xOff, canvas._yOff
+        canvas.translate(wCenter, hCenter)
+        canvas.draw(new_obj)
+        canvas.translate(temp_xOff, temp_yOff)
+
+    # Other methods
 
     def _normal(self, p1, p2, p3) -> float:
         n = np.cross(p2 - p1, p3 - p1)

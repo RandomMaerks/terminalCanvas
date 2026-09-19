@@ -1,5 +1,4 @@
 from .BaseObject import BaseObject
-from .Camera import Camera
 
 from .Point import Point
 from .Line import Line

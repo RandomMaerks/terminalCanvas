@@ -1,6 +1,4 @@
-from .tcanvas import (
-    TCanvas, TCanvasUI
-)
+from .tcanvas import TCanvas, TCanvasUI
 from .objects import *
 from .Coord import Coord
 from .Camera import Camera
