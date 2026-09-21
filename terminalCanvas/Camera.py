@@ -172,7 +172,8 @@ class Camera:
 
         # Backface culling
 
-        if has_3p and object.backfaceCulling and self._normal(*points) <= 0: return
+        backfaceCulling = getattr(object, 'backfaceCulling', False)
+        if backfaceCulling and self._normal(*points) <= 0: return
         
         # Project
 
