@@ -77,28 +77,28 @@ class Coord:
 
     def __eq__(self, other):
         if self.z is None or other.z is None:
-            return all(self.x == other.x, self.y == other.y)
-        return all(self.x == other.x, self.y == other.y, self.z == other.z)
+            return self.x == other.x and self.y == other.y
+        return self.x == other.x and self.y == other.y and self.z == other.z
 
     def __lt__(self, other):
         if self.z is None or other.z is None:
-            return all(self.x < other.x, self.y < other.y)
-        return all(self.x < other.x, self.y < other.y, self.z < other.z)
+            return self.x < other.x and self.y < other.y
+        return self.x < other.x and self.y < other.y and self.z < other.z
 
     def __gt__(self, other):
         if self.z is None or other.z is None:
-            return all(self.x > other.x, self.y > other.y)
-        return all(self.x > other.x, self.y > other.y, self.z > other.z)
+            return self.x > other.x and self.y > other.y
+        return self.x > other.x and self.y > other.y and self.z > other.z
 
     def __le__(self, other):
         if self.z is None or other.z is None:
-            return all(self.x <= other.x, self.y <= other.y)
-        return all(self.x <= other.x, self.y <= other.y, self.z <= other.z)
+            return self.x <= other.x and self.y <= other.y
+        return self.x <= other.x and self.y <= other.y and self.z <= other.z
 
     def __gt__(self, other):
         if self.z is None or other.z is None:
-            return all(self.x >= other.x, self.y >= other.y)
-        return all(self.x >= other.x, self.y >= other.y, self.z >= other.z)
+            return self.x >= other.x and self.y >= other.y
+        return self.x >= other.x and self.y >= other.y and self.z >= other.z
 
     def __repr__(self):
         if self.z is None:

@@ -150,14 +150,28 @@ class Camera:
 
         # Clip
 
-        # TODO: Properly implement clipping
         for normal, distance in zip(clippingNormals, clippingDistances):
-            point_plane_distance = tuple(
+            # Point-to-Plane distance
+            p2pd = tuple(
                 np.dot(normal, point) + distance
                 for point in points
             )
 
-            if all(d <= 0 for d in point_plane_distance): return
+            if all(d <= 0 for d in p2pd):
+                return
+            elif any(d <= 0 for d in p2pd):
+                if has_2p: point_count = 2
+                elif has_3p: point_count = 3
+                else: continue
+                
+                for i1 in range(point_count):
+                    i2 = i1 + 1 if i1 + 1 < point_count else 0
+
+                    intersect = self._intersect(points[i1], points[i2], normal, distance)
+                    if intersect is not None:
+                        if p2pd[i1] <= 0: points[i1] = intersect
+                        elif p2pd[i2] <= 0: points[i2] = intersect
+
 
         # Backface culling
 
@@ -187,6 +201,17 @@ class Camera:
         canvas.translate(temp_xOff, temp_yOff)
 
     # Other methods
+
+    def _intersect(self, p1, p2, normal, distance):
+        if Coord(*p1) == Coord(*p2):
+            return None
+
+        t = - (distance + np.dot(normal, p1)) / np.dot(normal, p2 - p1)
+
+        if 0 <= t <= 1:
+            return p1 + t * (p2 - p1)
+        else:
+            return None
 
     def _normal(self, p1, p2, p3) -> float:
         n = np.cross(p2 - p1, p3 - p1)
