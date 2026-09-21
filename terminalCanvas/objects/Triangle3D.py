@@ -9,6 +9,7 @@ class Triangle3D(BaseObject):
             x2: int | float = 0, y2: int | float = 0, z2: float = 0, 
             x3: int | float = 0, y3: int | float = 0, z3: float = 0, 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
+            backfaceCulling: bool = False
     ) -> None:
 
         super().__init__()
@@ -17,6 +18,7 @@ class Triangle3D(BaseObject):
         self.p2 = Coord(x2, y2, z2)
         self.p3 = Coord(x3, y3, z3)
         self.color = color
+        self.backfaceCulling = True
         self._build()
 
     def _build(self):
@@ -77,6 +79,9 @@ class Triangle3D(BaseObject):
         self.p2 = Coord(x2, y2, z2)
         self.p3 = Coord(x3, y3, z3)
         self._modified = True
+
+    def set_backfaceCulling(self, backfaceCulling):
+        self.backfaceCulling = backfaceCulling
 
     def __copy__(self):
         return Triangle3D(

@@ -11,7 +11,6 @@ class Camera:
             x: float = 0.0, y: float = 0.0, z: float = 0.0,
             ax: float = 0.0, ay: float = 0.0, az: float = 0.0,
             viewportDistance: float = 1.0,
-            backfaceCulling: bool = True,
     ) -> None:
 
         self.position = np.array([x, y, z])
@@ -29,8 +28,6 @@ class Camera:
 
         self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
         self.clippingDistances = (-self.viewportDistance, 0.0, 0.0, 0.0, 0.0)
-
-        self.backfaceCulling = backfaceCulling
 
     # Camera transformation
 
@@ -175,7 +172,7 @@ class Camera:
 
         # Backface culling
 
-        if self.backfaceCulling and has_3p and self._normal(*points) <= 0: return
+        if has_3p and object.backfaceCulling and self._normal(*points) <= 0: return
         
         # Project
 
