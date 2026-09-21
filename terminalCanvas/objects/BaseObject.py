@@ -3,7 +3,9 @@ class BaseObject:
     The base object class for all terminalCanvas's objects.
     Mainly for people who want to make shapes and other graphics that can be used in `TCanvas`.
 
-    To make a child object of `BaseObject`, write: `class <ObjectName>(BaseObject):`.
+    To make a subclass of `BaseObject`, write: `class <ObjectName>(BaseObject):`.
+    Then, use `super().__init__()` to call the BaseObject `__init__` method.
+    This will ensure all the required attributes are present in the child class.
 
     There are public and private methods that should not be overridden, except for `_build()`.
 

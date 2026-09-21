@@ -201,10 +201,12 @@ class Camera:
     # Other methods
 
     def _intersect(self, p1, p2, normal, distance):
-        if Coord(*p1) == Coord(*p2):
-            return None
+        num = - (distance + np.dot(normal, p1))
+        denom = np.dot(normal, p2 - p1)
 
-        t = - (distance + np.dot(normal, p1)) / np.dot(normal, p2 - p1)
+        if denom == 0: return None
+
+        t = num / denom
 
         if 0 <= t <= 1:
             return p1 + t * (p2 - p1)

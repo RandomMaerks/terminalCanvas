@@ -250,7 +250,7 @@ class TCanvas:
 
     def draw(
             self,
-            object: BaseObject,
+            object: BaseObject | BaseCompoundObject,
             camera: Camera | None = None
     ) -> None:
         """
@@ -262,25 +262,36 @@ class TCanvas:
         You can also put a camera for 3D objects. Objects will be translated into the 3D space and projected onto the camera.
 
         Parameters:
-        - object: BaseObject
+        - object: BaseObject | BaseCompoundObject
         - camera: Camera | None = None
 
         Returns:
         - None
         """
 
-        if camera is not None:
-            camera._draw(object, self)
-        
-        else:
-            plot = self._plot
-
+        if getattr(object, '_compound', False):
             if object._modified:
                 object._build()
                 object._modified = False
 
-            for pixel in object.data:
-                plot(*pixel)
+            for child_object in object.objects:
+                self.draw(child_object, camera)
+
+            return
+
+        if camera is not None:
+            camera._draw(object, self)
+
+            return
+        
+        plot = self._plot
+
+        if object._modified:
+            object._build()
+            object._modified = False
+
+        for pixel in object.data:
+            plot(*pixel)
 
     def show(self, cursor: bool = False, lock_to_terminal: bool = False) -> None:
         """

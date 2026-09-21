@@ -1,4 +1,5 @@
 from .BaseObject import BaseObject
+from .BaseCompoundObject import BaseCompoundObject
 
 from .Point import Point
 from .Line import Line
@@ -17,3 +18,5 @@ from .Triangle3D import Triangle3D
 
 from .RectangleUI import RectangleUI
 from .TextUI import TextUI
+
+from .Cube import Cube
