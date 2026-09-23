@@ -1,8 +1,9 @@
-from math import sin, cos, pi, sqrt
+from math import sin, cos, tan, pi, sqrt
 from copy import copy
 import numpy as np
 
 from .Coord import Coord
+from .objects.Polygon3D import Polygon3D
 from .helper import *
 
 class Camera:
@@ -18,16 +19,7 @@ class Camera:
 
         self.viewportDistance = viewportDistance
 
-        sqrt2rec = 1 / sqrt(2)
-
-        nearPlane   = np.array([0.0      , 0.0      , 1.0     ])
-        leftPlane   = np.array([sqrt2rec , 0.0      , sqrt2rec])
-        rightPlane  = np.array([-sqrt2rec, 0.0      , sqrt2rec])
-        bottomPlane = np.array([0.0      , sqrt2rec , sqrt2rec])
-        topPlane    = np.array([0.0      , -sqrt2rec, sqrt2rec])
-
-        self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
-        self.clippingDistances = (-self.viewportDistance, 0.0, 0.0, 0.0, 0.0)
+        self._getClippingPlanes(hFOV = 90)
 
     # Camera transformation
 
@@ -105,8 +97,9 @@ class Camera:
     def _draw(self, object: BaseObject, canvas: TCanvas) -> None:
         width, height = canvas.width, canvas.height
         wCenter, hCenter = canvas.wCenter, canvas.hCenter
-
-        hR, vR = (width, height) if width >= height else (height, width)
+        
+        #vWidth, vHeight = self.viewportWidth, self.viewportHeight
+        scale = max(width, height)
 
         pos = self.position
         ax, ay, az = self.angle
@@ -145,53 +138,72 @@ class Camera:
             new_point3 = (object.p3 - pos) @ rotMatrix.T
             points.append(new_point3)
 
+        # Backface culling
+
+        backfaceCulling = getattr(object, 'backfaceCulling', False)
+        if backfaceCulling and self._normal(*points) <= 0: return
+
         # Clip
 
         for normal, distance in zip(clippingNormals, clippingDistances):
             # Point-to-Plane distance
-            p2pd = tuple(
+            p2pd = list(
                 np.dot(normal, point) + distance
                 for point in points
             )
 
             if all(d <= 0 for d in p2pd):
                 return
+
             elif any(d <= 0 for d in p2pd):
-                if has_2p: point_count = 2
-                elif has_3p: point_count = 3
-                else: continue
-                
-                for i1 in range(point_count):
-                    i2 = i1 + 1 if i1 + 1 < point_count else 0
-
-                    intersect = self._intersect(points[i1], points[i2], normal, distance)
+                # Line intersection
+                if has_2p and not has_3p:
+                    intersect = self._intersect(points[0], points[1], normal, distance)
                     if intersect is not None:
-                        if p2pd[i1] <= 0: points[i1] = intersect
-                        elif p2pd[i2] <= 0: points[i2] = intersect
+                        if p2pd[0] <= 0: points[0] = intersect
+                        elif p2pd[1] <= 0: points[1] = intersect
 
+                # Triangle / polygon intersection
+                if has_3p:
+                    new_points = []
 
-        # Backface culling
+                    for i1 in range(len(points)):
+                        i2 = i1 + 1 if i1 + 1 < len(points) else 0
 
-        backfaceCulling = getattr(object, 'backfaceCulling', False)
-        if backfaceCulling and self._normal(*points) <= 0: return
-        
+                        intersect = self._intersect(points[i1], points[i2], normal, distance)
+                        if intersect is not None:
+                            if p2pd[i1] <= 0:
+                                new_points.append(intersect)
+                            elif p2pd[i2] <= 0:
+                                new_points.append(points[i1])
+                                new_points.append(intersect)
+                        elif p2pd[i1] > 0 and p2pd[i2] > 0:
+                            new_points.append(points[i1])
+
+                    points = copy(new_points)
         # Project
 
         for i, point in enumerate(points):
             z = max(point[2], d)
-            x = (point[0] * d) / z * hR
-            y = (point[1] * d) / z * vR
+            x = (point[0] * d) / z * scale
+            y = (point[1] * d) / z * scale
 
-            points[i] = Coord(x, -y, z)
+            points[i] = (x, -y, z)
 
-        new_obj = copy(object)
-        new_obj.p1 = points[0]
-        if has_2p: new_obj.p2 = points[1]
-        if has_3p: new_obj.p3 = points[2]
+        if len(points) > 3:
+            new_obj = Polygon3D(
+                points = points,
+                color = object.color
+            )
+        else:
+            new_obj = copy(object)
+            new_obj.p1 = Coord(*points[0])
+            if has_2p: new_obj.p2 = Coord(*points[1])
+            if has_3p: new_obj.p3 = Coord(*points[2])
+
+            new_obj._modified = True
 
         # Drawing and finalising
-
-        new_obj._modified = True
 
         temp_xOff, temp_yOff = canvas._xOff, canvas._yOff
         canvas.translate(wCenter, hCenter)
@@ -199,6 +211,29 @@ class Camera:
         canvas.translate(temp_xOff, temp_yOff)
 
     # Other methods
+
+    def _getClippingPlanes(self, hFOV = 90, vFOV = 90) -> None:
+        hFOV_half, vFOV_half = hFOV / 2, vFOV / 2
+
+        hFOV_r = hFOV_half / 180 * pi
+        vFOV_r = vFOV_half / 180 * pi
+
+        hx, hz = sin(hFOV_r), cos(hFOV_r)
+        vy, vz = sin(vFOV_r), cos(vFOV_r)
+
+        d = self.viewportDistance
+
+        nearPlane   = np.array([0.0, 0.0, 1.0])
+        leftPlane   = np.array([ hx, 0.0, hz])
+        rightPlane  = np.array([-hx, 0.0, hz])
+        bottomPlane = np.array([0.0,  vy, vz])
+        topPlane    = np.array([0.0, -vy, vz])
+
+        self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
+        self.clippingDistances = (-d, 0.0, 0.0, 0.0, 0.0)
+
+        self.viewportWidth = d * tan(hFOV_half) * 2
+        self.viewportHeight = d * tan(vFOV_half) * 2
 
     def _intersect(self, p1, p2, normal, distance):
         num = - (distance + np.dot(normal, p1))
