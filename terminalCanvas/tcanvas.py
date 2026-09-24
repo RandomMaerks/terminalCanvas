@@ -191,6 +191,7 @@ class TCanvas:
         self._buffered = False
 
         self.depthIntensity = 0
+        self.depthAccuracy = 4
 
         self._lastKeyPressed = {}
 
@@ -226,6 +227,7 @@ class TCanvas:
 
         width = self.width
         depthIntensity = self.depthIntensity
+        depthAccuracy = self.depthAccuracy
 
         if len(color) < 3:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
@@ -237,9 +239,10 @@ class TCanvas:
                 
             if zIndex is not None:
                 if zIndex < self.depthBuffer[y, x]:
+                    mult = round(1 - depthIntensity * zIndex, depthAccuracy)
                     self.depthBuffer[y, x] = zIndex
                     self._screenPixels[y*width + x] = tuple(
-                        roundInt(color[i] * (1 - depthIntensity * zIndex))
+                        roundInt(color[i] * mult)
                         for i in range(3)
                     )
             else:
