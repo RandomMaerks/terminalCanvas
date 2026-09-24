@@ -50,7 +50,7 @@ All classes and functions provided by the public API will now be called using th
 
 ### ● 2D rendering
 
-**terminalCanvas** has a class for 2D rendering called `TCanvas`. Create a new instance `TCanvas` and assign it to a variable with a memorable name, such as `canvas`:
+**terminalCanvas** has a class for 2D rendering called `TCanvas`. Create a new instance of `TCanvas` and assign it to a variable with a memorable name, such as `canvas`:
 
 ```python
 canvas = tc.TCanvas()
@@ -85,7 +85,7 @@ line = tc.Line(0, 0, canvas.width, canvas.height, color=(255, 0, 0))
 
 This will create an instance of the `Line` class with:
 - two points, one at `(0, 0)` and the other at `(canvas.width, canvas.height)`;
-- color *(RGB value)* of `(255, 0, 0)`, which is red.
+- colour *(RGB value)* of `(255, 0, 0)`, which is red.
 
 There are other geometric shapes like `Triangle` and `Rectangle`, as well as other useful objects such as `Text` or `Image`.
 
@@ -94,7 +94,7 @@ There are other geometric shapes like `Triangle` and `Rectangle`, as well as oth
 >
 > However, these parameters all have a default value, and you can simply write `line = tc.Line()` without any arguments. This is by design, and you can easily change its attributes later with *setter methods*, like `set_points()`.
 
-Anyway, we've created an object, but it's not on the canvas yet. To actually draw the line, use the `draw()` method:
+Anyway, we've created an object, but it's not on the canvas yet. To actually draw the line, use the `draw()` method, and put the desired object as the argument:
 
 ```python
 canvas.draw(line)
@@ -125,6 +125,8 @@ while True:
 
     canvas.show()
 ```
+
+The if-condition checks if the escape key is pressed, and breaks out of the `while` loop when the condition is true. You can use other keys if you want.
 
 The `clear()` method allows the canvas to be completely clean before redrawing anything for the next frame. Without calling this method, the very first frame will be the only frame to be shown.
 
@@ -173,11 +175,11 @@ However, when we draw this on the canvas, it does not look very impressive.
 
 `TCanvas` interprets the "third dimension" as an indicator for "distance". Basically, the lower the z-value, the "closer" the object, and the higher the z-value, the "further".
 
-You can then change the z-value for each object to control which one appears in front of the other. Occasionally, if objects (like triangles) has vertices in different z-values, you can have them "intersect" with each other.
+You can then change the z-value for each object to control which one appears in front of the other. Occasionally, if objects (like triangles) has vertices with different z-values, you can have them "intersect" with each other.
 
 Now, this is cool and all, but we're not *really* in 3D, are we? When the term *"3D rendering"* is used, you'd expect an actual 3D scene with 3D objects where you can move around and see everything in 3D.
 
-This is where we'll bring in a new class to the scene: `Camera`. The camera will be the one performing 3D transformation and projection, and we can change things like the field of view from the camera.
+This is where we'll bring in a new class to the scene: `Camera`. The camera will be the one performing 3D transformation and projection, and we can use this camera to look around and explore our environment.
 
 To start, make an instance of the class `Camera`:
 
@@ -189,7 +191,7 @@ If you plan to use this camera as the main one, you should put this right below 
 
 By default, the camera will be at `(0, 0, 0)` and facing +z with the angle `(0, 0, 0)`. You can change that by adding it during initialisation (e.g. `tc.TCanvas(1, 2, 2)`) or use the methods `set_position()` and `set_angle()` after initialisation (e.g. `camera.set_position(1, 2, 2)`).
 
-Now, before we start drawing our objects with the camera, we'll need to consider one thing. When we drew 2D objects on the canvas, the coordinates are in pixel units. However, when we put our 3D objects through the camera, the coordinates will be in a different unit. A 2D line on the canvas with coordinates `(0, 0)` - `(canvas.width, canvas.height)` will look very big if it were a 3D line in a 3D environment, and vice versa.
+Now, before we start drawing our objects with the camera, we'll need to consider one thing. When we drew 2D objects on the canvas, the coordinates were in pixel units. However, when we put our 3D objects through the camera, the coordinates will be in a different unit. A 2D line on the canvas with coordinates `(0, 0)` - `(canvas.width, canvas.height)` will look very big if it were a 3D line in a 3D environment, and vice versa.
 
 For now, let's make our 3D line a bit more reasonably sized. In fact, let's make 3 lines representing the 3 axes:
 
@@ -199,15 +201,15 @@ y_axis = tc.Line3D(0, -1, 0, 0, 1, 0, color=(0, 255, 0))
 z_axis = tc.Line3D(0, 0, -1, 0, 0, 1, color=(0, 0, 255))
 ```
 
-Now, if we want to draw our 3D objects using the camera, we must add a second argument to our `draw()` method:
+Now, if we want to draw our 3D objects using the camera, we must add a second argument to our `draw()` method, which is the camera itself:
 
 ```python
 canvas.draw(x_axis, camera)
 ```
 
-This will now use the camera to transform and project our 3D line, then draw the projected line onto the canvas.
+The camera will transform and project our 3D line, then it will feed the projected line to our canvas to draw.
 
-Do this for all 3 lines, along with a set position of `(2.0, 2.0, 2.0)` and angle of `(0.6, 2.35, 0.0)` for the camera, we should have:
+Now, do this for the other lines. When we set the camera at position `(2.0, 2.0, 2.0)` and with an angle of `(0.6, 2.35, 0.0)`, we should have:
 
 ![All 3 axes drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_3Daxis.png)
 
