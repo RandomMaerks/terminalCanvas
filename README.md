@@ -40,29 +40,34 @@ To create an entire canvas, we just need to fill up every space in the terminal 
 
 The information below is only showing the very basics. For more info, please consult the wiki (doesn't exist yet lol).
 
-### ● 2D rendering
-
 Start by importing the main module. For convenience, set a short alias for the module, `tc` for example.
 
 ```python
 import terminalCanvas as tc
 ```
 
-Then, create a new `TCanvas` object:
+All classes and functions provided by the public API will now be called using the syntax `tc.<class_name>` or `tc.<function_name>()`, with the prefix `tc.`.
+
+### ● 2D rendering
+
+**terminalCanvas** has a class for 2D rendering called `TCanvas`. Create a new instance `TCanvas` and assign it to a variable with a memorable name, such as `canvas`:
 
 ```python
 canvas = tc.TCanvas()
 ```
 
-Upon creating the object, the "width" and "height" of the terminal that would run the script will automatically be detected. You can get these data by calling `canvas.width` or `canvas.height`, as well as the precalculated `canvas.wCenter` and `canvas.hCenter`.
+This is the canvas you'll be using to draw. You can get the resolution of the canvas by calling `canvas.width` or `canvas.height`, as well as the precalculated `canvas.wCenter` and `canvas.hCenter` for the centres.
 
-Some properties of the canvas can be changed. For example, to change the background colour:
+Some properties of the canvas can be changed. For example, to change the background colour, use the `background()` method of `TCanvas`, which requires a three-item tuple representing the desired RGB value.
 
 ```python
 canvas.background((125, 170, 245))
 ```
 
-The `background()` method requires a *tuple* with three items that represents the RGB values.
+> [!NOTE]
+> Using a *method* of a *class* means using the syntax `<instance_of_class>.<method_name>()`.
+> 
+> The class `TCanvas` has a method called `background()`. When we created our `TCanvas` instance, which is `canvas`, it also includes that method. So, we should write `canvas.background()`.
 
 To resize the canvas, use:
 
@@ -70,15 +75,24 @@ To resize the canvas, use:
 canvas.resize()
 ```
 
-This will replace the old `canvas.width` and `canvas.height` with the new values corresponding to the reoslution of the terminal window. This is especially important if you want to resize the terminal window during runtime.
+This should come in handy when you need to resize the terminal window during runtime. The canvas will not change resolution by itself.
 
-To create a graphical object such as a line, you can call the `Line` class:
+To create a graphical object such as a line, you can call the `Line` class to create a new instance. Assign it to another variable like `line`.
 
 ```python
 line = tc.Line(0, 0, canvas.width, canvas.height, color=(255, 0, 0))
 ```
 
-This will create an instance of the `Line` class which includes the line's pixel data, its attributes, and additional setter methods to modify them. Other objects include `Point`, `Point3D`, `Line3D`, `Rectangle`, `Polygon`, `Triangle`, `Triangle3D`, `Ellipse`, `Text`, `Image`, and `Sprite`. Their attributes do not need to be set right from the start; you can simply create an instance of any object with absolutely no arguments.
+This will create an instance of the `Line` class with:
+- two points, one at `(0, 0)` and the other at `(canvas.width, canvas.height)`;
+- color *(RGB value)* of `(255, 0, 0)`, which is red.
+
+There are other geometric shapes like `Triangle` and `Rectangle`, as well as other useful objects such as `Text` or `Image`.
+
+> [!NOTE]
+> In this example, certain *arguments* are included inside the parentheses of `tc.Line()`. These are the arguments that define the attributes of this particular instance of `Line`.
+>
+> However, these parameters all have a default value, and you can simply write `line = tc.Line()` without any arguments. This is by design, and you can easily change its attributes later with *setter methods*, like `set_points()`.
 
 Anyway, we've created an object, but it's not on the canvas yet. To actually draw the line, use the `draw()` method:
 
@@ -140,6 +154,113 @@ while True:
 
 canvas.end()
 ```
+
+### ● 3D rendering
+
+`TCanvas` also supports 3D rendering, so we can keep using our `canvas` instance.
+
+There are 3D objects such as `Point3D`, `Line3D`, and `Triangle3D`. These are very similar to their 2D counterparts, though with the addition of the third dimension added for each vertex.
+
+You can simply create an instance just like with any other classes we've looked at:
+
+```python
+line = tc.Line3D(0, 0, 0, canvas.width, canvas.height, 1, color=(255, 0, 0))
+```
+
+However, when we draw this on the canvas, it does not look very impressive.
+
+![An example of a "3D" line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_line3DExample.png)
+
+`TCanvas` interprets the "third dimension" as an indicator for "distance". Basically, the lower the z-value, the "closer" the object, and the higher the z-value, the "further".
+
+You can then change the z-value for each object to control which one appears in front of the other. Occasionally, if objects (like triangles) has vertices in different z-values, you can have them "intersect" with each other.
+
+Now, this is cool and all, but we're not *really* in 3D, are we? When the term *"3D rendering"* is used, you'd expect an actual 3D scene with 3D objects where you can move around and see everything in 3D.
+
+This is where we'll bring in a new class to the scene: `Camera`. The camera will be the one performing 3D transformation and projection, and we can change things like the field of view from the camera.
+
+To start, make an instance of the class `Camera`:
+
+```python
+camera = tc.Camera()
+```
+
+If you plan to use this camera as the main one, you should put this right below the `canvas = tc.TCanvas()` line. Otherwise, you can create multiple cameras for other purposes.
+
+By default, the camera will be at `(0, 0, 0)` and facing +z with the angle `(0, 0, 0)`. You can change that by adding it during initialisation (e.g. `tc.TCanvas(1, 2, 2)`) or use the methods `set_position()` and `set_angle()` after initialisation (e.g. `camera.set_position(1, 2, 2)`).
+
+Now, before we start drawing our objects with the camera, we'll need to consider one thing. When we drew 2D objects on the canvas, the coordinates are in pixel units. However, when we put our 3D objects through the camera, the coordinates will be in a different unit. A 2D line on the canvas with coordinates `(0, 0)` - `(canvas.width, canvas.height)` will look very big if it were a 3D line in a 3D environment, and vice versa.
+
+For now, let's make our 3D line a bit more reasonably sized. In fact, let's make 3 lines representing the 3 axes:
+
+```python
+x_axis = tc.Line3D(-1, 0, 0, 1, 0, 0, color=(255, 0, 0))
+y_axis = tc.Line3D(0, -1, 0, 0, 1, 0, color=(0, 255, 0))
+z_axis = tc.Line3D(0, 0, -1, 0, 0, 1, color=(0, 0, 255))
+```
+
+Now, if we want to draw our 3D objects using the camera, we must add a second argument to our `draw()` method:
+
+```python
+canvas.draw(x_axis, camera)
+```
+
+This will now use the camera to transform and project our 3D line, then draw the projected line onto the canvas.
+
+Do this for all 3 lines, along with a set position of `(2.0, 2.0, 2.0)` and angle of `(0.6, 2.35, 0.0)` for the camera, we should have:
+
+![All 3 axes drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_3Daxis.png)
+
+Remember the `while` loop from before? After our `escape` key press check, let's add:
+
+```python
+camera.detectInput(canvas)
+```
+
+This method from `Camera` will have a variety of predefined keys associated with camera movement and rotation:
+- `W` and `S`: forwards and backwards
+- `A` and `D`: left and right
+- `Q` and `E`: up and down (not jumping; there is no gravity)
+- `I` and `K`: look up and down
+- `J` and `L`: turn left and right
+- `U` and `O`: spin counterclockwise and clockwise (don't use this often)
+
+You can also change the movement and rotation speed by doing `camera.detectInput(canvas, movementSpeed=0.5, rotationSpeed=0.3)`.
+
+The whole script should now look like this:
+
+```python
+import terminalCanvas as tc
+
+canvas = tc.TCanvas()
+canvas.background((125, 170, 245))
+
+camera = tc.Camera()
+camera.set_position(2.0, 2.0, 2.0)
+camera.set_angle(-0.6, 2.35, 0)
+
+x_axis = tc.Line3D(-1, 0, 0, 1, 0, 0, color=(255, 0, 0))
+y_axis = tc.Line3D(0, -1, 0, 0, 1, 0, color=(0, 255, 0))
+z_axis = tc.Line3D(0, 0, -1, 0, 0, 1, color=(0, 0, 255))
+
+while True:
+    if canvas.keyPressed("ESC"):
+        break
+
+    camera.detectInput(canvas)
+
+    canvas.clear()
+    canvas.draw(x_axis, camera)
+    canvas.draw(y_axis, camera)
+    canvas.draw(z_axis, camera)
+    canvas.show()
+
+canvas.end()
+```
+
+Here's an example of a voxel-based world drawn using the 3D renderer (ignore the abysmal performance):
+
+![Voxelate, a voxel-based Minecraft wannabe](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_voxelate.png)
 
 ### ● User interface
 
