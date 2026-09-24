@@ -27,6 +27,12 @@ class Camera:
 
     # Camera transformation
 
+    def set_position(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
+        self.position = np.array([x, y, z], dtypes = np.float64)
+
+    def set_angle(self, ax: float = 0.0, ay: float = 0.0, az: float = 0.0) -> None:
+        self.angle = np.array([ax, ay, az], dtypes = np.float64)
+
     def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
         self.position += np.array([x, y, z])
 
