@@ -169,7 +169,7 @@ line = tc.Line3D(0, 0, 0, canvas.width, canvas.height, 1, color=(255, 0, 0))
 
 However, when we draw this on the canvas, it does not look very impressive.
 
-![An example of a "3D" line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_line3DExample.png)
+![An example of a "3D" line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_line3Dexample.png)
 
 `TCanvas` interprets the "third dimension" as an indicator for "distance". Basically, the lower the z-value, the "closer" the object, and the higher the z-value, the "further".
 
