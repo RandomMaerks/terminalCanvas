@@ -12,6 +12,7 @@ class Camera:
             x: float = 0.0, y: float = 0.0, z: float = 0.0,
             ax: float = 0.0, ay: float = 0.0, az: float = 0.0,
             viewportDistance: float = 1.0,
+            hFOV: int = 90, vFOV: int = 90
     ) -> None:
 
         self.position = np.array([x, y, z])
@@ -19,7 +20,10 @@ class Camera:
 
         self.viewportDistance = viewportDistance
 
-        self._getClippingPlanes(hFOV = 90)
+        self._getClippingPlanes(
+            hFOV = clamp(hFOV, 1, 179),
+            vFOV = clamp(vFOV, 1, 179)
+        )
 
     # Camera transformation
 
@@ -98,8 +102,8 @@ class Camera:
         width, height = canvas.width, canvas.height
         wCenter, hCenter = canvas.wCenter, canvas.hCenter
         
-        #vWidth, vHeight = self.viewportWidth, self.viewportHeight
-        scale = max(width, height)
+        vWidth, vHeight = self.viewportWidth, self.viewportHeight
+        scale = max(width, height) / vWidth * vHeight
 
         pos = self.position
         ax, ay, az = self.angle
@@ -152,19 +156,19 @@ class Camera:
                 for point in points
             )
 
-            if all(d <= 0 for d in p2pd):
+            if all(d < 0 for d in p2pd):
                 return
 
-            elif any(d <= 0 for d in p2pd):
+            elif any(d < 0 for d in p2pd):
                 # Line intersection
                 if has_2p and not has_3p:
                     intersect = self._intersect(points[0], points[1], normal, distance)
                     if intersect is not None:
-                        if p2pd[0] <= 0: points[0] = intersect
-                        elif p2pd[1] <= 0: points[1] = intersect
+                        if p2pd[0] < 0: points[0] = intersect
+                        elif p2pd[1] < 0: points[1] = intersect
 
                 # Triangle / polygon intersection
-                if has_3p:
+                elif has_3p:
                     new_points = []
 
                     for i1 in range(len(points)):
@@ -172,12 +176,12 @@ class Camera:
 
                         intersect = self._intersect(points[i1], points[i2], normal, distance)
                         if intersect is not None:
-                            if p2pd[i1] <= 0:
+                            if p2pd[i1] < 0:
                                 new_points.append(intersect)
-                            elif p2pd[i2] <= 0:
+                            elif p2pd[i2] < 0:
                                 new_points.append(points[i1])
                                 new_points.append(intersect)
-                        elif p2pd[i1] > 0 and p2pd[i2] > 0:
+                        elif p2pd[i1] >= 0 and p2pd[i2] >= 0:
                             new_points.append(points[i1])
 
                     points = copy(new_points)
@@ -210,16 +214,22 @@ class Camera:
         canvas.draw(new_obj)
         canvas.translate(temp_xOff, temp_yOff)
 
+    def fov(self, hFOV: int = 90, vFOV: int = 90) -> None:
+        self._getClippingPlanes(
+            hFOV = clamp(hFOV, 1, 179),
+            vFOV = clamp(vFOV, 1, 179)
+        )
+
     # Other methods
 
     def _getClippingPlanes(self, hFOV = 90, vFOV = 90) -> None:
         hFOV_half, vFOV_half = hFOV / 2, vFOV / 2
 
-        hFOV_r = hFOV_half / 180 * pi
-        vFOV_r = vFOV_half / 180 * pi
+        hFOV_r = hFOV_half * pi / 180
+        vFOV_r = vFOV_half * pi / 180
 
-        hx, hz = sin(hFOV_r), cos(hFOV_r)
-        vy, vz = sin(vFOV_r), cos(vFOV_r)
+        hx, hz = cos(hFOV_r), sin(hFOV_r)
+        vy, vz = cos(vFOV_r), sin(vFOV_r)
 
         d = self.viewportDistance
 
@@ -232,8 +242,8 @@ class Camera:
         self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
         self.clippingDistances = (-d, 0.0, 0.0, 0.0, 0.0)
 
-        self.viewportWidth = d * tan(hFOV_half) * 2
-        self.viewportHeight = d * tan(vFOV_half) * 2
+        self.viewportWidth = d * tan(hFOV_r) * 2
+        self.viewportHeight = d * tan(vFOV_r) * 2
 
     def _intersect(self, p1, p2, normal, distance):
         num = - (distance + np.dot(normal, p1))
