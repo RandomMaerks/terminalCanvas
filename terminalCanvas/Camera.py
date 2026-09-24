@@ -156,16 +156,16 @@ class Camera:
                 for point in points
             )
 
-            if all(d < 0 for d in p2pd):
+            if all(d <= 0 for d in p2pd):
                 return
 
-            elif any(d < 0 for d in p2pd):
+            elif any(d <= 0 for d in p2pd):
                 # Line intersection
                 if has_2p and not has_3p:
                     intersect = self._intersect(points[0], points[1], normal, distance)
                     if intersect is not None:
-                        if p2pd[0] < 0: points[0] = intersect
-                        elif p2pd[1] < 0: points[1] = intersect
+                        if p2pd[0] <= 0: points[0] = intersect
+                        elif p2pd[1] <= 0: points[1] = intersect
 
                 # Triangle / polygon intersection
                 elif has_3p:
@@ -176,12 +176,12 @@ class Camera:
 
                         intersect = self._intersect(points[i1], points[i2], normal, distance)
                         if intersect is not None:
-                            if p2pd[i1] < 0:
+                            if p2pd[i1] <= 0:
                                 new_points.append(intersect)
-                            elif p2pd[i2] < 0:
+                            elif p2pd[i2] <= 0:
                                 new_points.append(points[i1])
                                 new_points.append(intersect)
-                        elif p2pd[i1] >= 0 and p2pd[i2] >= 0:
+                        elif p2pd[i1] >= 0:
                             new_points.append(points[i1])
 
                     points = copy(new_points)
@@ -253,7 +253,7 @@ class Camera:
 
         t = num / denom
 
-        if 0 <= t <= 1:
+        if 0 < t < 1:
             return p1 + t * (p2 - p1)
         else:
             return None
