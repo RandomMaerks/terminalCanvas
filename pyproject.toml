@@ -1,3 +1,29 @@
 [build-system]
-requires = ["setuptools>=61", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "terminalCanvas"
+version = "0.5.0"
+dependencies = [
+    "pillow",
+    "numpy",
+]
+requires-python = ">= 3.10"
+authors = [
+    {name = "RandomMaerks", email = "rmforbusiness@gmail.com"},
+]
+descrption = "A module for creating a canvas and displaying text-based graphics in the terminal"
+readme = "README.md"
+license = "GPL-3.0-or-later"
+license-files = ["LICENSE"]
+keywords = ["terminal", "graphics", "raster", "ansi", "canvas", "windows", "console"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: Microsoft :: Windows",
+    "Topic :: Multimedia :: Graphics",
+]
+
+[project.urls]
+Repository = "https://github.com/RandomMaerks/terminalCanvas"
+Issues = "https://github.com/RandomMaerks/terminalCanvas/issues"
