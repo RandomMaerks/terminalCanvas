@@ -128,7 +128,7 @@ while True:
 
 The if-condition checks if the escape key is pressed, and breaks out of the `while` loop when the condition is true. You can use other keys if you want.
 
-The `clear()` method allows the canvas to be completely clean before redrawing anything for the next frame. Without calling this method, the very first frame will be the only frame to be shown.
+The `clear()` method allows the canvas to be completely clean before redrawing anything for the next frame. Without calling this method, anything in the last frame will still be visible on the next. Especially with moving objects, there will be a "trailing" effect which you may or may not want.
 
 Lastly, you should put `canvas.end()` after everything to properly erase everything and restore the cursor.
 
@@ -187,9 +187,9 @@ To start, make an instance of the class `Camera`:
 camera = tc.Camera()
 ```
 
-If you plan to use this camera as the main one, you should put this right below the `canvas = tc.TCanvas()` line. Otherwise, you can create multiple cameras for other purposes.
+Put this right below the `canvas = tc.TCanvas()` line. You can also create multiple cameras for different purposes.
 
-By default, the camera will be at `(0, 0, 0)` and facing +z with the angle `(0, 0, 0)`. You can change that by adding it during initialisation (e.g. `tc.TCanvas(1, 2, 2)`) or use the methods `set_position()` and `set_angle()` after initialisation (e.g. `camera.set_position(1, 2, 2)`).
+By default, the camera will be at `(0, 0, 0)` and facing +z with the angle `(0, 0, 0)`. You can set its position and angle during initialisation (e.g. `tc.TCanvas(1, 2, 2)`) or use the methods `set_position()` and `set_angle()` after initialisation (e.g. `camera.set_position(1, 2, 2)`).
 
 Now, before we start drawing our objects with the camera, we'll need to consider one thing. When we drew 2D objects on the canvas, the coordinates were in pixel units. However, when we put our 3D objects through the camera, the coordinates will be in a different unit. A 2D line on the canvas with coordinates `(0, 0)` - `(canvas.width, canvas.height)` will look very big if it were a 3D line in a 3D environment, and vice versa.
 
@@ -263,6 +263,13 @@ canvas.end()
 Here's an example of a voxel-based world drawn using the 3D renderer (ignore the abysmal performance):
 
 ![Voxelate, a voxel-based Minecraft wannabe](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_voxelate.png)
+
+> [!NOTE]
+> The colour banding effect is purely an aesthetic choice, caused by two attributes of `TCanvas`: `depthIntensity` and `depthAccuracy`.
+> 
+> `depthIntensity` changes how dark far objects get; the higher the value, the darker. Usually, this value goes between 0 and 0.1.
+> 
+> `depthAccuracy` changes how smooth the colour blending is. This value should be an integer, and it is set to 3 by default. Higher accuracy means better gradient, but also more work for the terminal.
 
 ### ● User interface
 
