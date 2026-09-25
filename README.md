@@ -209,7 +209,7 @@ canvas.draw(x_axis, camera)
 
 The camera will transform and project our 3D line, then it will feed the projected line to our canvas to draw.
 
-Now, do this for the other lines. When we set the camera at position `(2.0, 2.0, 2.0)` and with an angle of `(0.6, 2.35, 0.0)`, we should have:
+Now, do this for the other lines. When we set the camera at position `(2.0, 2.0, 2.0)` and with an angle of `(-0.6, 2.35, 0.0)`, we should have:
 
 ![All 3 axes drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_3Daxis.png)
 
