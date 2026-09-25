@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 class BaseCompoundObject:
     """
     The base compound object class consisting of multiple BaseObject shapes.
@@ -52,7 +54,7 @@ class BaseCompoundObject:
 
     # Object insertion
 
-    def _add(self, object: "BaseObject") -> None:
+    def _add(self, object: BaseObject) -> None:
         self.objects.append(object)
 
     # Empty build method

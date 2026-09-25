@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import time
 import sys
@@ -253,8 +255,8 @@ class TCanvas:
 
     def draw(
             self,
-            object: "BaseObject" | "BaseCompoundObject",
-            camera: "Camera" | None = None
+            object: BaseObject | BaseCompoundObject,
+            camera: Camera | None = None
     ) -> None:
         """
         Draws the object on the canvas.
