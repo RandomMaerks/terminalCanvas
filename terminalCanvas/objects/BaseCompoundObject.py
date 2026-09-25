@@ -52,7 +52,7 @@ class BaseCompoundObject:
 
     # Object insertion
 
-    def _add(self, object: BaseObject) -> None:
+    def _add(self, object: "BaseObject") -> None:
         self.objects.append(object)
 
     # Empty build method

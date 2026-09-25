@@ -41,7 +41,7 @@ class Camera:
 
     def detectInput(
             self,
-            canvas: TCanvas,
+            canvas: "TCanvas",
             movementSpeed: float = 0.1,
             rotationSpeed: float = pi/120,
             keymap: dict = None,
@@ -104,7 +104,7 @@ class Camera:
 
     # Object translation and projection
 
-    def _draw(self, object: BaseObject, canvas: TCanvas) -> None:
+    def _draw(self, object: "BaseObject", canvas: "TCanvas") -> None:
         width, height = canvas.width, canvas.height
         wCenter, hCenter = canvas.wCenter, canvas.hCenter
         
