@@ -175,7 +175,7 @@ However, when we draw this on the canvas, it does not look very impressive.
 
 `TCanvas` interprets the "third dimension" as an indicator for "distance". Basically, the lower the z-value, the "closer" the object, and the higher the z-value, the "further".
 
-You can then change the z-value for each object to control which one appears in front of the other. Occasionally, if objects (like triangles) has vertices with different z-values, you can have them "intersect" with each other.
+You can then change the z-value for each object to control which one appears in front of the other. Occasionally, if objects (like triangles) have vertices with different z-values, you can have them "intersect" with each other.
 
 Now, this is cool and all, but we're not *really* in 3D, are we? When the term *"3D rendering"* is used, you'd expect an actual 3D scene with 3D objects where you can move around and see everything in 3D.
 
