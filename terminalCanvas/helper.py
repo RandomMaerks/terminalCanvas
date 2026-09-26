@@ -66,14 +66,14 @@ def roundInt(x: float) -> int:
     except TypeError as e:
         raise TypeError(repr(e) + f" (offender: {x})")
 
-def interpolate(i0, d0, i1, d1, round = True) -> list:
+def interpolate(i0, d0, i1, d1, round=True) -> list:
+    r = roundInt if round else lambda x: x
+
     if i0 == i1:
-        return [roundInt(d0) if round else d0]
+        return [r(d0)]
 
     n = i1 - i0
     values = [0] * (n + 1)
-
-    r = roundInt if round else lambda x: x
 
     delta = (d1 - d0) / n
     d = d0
