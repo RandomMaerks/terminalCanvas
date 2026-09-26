@@ -1053,7 +1053,7 @@ class TCanvasUI(TCanvas):
                 roundInt(bgcolor[2]),
             )
 
-    def show(self, cursor = False, lock_to_terminal: bool = False) -> None:
+    def show(self, cursor: bool = False, lock_to_terminal: bool = False) -> None:
         """
         Displays the canvas onto the terminal.
 
