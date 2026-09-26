@@ -15,6 +15,7 @@ from .Sprite import Sprite
 from .Point3D import Point3D
 from .Line3D import Line3D
 from .Triangle3D import Triangle3D
+from .Polygon3D import Polygon3D
 
 from .RectangleUI import RectangleUI
 from .TextUI import TextUI
