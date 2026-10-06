@@ -32,7 +32,7 @@ def map(v, old_lo, old_hi, new_lo, new_hi):
 
     This value is calculated using the formula:
     `(v - old_lo) / (old_hi - old_lo) * (new_hi - new_lo) + new_lo`.
-    If the lower and upper limits of the old range is 0, the lower limit of the new range is returned instead.
+    If the old range is 0 (lower = upper), the lower limit of the new range is returned instead.
 
     Parameters:
     - v
