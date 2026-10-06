@@ -56,8 +56,8 @@ class Line(BaseObject):
             else:
                 sy = 1
 
-            dx2 = dx << 1
-            dy2 = dy << 1
+            dx2 = dx * 2
+            dy2 = dy * 2
 
             offset = thickness // 2
 
@@ -148,8 +148,8 @@ class Line(BaseObject):
         else:
             sy = 1
 
-        dx2 = dx << 1
-        dy2 = dy << 1
+        dx2 = dx * 2
+        dy2 = dy * 2
 
         self._add([x1, y1, color])
         if dx > dy:
