@@ -36,12 +36,9 @@ class Text(BaseObject):
         color = self.color   
 
         if font is None:
-            font = font_5x7.regular  
+            font = font_5x7
 
         kerningInfo = font.get("kerning", dict())
-        next_xInfo = font.get("next_x", dict())
-        offset_xInfo = font.get("offset_x", dict())
-        offset_yInfo = font.get("offset_y", dict())
         
         xCurrent = x1
         yCurrent = y1
@@ -49,7 +46,6 @@ class Text(BaseObject):
         for message in messages:
             textLines = []
             totalWidth = 0
-            glyph = []
 
             for index, char in enumerate(message):
                 if char not in font:
@@ -57,11 +53,14 @@ class Text(BaseObject):
                     totalWidth += 4 + spacing
                     continue
 
-                glyph = font.get(char)
+                glyph_data = font.get(char)
+
+                glyph = glyph_data.get("bitmap")
+                next_x = glyph_data.get("next_x", 0)
+                offset_x = glyph_data.get("offset_x", 0)
+                offset_y = glyph_data.get("offset_y", 0)
+                
                 charWidth = len(glyph[0])
-                next_x = next_xInfo.get(char, 0)
-                offset_x = offset_xInfo.get(char, 0)
-                offset_y = offset_yInfo.get(char, 0)
 
                 kern = kerningInfo.get(f"{message[index-1]}{char}", 0) if index > 0 else 0
 

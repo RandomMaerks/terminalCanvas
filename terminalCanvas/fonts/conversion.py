@@ -57,10 +57,7 @@ def from_bdf(font_dir: str) -> dict:
     with open(font_dir, "r", encoding="ascii") as font:
         data = [line.rstrip("\n") for line in font]
 
-    font = {
-        "next_x" : {},
-        "offset_x": {},
-    }
+    font = {}
 
     lineIndex = 0
     lineCount = len(data)
@@ -72,11 +69,8 @@ def from_bdf(font_dir: str) -> dict:
         line = data[lineIndex]
 
         # Detecting global font info
-
-        if line.startswith("FONT "):
-            font["name"] = line.removeprefix("FONT ") 
         
-        elif line.startswith("FONTBOUNDINGBOX "):
+        if line.startswith("FONTBOUNDINGBOX "):
             width, height, xOff, yOff = (int(x) for x in line.removeprefix("FONTBOUNDINGBOX ").split())
 
         elif line.startswith("STARTCHAR "):
@@ -146,12 +140,12 @@ def from_bdf(font_dir: str) -> dict:
                                     f"{width=}, {height=}, {xOff=}, {yOff=}, {glyphWidth=}, {glyphHeight=}, {glyphXOff=}, {glyphYOff=}, {i=}"
                                     )
 
-                    font[glyph] = bitmap
-                    next_x = dwX0 - (totalWidth)
+                    font[glyph] = {"bitmap": bitmap}
+                    next_x = dwX0 - totalWidth
                     if next_x != 0:
-                        font["next_x"][glyph] = next_x
+                        font[glyph]["next_x"] = next_x
                     if glyphXOff < 0:
-                        font["offset_x"][glyph] = glyphXOff
+                        font[glyph]["offset_x"] = glyphXOff
 
                 elif line2.startswith("ENDCHAR"):
                     break
