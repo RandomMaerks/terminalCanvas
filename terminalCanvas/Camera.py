@@ -115,15 +115,12 @@ class Camera:
 
         width, height = canvas.width, canvas.height
         wCenter, hCenter = canvas.wCenter, canvas.hCenter
-        
-        vWidth, vHeight = self.viewportWidth, self.viewportHeight
-        scale = max(width, height) / vWidth * vHeight
+        scale = max(width, height) * self.scaleMult
 
         pos = self.position
 
         d = self.viewportDistance
-        clippingNormals = self.clippingNormals
-        clippingDistances = self.clippingDistances        
+        clippingPlanes = zip(self.clippingNormals, self.clippingDistances)       
 
         if not np.array_equal(self._prev_angle, self.angle):
             self._getRotationMatrix()
@@ -161,7 +158,7 @@ class Camera:
 
         # Clip
 
-        for normal, distance in zip(clippingNormals, clippingDistances):
+        for normal, distance in clippingPlanes:
             # Point-to-Plane distance
             p2pd = list(
                 np.dot(normal, point) + distance
@@ -269,8 +266,12 @@ class Camera:
         self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
         self.clippingDistances = (-d, 0.0, 0.0, 0.0, 0.0)
 
-        self.viewportWidth = d * tan(hFOV_r) * 2
-        self.viewportHeight = d * tan(vFOV_r) * 2
+        '''
+        viewportWidth = d * tan(hFOV_r) * 2
+        viewportHeight = d * tan(vFOV_r) * 2
+        '''
+
+        self.scaleMult = tan(vFOV_r) / tan(hFOV_r)
 
     def _intersect(self, p1, p2, normal, distance):
         num = - (distance + np.dot(normal, p1))
