@@ -164,16 +164,9 @@ class TCanvas:
         - None
         """
 
-        if width is None:
-            self.width, _ = shutil.get_terminal_size()
-        else:
-            self.width = width
-
-        if height is None:
-            _, self.height = shutil.get_terminal_size()
-            self.height *= 2
-        else:
-            self.height = height
+        tw, th = shutil.get_terminal_size()
+        self.width = tw if width is None else width
+        self.height = th * 2 if height is None else height
 
         self.totalPixels = self.width * self.height
 
@@ -235,20 +228,22 @@ class TCanvas:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
         
         if self._inRange(x, y):
+            index = y * width + x
+
             if len(color) == 4 and color[3] != 255:
-                colorBelow = self._screenPixels[y*width + x]
+                colorBelow = self._screenPixels[index]
                 color = _combineAlpha(color, colorBelow)
                 
             if zIndex is not None:
-                if zIndex < self.depthBuffer[y, x]:
+                if zIndex < self.depthBuffer[index]:
                     mult = round(1 - depthIntensity * zIndex, depthAccuracy)
-                    self.depthBuffer[y, x] = zIndex
-                    self._screenPixels[y*width + x] = tuple(
+                    self.depthBuffer[index] = zIndex
+                    self._screenPixels[index] = tuple(
                         roundInt(color[i] * mult)
                         for i in range(3)
                     )
             else:
-                self._screenPixels[y*width + x] = tuple(
+                self._screenPixels[index] = tuple(
                     roundInt(color[i])
                     for i in range(3)
                 )
@@ -400,9 +395,7 @@ class TCanvas:
         Clears the canvas. More specifically, it fills the entire canvas with the current background color.
         """
 
-        self._screenPixels = [
-            self._bgColor for _ in range(self.totalPixels)
-            ]
+        self._screenPixels = [self._bgColor] * self.totalPixels
         self.resetDepthBuffer()
 
     def end(self, clear_all: bool = False) -> None:
@@ -448,13 +441,9 @@ class TCanvas:
         - None
         """
 
-        if width is None: tempwidth, _ = shutil.get_terminal_size()
-        else: tempwidth = width
-        self.width = tempwidth
-
-        if height is None: _, tempheight = shutil.get_terminal_size()
-        else: tempheight = height
-        self.height = tempheight * 2
+        tw, th = shutil.get_terminal_size()
+        self.width = tw if width is None else width
+        self.height = th * 2 if height is None else height
 
         self.totalPixels = self.width * self.height
 
@@ -475,7 +464,7 @@ class TCanvas:
         Unless there's a specific circumstance where you need to reset the buffer midway through drawing, you don't need to call this method at all.
         """
 
-        self.depthBuffer = np.full((self.height, self.width), np.inf)
+        self.depthBuffer = np.full((self.totalPixels), np.inf)
         
             
     # Transformation & image processing
@@ -966,15 +955,9 @@ class TCanvasUI(TCanvas):
         - None
         """
         
-        if width is None:
-            self.width, _ = shutil.get_terminal_size()
-        else:
-            self.width = width
-
-        if height is None:
-            _, self.height = shutil.get_terminal_size()
-        else:
-            self.height = height
+        tw, th = shutil.get_terminal_size()
+        self.width = tw if width is None else width
+        self.height = th if height is None else height
 
         self.totalPixels = self.width * self.height
 
@@ -1138,9 +1121,7 @@ class TCanvasUI(TCanvas):
         Clears the canvas. More specifically, it fills the entire canvas with the current background color.
         """
 
-        self._screenPixels = [
-            self._bgColor + (' ',) + self._bgColor for _ in range(self.totalPixels)
-            ]
+        self._screenPixels = [self._bgColor + (' ',) + self._bgColor] * self.totalPixels
 
     def resize(self, width: int = None, height: int = None) -> None:
         """
@@ -1156,13 +1137,9 @@ class TCanvasUI(TCanvas):
         - None
         """
 
-        if width is None: tempwidth, _ = shutil.get_terminal_size()
-        else: tempwidth = width
-        self.width = tempwidth
-
-        if height is None: _, tempheight = shutil.get_terminal_size()
-        else: tempheight = height
-        self.height = tempheight
+        tw, th = shutil.get_terminal_size()
+        self.width = tw if width is None else width
+        self.height = th if height is None else height
 
         self.totalPixels = self.width * self.height
 
