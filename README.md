@@ -269,7 +269,7 @@ Here's an example of a voxel-based world drawn using the 3D renderer (ignore the
 > 
 > `depthIntensity` changes how dark far objects get; the higher the value, the darker. Usually, this value goes between 0 and 0.1.
 > 
-> `depthAccuracy` changes how smooth the colour blending is. This value should be an integer, and it is set to 3 by default. Higher accuracy means better gradient, but also more work for the terminal.
+> `depthAccuracy` changes how smooth the colour blending is. This value should be an integer, and it is set to 4 by default. Higher accuracy means better gradient, but also more work for the terminal.
 
 ### ● User interface
 
@@ -278,8 +278,6 @@ Here's an example of a voxel-based world drawn using the 3D renderer (ignore the
 ```python
 canvas = tc.TCanvasUI()
 ```
-
-`TCanvasUI` fundamentally changes what a "pixel" is on the canvas and how each pixel is represented. In `TCanvas`, each pixel represents one color, takes up half of a character's bounding box, and the glyph used in this character space is specifically the half-box character `▀`. In `TCanvasUI`, however, each pixel represents one character, and the glyph is either a letter from a textbox or part of a rectangular frame.
 
 By default, the background color of `TCanvasUI` will be entirely black, as opposed to `TCanvas` being white. You can still change it using `background()`.
 
@@ -296,9 +294,10 @@ tc.RectangleUI(
 )
 ```
 
-While non-UI objects are usable in `TCanvasUI`, they will not be displayed in the same manner as in `TCanvas`.
-
 `TCanvasUI` also has all the essential methods like `draw()` and `show()`.
+
+> [!NOTE]
+> `TCanvasUI` fundamentally changes what a "pixel" is on the canvas and how each pixel is represented and displayed on the terminal. So, while non-UI objects are usable (to some extent) in `TCanvasUI`, they will not be displayed in the same manner as in `TCanvas`.
 
 ## Credits & honourable mentions
 
