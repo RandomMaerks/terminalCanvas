@@ -46,6 +46,7 @@ class Text(BaseObject):
         for message in messages:
             textLines = []
             totalWidth = 0
+            glyph = []
 
             for index, char in enumerate(message):
                 if char not in font:
