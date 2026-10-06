@@ -20,6 +20,9 @@ class Camera:
         self.position = np.array([x, y, z])
         self.angle = np.array([ax, ay, az])
 
+        self._prev_angle = self.angle
+        self._getRotationMatrix()
+
         self.viewportDistance = viewportDistance
 
         self._getClippingPlanes(
@@ -30,10 +33,10 @@ class Camera:
     # Camera transformation
 
     def set_position(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
-        self.position = np.array([x, y, z], dtype = np.float64)
+        self.position = np.array([x, y, z], dtype=np.float64)
 
     def set_angle(self, ax: float = 0.0, ay: float = 0.0, az: float = 0.0) -> None:
-        self.angle = np.array([ax, ay, az], dtype = np.float64)
+        self.angle = np.array([ax, ay, az], dtype=np.float64)
 
     def move(self, x: float = 0.0, y: float = 0.0, z: float = 0.0) -> None:
         self.position += np.array([x, y, z])
@@ -107,6 +110,9 @@ class Camera:
     # Object translation and projection
 
     def _draw(self, object: BaseObject, canvas: TCanvas) -> None:
+        if hasattr(object, "p1") and object.p1.dim() == 2:
+            raise TypeError(f"{type(object)} is not a 3D object, thus cannot be used with Camera.")
+
         width, height = canvas.width, canvas.height
         wCenter, hCenter = canvas.wCenter, canvas.hCenter
         
@@ -114,41 +120,39 @@ class Camera:
         scale = max(width, height) / vWidth * vHeight
 
         pos = self.position
-        ax, ay, az = self.angle
 
         d = self.viewportDistance
         clippingNormals = self.clippingNormals
         clippingDistances = self.clippingDistances        
 
-        if object.p1.dim() == 2:
-            raise TypeError(f"{type(object)} is not a 3D object, thus cannot be used with Camera.")
+        if not np.array_equal(self._prev_angle, self.angle):
+            self._getRotationMatrix()
+        rotMatrix = self._rotationMatrix
 
-        sin_ax, sin_ay, sin_az = sin(ax), sin(ay), sin(az)
-        cos_ax, cos_ay, cos_az = cos(ax), cos(ay), cos(az)
-
-        rotMatrix = np.array([
-            [cos_ay * cos_az                           ,-cos_ay * sin_az                           , sin_ay         ],
-            [cos_ax * sin_az + sin_ax * sin_ay * cos_az, cos_ax * cos_az - sin_ax * sin_ay * sin_az,-sin_ax * cos_ay],
-            [sin_ax * sin_az - cos_ax * sin_ay * cos_az, sin_ax * cos_az - cos_ax * sin_ay * sin_az, cos_ax * cos_ay]
-        ])
-
-        has_2p = hasattr(object, "p2")
-        has_3p = hasattr(object, "p3")
+        has_p2 = hasattr(object, "p2")
+        has_p3 = hasattr(object, "p3")
+        has_multipoints = hasattr(object, "points")
 
         # Translate
 
-        points = []
+        if has_multipoints:
+            points = []
+            for point in object.points:
+                new_point = (point - pos) @ rotMatrix
+                points.append(new_point)
+        else:
+            points = []
 
-        new_point1 = (object.p1 - pos) @ rotMatrix.T
-        points.append(new_point1)
+            new_point1 = (object.p1 - pos) @ rotMatrix
+            points.append(new_point1)
 
-        if has_2p:
-            new_point2 = (object.p2 - pos) @ rotMatrix.T
-            points.append(new_point2)
+            if has_p2:
+                new_point2 = (object.p2 - pos) @ rotMatrix
+                points.append(new_point2)
 
-        if has_3p:
-            new_point3 = (object.p3 - pos) @ rotMatrix.T
-            points.append(new_point3)
+            if has_p3:
+                new_point3 = (object.p3 - pos) @ rotMatrix
+                points.append(new_point3)            
 
         # Backface culling
 
@@ -169,14 +173,14 @@ class Camera:
 
             elif any(d <= 0 for d in p2pd):
                 # Line intersection
-                if has_2p and not has_3p:
+                if has_p2 and not has_p3:
                     intersect = self._intersect(points[0], points[1], normal, distance)
                     if intersect is not None:
                         if p2pd[0] <= 0: points[0] = intersect
                         elif p2pd[1] <= 0: points[1] = intersect
 
                 # Triangle / polygon intersection
-                elif has_3p:
+                elif has_p3 or has_multipoints:
                     new_points = []
 
                     for i1 in range(len(points)):
@@ -193,6 +197,7 @@ class Camera:
                             new_points.append(points[i1])
 
                     points = copy(new_points)
+
         # Project
 
         for i, point in enumerate(points):
@@ -210,8 +215,8 @@ class Camera:
         else:
             new_obj = copy(object)
             new_obj.p1 = Coord(*points[0])
-            if has_2p: new_obj.p2 = Coord(*points[1])
-            if has_3p: new_obj.p3 = Coord(*points[2])
+            if has_p2: new_obj.p2 = Coord(*points[1])
+            if has_p3: new_obj.p3 = Coord(*points[2])
 
             new_obj._modified = True
 
@@ -230,7 +235,21 @@ class Camera:
 
     # Other methods
 
-    def _getClippingPlanes(self, hFOV = 90, vFOV = 90) -> None:
+    def _getRotationMatrix(self) -> None:
+        ax, ay, az = self.angle
+
+        sx, sy, sz = sin(ax), sin(ay), sin(az)
+        cx, cy, cz = cos(ax), cos(ay), cos(az)
+
+        self._rotationMatrix = np.array([
+            [ cy*cz, cx*sz + sx*sy*cz, sx*sz - cx*sy*cz],
+            [-cy*sz, cx*cz - sx*sy*sz, sx*cz - cx*sy*sz],
+            [ sy   ,-sx*cy           , cx*cy           ]
+        ])
+
+        self._prev_angle = np.array([ax, ay, az])
+
+    def _getClippingPlanes(self, hFOV: int = 90, vFOV: int = 90) -> None:
         hFOV_half, vFOV_half = hFOV / 2, vFOV / 2
 
         hFOV_r = hFOV_half * pi / 180
