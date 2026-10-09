@@ -301,7 +301,7 @@ tc.RectangleUI(
 
 ## Credits & honourable mentions
 
-Massive thanks to [**ConnerWill**](https://connerwill.com/) for his [ANSI escape sequence cheatsheet](https://gist.github.com/ConnerWill/d4b6c776b509add763e17f9f113fd25b). Without this cheatsheet, I wouldn't have been able to make this module possible (and, honestly, I wouldn't have known that this entire thing was possible).
+Massive thanks to [**fnky**](https://www.cbp.io/) (Christian Petersen) for their [ANSI escape sequence documentation on Gist](https://gist.github.com/fnky/458719343aabd01cfb17a3a4f7296797). Without this, I wouldn't have been able to make this module possible (and, honestly, I wouldn't have known that this entire thing was possible).
 
 Another huge thanks to [**Gabriel Gambetta**](https://www.gabrielgambetta.com/index.html) for writing the book [Computer Graphics from Scratch](https://www.gabrielgambetta.com/computer-graphics-from-scratch/). All my rasterisation work closely follow his guidance.
 
