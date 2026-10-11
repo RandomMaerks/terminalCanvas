@@ -359,7 +359,19 @@ class TCanvas:
                     last_p2 = p2
                 else:
                     if p1 != b1 or p2 != b2:
-                        append(f"\033[{y+1};{x+1}H{fg(p1)}{bg(p2)}▀")
+                        append(f"\033[{y+1};{x+1}H")
+
+                        if p1 == p2:
+                            if p2 != last_p2:
+                                append(bg(p2))
+                            append(" ")
+                        else:
+                            if p1 != last_p1 or p2 != last_p2:
+                                append(bg(p2) + fg(p1))
+                            append("▀")
+
+                        last_p1 = p1
+                        last_p2 = p2
 
             if y < hCenter-1: append("\n")
 
