@@ -1,4 +1,4 @@
-from PIL import Image
+from PIL import Image as PILImage
 import numpy as np
 
 from .BaseObject import BaseObject
@@ -30,7 +30,7 @@ class Image(BaseObject):
         if image_dir is None:
             return 
         
-        img = Image.open(image_dir).convert("RGBA")
+        img = PILImage.open(image_dir).convert("RGBA")
         if size is not None:
             img = img.resize(size)
         res = np.array(img, dtype=np.uint8)
