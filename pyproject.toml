@@ -15,7 +15,7 @@ authors = [
 ]
 descrption = "A module for creating a canvas and displaying text-based graphics in the terminal"
 readme = "README.md"
-license = "GPL-3.0-or-later"
+license = "GPL-3.0"
 license-files = ["LICENSE"]
 keywords = ["terminal", "graphics", "raster", "ansi", "canvas", "windows", "console"]
 classifiers = [
