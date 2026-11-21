@@ -59,7 +59,7 @@ All classes and functions provided by the public API will now be called using th
 canvas = tc.TCanvas()
 ```
 
-This is the canvas you'll be using to draw. You can get the resolution of the canvas by calling `canvas.width` or `canvas.height`, as well as the precalculated `canvas.wCenter` and `canvas.hCenter` for the centres.
+This is the canvas you'll be using to draw. You can get the resolution of the canvas by calling `canvas.width` or `canvas.height`, as well as the precalculated `canvas.width_center` and `canvas.height_center` for the centres.
 
 Some properties of the canvas can be changed. For example, to change the background colour, use the `background()` method of `TCanvas`, which requires a three-item tuple representing the desired RGB value.
 
@@ -115,11 +115,11 @@ This will print everything in our canvas to the terminal.
 
 ![An example of the line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_lineExample.png)
 
-However, `canvas.show()` only shows the canvas once. You can put it in a loop to keep it running, along with `keyPressed()` to stop the loop using keyboard input:
+However, `canvas.show()` only shows the canvas once. You can put it in a loop to keep it running, along with `key_pressed()` to stop the loop using keyboard input:
 
 ```python
 while True:
-    if canvas.keyPressed("ESC"):
+    if canvas.key_pressed("ESC"):
         break
 
     canvas.clear()
@@ -150,7 +150,7 @@ line = tc.Line(
 )
 
 while True:
-    if canvas.keyPressed("ESC"):
+    if canvas.key_pressed("ESC"):
         break
 
     canvas.clear()
@@ -219,7 +219,7 @@ Now, do this for the other lines. When we set the camera at position `(2.0, 2.0,
 Remember the `while` loop from before? After our `escape` key press check, let's add:
 
 ```python
-camera.detectInput(canvas)
+camera.detect_input(canvas)
 ```
 
 This method from `Camera` will have a variety of predefined keys associated with camera movement and rotation:
@@ -230,7 +230,7 @@ This method from `Camera` will have a variety of predefined keys associated with
 - `J` and `L`: turn left and right
 - `U` and `O`: spin counterclockwise and clockwise (don't use this often)
 
-You can also change the movement and rotation speed by doing `camera.detectInput(canvas, movementSpeed=0.5, rotationSpeed=0.3)`.
+You can also change the movement and rotation speed by doing `camera.detect_input(canvas, movement_speed=0.5, rotation_speed=0.3)`.
 
 The whole script should now look like this:
 
@@ -249,10 +249,10 @@ y_axis = tc.Line3D(0, -1, 0, 0, 1, 0, color=(0, 255, 0))
 z_axis = tc.Line3D(0, 0, -1, 0, 0, 1, color=(0, 0, 255))
 
 while True:
-    if canvas.keyPressed("ESC"):
+    if canvas.key_pressed("ESC"):
         break
 
-    camera.detectInput(canvas)
+    camera.detect_input(canvas)
 
     canvas.clear()
     canvas.draw(x_axis, camera)
@@ -268,11 +268,11 @@ Here's an example of a voxel-based world drawn using the 3D renderer (ignore the
 ![Voxelate, a voxel-based Minecraft wannabe](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_voxelate.png)
 
 > [!NOTE]
-> The colour banding effect is purely an aesthetic choice, caused by two attributes of `TCanvas`: `depthIntensity` and `depthAccuracy`.
+> The colour banding effect is purely an aesthetic choice, caused by two attributes of `TCanvas`: `depth_intensity` and `depth_accuracy`.
 > 
-> `depthIntensity` changes how dark far objects get; the higher the value, the darker. Usually, this value goes between 0 and 0.1.
+> `depth_intensity` changes how dark far objects get; the higher the value, the darker. Usually, this value goes between 0 and 0.1.
 > 
-> `depthAccuracy` changes how smooth the colour blending is. This value should be an integer, and it is set to 4 by default. Higher accuracy means better gradient, but also more work for the terminal.
+> `depth_accuracy` changes how smooth the colour blending is. This value should be an integer, and it is set to 4 by default. Higher accuracy means better gradient, but also more work for the terminal.
 
 ### ● User interface
 
