@@ -9,7 +9,7 @@ dependencies = [
     "pillow",
     "numpy",
 ]
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 authors = [
     {name = "RandomMaerks", email = "rmforbusiness@gmail.com"},
 ]
