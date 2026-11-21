@@ -36,7 +36,7 @@ class Line(BaseObject):
         color = self.color
 
         if thickness <= 1:
-            self._drawLineOverlap(x1, y1, x2, y2, color)
+            self._draw_line_overlap(x1, y1, x2, y2, color)
         else:
             dy = x2 - x1
             dx = y2 - y1
@@ -78,7 +78,7 @@ class Line(BaseObject):
                         error -= dx2
                     error += dy2
 
-                self._drawLineOverlap(x1, y1, x2, y2, color)
+                self._draw_line_overlap(x1, y1, x2, y2, color)
 
                 error = dy2 - dx
                 for i in range(thickness, 1, -1):
@@ -92,7 +92,7 @@ class Line(BaseObject):
                         overlap = "major"
                     error += dy2
 
-                    self._drawLineOverlap(x1, y1, x2, y2, color, overlap)
+                    self._draw_line_overlap(x1, y1, x2, y2, color, overlap)
             else:
                 if swap:
                     sx = -sx
@@ -110,7 +110,7 @@ class Line(BaseObject):
                         error -= dy2
                     error += dx2
 
-                self._drawLineOverlap(x1, y1, x2, y2, color)
+                self._draw_line_overlap(x1, y1, x2, y2, color)
 
                 error = dx2 - dy
                 for i in range(thickness, 1, -1):
@@ -124,9 +124,9 @@ class Line(BaseObject):
                         overlap = "major"
                     error += dx2
 
-                    self._drawLineOverlap(x1, y1, x2, y2, color, overlap)
+                    self._draw_line_overlap(x1, y1, x2, y2, color, overlap)
      
-    def _drawLineOverlap(
+    def _draw_line_overlap(
             self,
             x1: int, y1: int,
             x2: int, y2: int,

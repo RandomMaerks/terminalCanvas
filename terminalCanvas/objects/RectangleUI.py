@@ -9,7 +9,7 @@ class RectangleUI(BaseObject):
             mode: str = "frame",
             char: str = "█",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
-            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 0),
+            background_color: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> None:
 
         super().__init__()
@@ -17,7 +17,7 @@ class RectangleUI(BaseObject):
         self.p1 = Coord(x1, y1)
         self.p2 = Coord(x2, y2)
         self.color = color
-        self.bgcolor = bgcolor
+        self.background_color = background_color
         self.mode = mode
         self.char = char
         self._build()
@@ -31,7 +31,7 @@ class RectangleUI(BaseObject):
         color = self.color
         mode = self.mode
         char = self.char
-        bgcolor = self.bgcolor
+        background_color = self.background_color
 
         if x1 > x2: x1, x2 = x2, x1
         if y1 > y2: y1, y2 = y2, y1
@@ -88,20 +88,20 @@ class RectangleUI(BaseObject):
                 left   = ["█", "█"]
 
             for x in range(x1, x2):
-                self._add([x, y1, color, top[0] if x==x1 else top[1], bgcolor])
-                self._add([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1], bgcolor])
+                self._add([x, y1, color, top[0] if x==x1 else top[1], background_color])
+                self._add([x+1, y2, color, bottom[0] if x+1==x2 else bottom[1], background_color])
             
             for y in range(y1, y2):
-                self._add([x1, y+1, color, left[0] if y+1==y2 else left[1], bgcolor])
-                self._add([x2, y, color, right[0] if y==y1 else right[1], bgcolor])
+                self._add([x1, y+1, color, left[0] if y+1==y2 else left[1], background_color])
+                self._add([x2, y, color, right[0] if y==y1 else right[1], background_color])
 
     def set_points(self, x1, y1, x2, y2):
         self.p1 = Coord(x1, y1)
         self.p2 = Coord(x2, y2)
         self._modified = True
 
-    def set_bgcolor(self, bgcolor: tuple[int, int, int, int]):
-        self.bgcolor = bgcolor
+    def set_background_color(self, background_color: tuple[int, int, int, int]):
+        self.background_color = background_color
         self._modified = True
 
     def set_mode(self, mode):
@@ -119,5 +119,5 @@ class RectangleUI(BaseObject):
             mode = self.mode,
             char = self.char,
             color = self.color,
-            bgcolor = self.bgcolor
+            background_color = self.background_color
         )

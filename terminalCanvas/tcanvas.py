@@ -49,7 +49,7 @@ class _point_t(ctypes.Structure):
 # Predefined display functions
 # ----------------------------
 
-def _sanitizeColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
+def _sanitize_color(color: tuple[int, int, int]) -> tuple[int, int, int]:
     """
     Bound all input RGB values to a specific range of [0, 255].
 
@@ -60,13 +60,13 @@ def _sanitizeColor(color: tuple[int, int, int]) -> tuple[int, int, int]:
     - tuple[int, int, int]
     """
 
-    red = clamp(roundInt(color[0]), 0, 255)
-    green = clamp(roundInt(color[1]), 0, 255)
-    blue = clamp(roundInt(color[2]), 0, 255)
+    red = clamp(round_int(color[0]), 0, 255)
+    green = clamp(round_int(color[1]), 0, 255)
+    blue = clamp(round_int(color[2]), 0, 255)
 
     return red, green, blue
 
-def _getFGColor(color: tuple[int, int, int]) -> str:
+def _get_foreground_color(color: tuple[int, int, int]) -> str:
     """
     Returns the ANSI escape sequence for changing the foreground color.
 
@@ -79,10 +79,10 @@ def _getFGColor(color: tuple[int, int, int]) -> str:
 
     if color is None: return "\033[38;2;0;0;0m"
 
-    red, green, blue = _sanitizeColor(color)
+    red, green, blue = _sanitize_color(color)
     return f"\033[38;2;{red};{green};{blue}m"
 
-def _getBGColor(color: tuple[int, int, int]) -> str:
+def _get_background_color(color: tuple[int, int, int]) -> str:
     """
     Returns the ANSI escape sequence for changing the background color.
 
@@ -95,10 +95,10 @@ def _getBGColor(color: tuple[int, int, int]) -> str:
 
     if color is None: return "\033[48;2;0;0;0m"
 
-    red, green, blue = _sanitizeColor(color)
+    red, green, blue = _sanitize_color(color)
     return f"\033[48;2;{red};{green};{blue}m"
 
-def _combineAlpha(
+def _combine_alpha(
         c_top: tuple[int, int, int, int],
         c_bot: tuple[int, int, int]
 ) -> tuple[int, int, int]:
@@ -144,8 +144,8 @@ class TCanvas:
 
     There are also certain attributes you can either access or modify:
     - `canvas.width` and `canvas.height`, the canvas resolution
-    - `canvas.wCenter` and `canvas.hCenter`, half of the canvas' width and height respectively
-    - `canvas.depthIntensity`, the depth intensity for 3D objects. The higher the number, the darker high-z objects are
+    - `canvas.width_center` and `canvas.height_center`, half of the canvas' width and height respectively
+    - `canvas.depth_intensity`, the depth intensity for 3D objects. The higher the number, the darker high-z objects are
     """
 
     def __init__(
@@ -168,83 +168,83 @@ class TCanvas:
         self.width = tw if width is None else width
         self.height = th * 2 if height is None else height
 
-        self.totalPixels = self.width * self.height
+        self.total_pixels = self.width * self.height
 
-        self.wCenter = self.width//2
-        self.hCenter = self.height//2
+        self.width_center = self.width // 2
+        self.height_center = self.height // 2
 
-        self._screenPixels = []
-        self._screenBuffer = []
+        self._screen_pixels = []
+        self._screen_buffer = []
 
-        self._xOff = 0
-        self._yOff = 0
+        self._x_off = 0
+        self._y_off = 0
 
-        self._bgColor = (255, 255, 255)
+        self._background_color = (255, 255, 255)
 
         self.clear()
-        self._screenBuffer = self._screenPixels
+        self._screen_buffer = self._screen_pixels
         self._buffered = False
 
-        self.depthIntensity = 0
-        self.depthAccuracy = 4
+        self.depth_intensity = 0
+        self.depth_accuracy = 4
 
-        self._lastKeyPressed = {}
+        self._last_key_pressed = {}
 
 
     # Display functions
 
     def _plot(
             self,
-            xIndex: int, yIndex: int, 
+            x: int, y: int, 
             color: tuple[int, int, int, int] = (0, 0, 0, 255), 
-            zIndex: float = None
+            z: float = None
     ) -> None:
         """
-        Plots a pixel to `_screenPixels`, a.k.a. the canvas.
+        Plots a pixel to `_screen_pixels`, a.k.a. the canvas.
 
-        `xIndex`, `yIndex`, and `color` are absolutely necessary since they define where and how to plot the pixel.
+        `x`, `y`, and `color` are absolutely necessary since they define where and how to plot the pixel.
         The pixel color can be RGB or RGBA.
 
-        `zIndex` is mainly for layered / 3D rendering and is optional.
+        `z` is mainly for layered / 3D rendering and is optional.
 
         Parameters:
-        - xIndex: int
-        - yIndex: int
+        - x: int
+        - y: int
         - color: tuple[int, int, int, int] = (0, 0, 0, 255)
-        - zIndex: float = None
+        - z: float = None
 
         Returns:
         - None
         """
 
-        x = xIndex + self._xOff
-        y = yIndex + self._yOff
+        x += self._x_off
+        y += self._y_off
 
         width = self.width
-        depthIntensity = self.depthIntensity
-        depthAccuracy = self.depthAccuracy
+        depth_intensity = self.depth_intensity
+        depth_accuracy = self.depth_accuracy
 
         if len(color) < 3:
             raise Exception("Missing color arguments. Must be an iterable with RGB values.")
         
-        if self._inRange(x, y):
+        if self._in_range(x, y):
             index = y * width + x
 
             if len(color) == 4 and color[3] != 255:
-                colorBelow = self._screenPixels[index]
-                color = _combineAlpha(color, colorBelow)
+                color_below = self._screen_pixels[index]
+                color = _combine_alpha(color, color_below)
                 
-            if zIndex is not None:
-                if zIndex < self.depthBuffer[index]:
-                    mult = round(1 - depthIntensity * zIndex, depthAccuracy)
-                    self.depthBuffer[index] = zIndex
-                    self._screenPixels[index] = tuple(
-                        roundInt(color[i] * mult)
+            if z is not None:
+                if z < self.depth_buffer[index]:
+                    mult = round(1 - depth_intensity * z, depth_accuracy)
+                    self.depth_buffer[index] = z
+                    self._screen_pixels[index] = tuple(
+                        round_int(color[i] * mult)
                         for i in range(3)
                     )
             else:
-                self._screenPixels[index] = tuple(
-                    roundInt(color[i])
+                self._screen_pixels[index] = tuple(
+                    round_int(color[i])
                     for i in range(3)
                 )
 
@@ -317,38 +317,38 @@ class TCanvas:
         ]
 
         width = self.width
-        hCenter = self.hCenter
+        height_center = self.height_center
         append = display.append
         sys_write = sys.stdout.write
         sys_flush = sys.stdout.flush
 
-        fg = _getFGColor
-        bg = _getBGColor
+        fg = _get_foreground_color
+        bg = _get_background_color
 
         last_p1 = None
         last_p2 = None
 
         if lock_to_terminal:
-            xRange, yRange = shutil.get_terminal_size()
-            xRange = min(width, xRange)
-            yRange = min(hCenter, (yRange // 2) * 2 - 1)
+            x_range, y_range = shutil.get_terminal_size()
+            x_range = min(width, x_range)
+            y_range = min(height_center, (y_range // 2) * 2 - 1)
         else:
-            xRange, yRange = width, hCenter
+            x_range, y_range = width, height_center
 
-        for y in range(yRange):
-            yIndex = y*2
+        for y in range(y_range):
+            yIndex = y * 2
             row1 = yIndex * width
             row2 = row1 + width
 
-            for x in range(xRange):
+            for x in range(x_range):
                 i1 = row1 + x
                 i2 = row2 + x
 
-                p1 = self._screenPixels[i1]
-                p2 = self._screenPixels[i2]
+                p1 = self._screen_pixels[i1]
+                p2 = self._screen_pixels[i2]
 
-                b1 = self._screenBuffer[i1]
-                b2 = self._screenBuffer[i2]
+                b1 = self._screen_buffer[i1]
+                b2 = self._screen_buffer[i2]
 
                 if not self._buffered:
                     if p1 != last_p1 or p2 != last_p2 or y == 0:
@@ -373,14 +373,14 @@ class TCanvas:
                         last_p1 = p1
                         last_p2 = p2
 
-            if y < hCenter-1: append("\n")
+            if y < height_center-1: append("\n")
 
         append(_COLOR_RESET)
 
         sys_write(''.join(display))
         sys_flush()
 
-        self._screenBuffer = list(self._screenPixels)
+        self._screen_buffer = list(self._screen_pixels)
         self._buffered = True
 
     def background(self, color: tuple[int, int, int], clear: bool = True) -> None:
@@ -398,7 +398,7 @@ class TCanvas:
         - None
         """
 
-        self._bgColor = color
+        self._background_color = color
         if clear:
             self.clear()
 
@@ -407,8 +407,8 @@ class TCanvas:
         Clears the canvas. More specifically, it fills the entire canvas with the current background color.
         """
 
-        self._screenPixels = [self._bgColor] * self.totalPixels
-        self.resetDepthBuffer()
+        self._screen_pixels = [self._background_color] * self.total_pixels
+        self.reset_depth_buffer()
 
     def end(self, clear_all: bool = False) -> None:
         """
@@ -433,8 +433,8 @@ class TCanvas:
         This implementation of `space()` iterates through every value of x before iterating to the next value of y.
         """
 
-        xMin, xMax = 0 - self._xOff, self.width - self._xOff
-        yMin, yMax = 0 - self._yOff, self.height - self._yOff
+        xMin, xMax = 0 - self._x_off, self.width - self._x_off
+        yMin, yMax = 0 - self._y_off, self.height - self._y_off
         for y in range(yMin, yMax):
             for x in range(xMin, xMax):
                 yield (x, y)
@@ -457,18 +457,18 @@ class TCanvas:
         self.width = tw if width is None else width
         self.height = th * 2 if height is None else height
 
-        self.totalPixels = self.width * self.height
+        self.total_pixels = self.width * self.height
 
-        self.wCenter = self.width//2
-        self.hCenter = self.height//2
+        self.width_center = self.width//2
+        self.height_center = self.height//2
 
-        self._screenPixels = []
+        self._screen_pixels = []
         self.clear()
-        self._screenBuffer = self._screenPixels
+        self._screen_buffer = self._screen_pixels
 
         self._buffered = False
 
-    def resetDepthBuffer(self) -> None:
+    def reset_depth_buffer(self) -> None:
         """
         Resets the depth buffer of the canvas. Particularly useful with 3D objects.
 
@@ -476,7 +476,7 @@ class TCanvas:
         Unless there's a specific circumstance where you need to reset the buffer midway through drawing, you don't need to call this method at all.
         """
 
-        self.depthBuffer = np.full((self.totalPixels), np.inf)
+        self.depth_buffer = np.full((self.total_pixels), np.inf)
         
             
     # Transformation & image processing
@@ -486,8 +486,8 @@ class TCanvas:
         Flips the canvas either horizontally, vertically, or both.
 
         `direction` can be either:
-        - `h`: flips the canvas horizontally
-        - `v`: flips the canvas vertically
+        - `h`, `horizontal`: flips the canvas horizontally
+        - `v`, `vertical`: flips the canvas vertically
         - None or anything else: flips the canvas horizontally AND vertically, or rotates the canvas 180°
 
         Parameters:
@@ -500,21 +500,21 @@ class TCanvas:
         width = self.width
         height = self.height
 
-        if direction in {"h"}:
-            self._screenPixels = [
-                self._screenPixels[y*width + x] 
+        if direction in {"h", "horizontal"}:
+            self._screen_pixels = [
+                self._screen_pixels[y*width + x] 
                 for y in range(height)                
                 for x in reversed(range(width))
                 ]
-        elif direction in {"v"}:
-            self._screenPixels = [
-                self._screenPixels[y*width + x]
+        elif direction in {"v", "vertical"}:
+            self._screen_pixels = [
+                self._screen_pixels[y*width + x]
                 for y in reversed(range(height))
                 for x in range(width)
                 ]
         else:
-            self._screenPixels = [
-                self._screenPixels[y*width + x]
+            self._screen_pixels = [
+                self._screen_pixels[y*width + x]
                 for y in reversed(range(height))
                 for x in reversed(range(width))
                 ]
@@ -526,7 +526,7 @@ class TCanvas:
         By default, the origin is on the top left.
         Every time you put the coordinate of a point or vertice at (0, 0), it will be at the top left.
 
-        Translating the canvas to something like (canvas.wCenter, canvas.hCenter) will move the origin to that center,
+        Translating the canvas to something like (canvas.width_center, canvas.height_center) will move the origin to that center,
         and putting the coordinate of a point or vertice at (0, 0) will now make it appear at the center instead.
 
         This method is "destructive", not "additive". It replaces the shifting, not add to it.
@@ -539,8 +539,8 @@ class TCanvas:
         - None
         """
 
-        self._xOff = int(xIndex)
-        self._yOff = int(yIndex)
+        self._x_off = int(xIndex)
+        self._y_off = int(yIndex)
 
     def invert(
             self,
@@ -570,11 +570,11 @@ class TCanvas:
         width = self.width
 
         for x, y in self.space():
-            if not self._inRange(x, y, x1, x2, y1, y2):
+            if not self._in_range(x, y, x1, x2, y1, y2):
                 continue
 
-            r, g, b = self._screenPixels[y*width + x]
-            self._screenPixels[y*width + x] = (255 - r, 255 - g, 255 - b)
+            r, g, b = self._screen_pixels[y*width + x]
+            self._screen_pixels[y*width + x] = (255 - r, 255 - g, 255 - b)
 
         self._buffered = False
 
@@ -608,13 +608,13 @@ class TCanvas:
         width = self.width
         height = self.height
 
-        new = [None] * self.totalPixels
+        new = [None] * self.total_pixels
 
         pixel_count = (radius * 2 + 1) * 2
 
         for x, y in self.space():
-            if not self._inRange(x, y, x1, x2, y1, y2):
-                new[y*width + x] = self._screenPixels[y*width + x]
+            if not self._in_range(x, y, x1, x2, y1, y2):
+                new[y*width + x] = self._screen_pixels[y*width + x]
                 continue
 
             all_r = 0
@@ -622,7 +622,7 @@ class TCanvas:
             all_b = 0
 
             for dy in range(y - radius, y + radius + 1):
-                r, g, b = self._screenPixels[
+                r, g, b = self._screen_pixels[
                     clamp(dy, 0, height - 1) *
                     width +
                     clamp(x, 0, width - 1)
@@ -632,7 +632,7 @@ class TCanvas:
                 all_b += b
 
             for dx in range(x - radius, x + radius + 1):
-                r, g, b = self._screenPixels[
+                r, g, b = self._screen_pixels[
                     clamp(y, 0, height - 1) *
                     width +
                     clamp(dx, 0, width - 1)
@@ -647,7 +647,7 @@ class TCanvas:
                 all_b // pixel_count,
             )
             
-        self._screenPixels = new.copy()
+        self._screen_pixels = new.copy()
         self._buffered = False
 
 
@@ -670,19 +670,19 @@ class TCanvas:
         - None
         """
 
-        toNPArray = np.zeros((self.height, self.width, 4), dtype=np.uint8)
+        np_canvas = np.zeros((self.height, self.width, 4), dtype=np.uint8)
         width = self.width
         height = self.height
         for y in range(height):
             for x in range(width):
                 red, green, blue = tuple(
                     clamp(x, 0, 255)
-                    for x in self._screenPixels[y*width + x]
+                    for x in self._screen_pixels[y*width + x]
                 )
                 alpha = 255
-                toNPArray[y, x] = np.array([red, green, blue, alpha])
+                np_canvas[y, x] = np.array([red, green, blue, alpha])
 
-        newImage = Image.fromarray(toNPArray)
+        newImage = Image.fromarray(np_canvas)
         if scale is not None:
             newImage = newImage.resize(
                 (newImage.width * scale, newImage.height * scale),
@@ -693,11 +693,11 @@ class TCanvas:
     
     # Keyboard & mouse input
 
-    def _keyPressed_WINDOWS(self, key: str, hold: bool = True) -> bool:
+    def _key_pressed_WINDOWS(self, key: str, hold: bool = True) -> bool:
         """
         Returns the pressed state of a key, designated for Windows systems.
 
-        Refer to `keyPressed()` for the full description.
+        Refer to `key_pressed()` for the full description.
         """
 
         map = VK_WINDOWS
@@ -707,22 +707,22 @@ class TCanvas:
             raise KeyError(f"Key {key} has not been defined in selected map.")
 
         current = bool(_user32.GetAsyncKeyState(vk) & 0x8000)
-        previous = self._lastKeyPressed.get(vk, False)
+        previous = self._last_key_pressed.get(vk, False)
 
-        self._lastKeyPressed[vk] = current
+        self._last_key_pressed[vk] = current
 
         if hold is True:
             return current
         else:
             return current and not previous
 
-    def _keyPressed_UNIX(self, key: str, hold: bool = True) -> bool:
+    def _key_pressed_UNIX(self, key: str, hold: bool = True) -> bool:
         """
         Returns the pressed state of a key, designated for Unix systems.
 
         This is purely a fallback system. I cannot guarantee that this works.
 
-        Refer to `keyPressed()` for the full description.
+        Refer to `key_pressed()` for the full description.
         """
         map = VK_UNIX
 
@@ -750,9 +750,9 @@ class TCanvas:
                 data = ""
                 
             current = (data == vk)
-            previous = self._lastKeyPressed.get(vk, False)
+            previous = self._last_key_pressed.get(vk, False)
 
-            self._lastKeyPressed[vk] = current
+            self._last_key_pressed[vk] = current
 
             if hold is True:
                 return current
@@ -762,7 +762,7 @@ class TCanvas:
             termios.tcsetattr(fd, termios.TCSADRAIN, old)
             fcntl.fcntl(fd, fcntl.F_SETFL, oldflags)
 
-    def keyPressed(self, key: str, hold: bool = True) -> bool:
+    def key_pressed(self, key: str, hold: bool = True) -> bool:
         """
         Returns the pressed state of a key.
 
@@ -785,11 +785,11 @@ class TCanvas:
         """
 
         if input_mode == "Windows":
-            return self._keyPressed_WINDOWS(key=key, hold=hold)
+            return self._key_pressed_WINDOWS(key=key, hold=hold)
         elif input_mode == "Unix":
-            return self._keyPressed_UNIX(key=key, hold=hold)
+            return self._key_pressed_UNIX(key=key, hold=hold)
 
-    def _getCharacter(self) -> str:
+    def _get_character(self) -> str:
         """
         [TEST METHOD] Get the output character from a key press.
 
@@ -833,7 +833,7 @@ class TCanvas:
 
             return ""
 
-    def getMousePos(self) -> tuple[int, int]:
+    def get_mouse_pos(self) -> tuple[int, int]:
         """
         Returns the coordinate of the mouse on the canvas.
 
@@ -849,7 +849,7 @@ class TCanvas:
         """
 
         if input_mode != "Windows":
-            raise OSError("Cannot use getMousePos() on non-Windows system/terminal.")
+            raise OSError("Cannot use get_mouse_pos() on non-Windows system/terminal.")
 
         point = _point_t()
         if not _user32.GetCursorPos(ctypes.pointer(point)):
@@ -899,30 +899,30 @@ class TCanvas:
 
     # Other functions        
         
-    def _inRange(
+    def _in_range(
             self,
-            xIndex: int, yIndex: int, 
-            xStart: int = 0, xEnd: int = None,
-            yStart: int = 0, yEnd: int = None
+            x: int, y: int, 
+            x_start: int = 0, x_end: int = None,
+            y_start: int = 0, y_end: int = None
     ) -> bool:
         """
-        Checks if a pixel is inside the visible boundary of the canvas.
+        Checks if a pixel at coordinate (x, y) is inside the visible boundary of the canvas.
 
         Parameters:
-        - xIndex: int
-        - yIndex: int
-        - xStart: int = 0
-        - xEnd: int = None
-        - yStart: int = 0
-        - yEnd: int = None
+        - x: int
+        - y: int
+        - x_start: int = 0
+        - x_end: int = None
+        - y_start: int = 0
+        - y_end: int = None
 
         Returns:
         - bool
         """
 
-        if xEnd is None: xEnd = self.width
-        if yEnd is None: yEnd = self.height
-        return xStart <= xIndex < xEnd and yStart <= yIndex < yEnd
+        if x_end is None: x_end = self.width
+        if y_end is None: y_end = self.height
+        return x_start <= x < x_end and y_start <= y < y_end
 
 
 # -------------------------------
@@ -948,7 +948,7 @@ class TCanvasUI(TCanvas):
 
     There are also certain attributes you can either access or modify:
     - `canvas.width` and `canvas.height`, the canvas resolution
-    - `canvas.wCenter` and `canvas.hCenter`, half of the canvas' width and height respectively
+    - `canvas.width_center` and `canvas.height_center`, half of the canvas' width and height respectively
     """
 
     def __init__(
@@ -971,81 +971,81 @@ class TCanvasUI(TCanvas):
         self.width = tw if width is None else width
         self.height = th if height is None else height
 
-        self.totalPixels = self.width * self.height
+        self.total_pixels = self.width * self.height
 
-        self.wCenter = self.width//2
-        self.hCenter = self.height//2
+        self.width_center = self.width//2
+        self.height_center = self.height//2
 
-        self._screenPixels = []
-        self._screenBuffer = []
+        self._screen_pixels = []
+        self._screen_buffer = []
 
-        self._xOff = 0
-        self._yOff = 0
+        self._x_off = 0
+        self._y_off = 0
 
-        self._bgColor = (0, 0, 0)
+        self._background_color = (0, 0, 0)
 
         #print(_SCREEN_CLEAR)
         self.clear()
-        self._screenBuffer = self._screenPixels
+        self._screen_buffer = self._screen_pixels
         self._buffered = False
 
-        self._lastKeyPressed = {}
+        self._last_key_pressed = {}
 
 
     # Display functions
 
     def _plot(
             self,
-            xIndex: int, yIndex: int, 
+            x: int, y: int, 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
             char: str = "█",
-            bgcolor: tuple[int, int, int, int] = None,
+            background_color: tuple[int, int, int, int] = None,
     ) -> None:
         """
-        Plots a pixel to `_screenPixels`, a.k.a. the canvas.
+        Plots a pixel to `_screen_pixels`, a.k.a. the canvas.
 
-        `xIndex`, `yIndex`, and `color` are absolutely necessary since they define where and how to plot the pixel.
+        `x`, `y`, and `color` are absolutely necessary since they define where and how to plot the pixel.
         The pixel color can be RGB or RGBA.
 
         `char` is the character to use.
         
-        `bgcolor` is the background color.
+        `background_color` is the background color.
 
         Parameters:
-        - xIndex: int
-        - yIndex: int
+        - x: int
+        - y: int
         - color: tuple[int, int, int, int] = (0, 0, 0, 255)
         - char: str = "█"
-        - bgcolor: tuple[int, int, int, int] = None
+        - background_color: tuple[int, int, int, int] = None
 
         Returns:
         - None
         """
 
-        x = xIndex + self._xOff
-        y = yIndex + self._yOff
+        x += self._x_off
+        y += self._y_off
 
         width = self.width
 
-        if bgcolor is None: bgcolor = color
+        if background_color is None: background_color = color
         
-        if self._inRange(x, y):
+        if self._in_range(x, y):
             if len(color) == 4 and color[3] != 255:
-                colorBelow = self._screenPixels[y*width + x][0:3]
-                color = _combineAlpha(color, colorBelow)
+                color_below = self._screen_pixels[y*width + x][0:3]
+                color = _combine_alpha(color, color_below)
 
-            if len(bgcolor) == 4 and bgcolor[3] != 255:
-                bgcolorBelow = self._screenPixels[y*width + x][4:7]
-                bgcolor = _combineAlpha(bgcolor, bgcolorBelow)
+            if len(background_color) == 4 and background_color[3] != 255:
+                background_color_below = self._screen_pixels[y*width + x][4:7]
+                background_color = _combine_alpha(background_color, background_color_below)
                 
-            self._screenPixels[y*width + x] = (
-                roundInt(color[0]),
-                roundInt(color[1]),
-                roundInt(color[2]),
+            self._screen_pixels[y*width + x] = (
+                round_int(color[0]),
+                round_int(color[1]),
+                round_int(color[2]),
                 char,
-                roundInt(bgcolor[0]),
-                roundInt(bgcolor[1]),
-                roundInt(bgcolor[2]),
+                round_int(background_color[0]),
+                round_int(background_color[1]),
+                round_int(background_color[2]),
             )
 
     def show(self, cursor: bool = False, lock_to_terminal: bool = False) -> None:
@@ -1066,7 +1066,7 @@ class TCanvasUI(TCanvas):
         - None
         """
 
-        display = [_CURSOb_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
+        display = [_CURSOR_HOME] if cursor else [_CURSOR_HOME + _CURSOR_HIDE]
 
         width = self.width
         height = self.height
@@ -1074,27 +1074,27 @@ class TCanvasUI(TCanvas):
         sys_write = sys.stdout.write
         sys_flush = sys.stdout.flush
 
-        fg = _getFGColor
-        bg = _getBGColor
+        fg = _get_foreground_color
+        bg = _get_background_color
 
         last_p1 = None
         last_bgp1 = None
 
         if lock_to_terminal:
-            xRange, yRange = shutil.get_terminal_size()
-            xRange = min(width, xRange)
-            yRange = min(height, (yRange // 2) * 2 - 1)
+            x_range, y_range = shutil.get_terminal_size()
+            x_range = min(width, x_range)
+            y_range = min(height, (y_range // 2) * 2 - 1)
         else:
-            xRange, yRange = width, height
+            x_range, y_range = width, height
 
-        for y in range(yRange):
+        for y in range(y_range):
             row1 = y * width
 
-            for x in range(xRange):
+            for x in range(x_range):
                 i1 = row1 + x
 
-                dp1 = self._screenPixels[i1]
-                db1 = self._screenBuffer[i1]
+                dp1 = self._screen_pixels[i1]
+                db1 = self._screen_buffer[i1]
 
                 p1 = dp1[:3]
                 b1 = db1[:3]
@@ -1125,7 +1125,7 @@ class TCanvasUI(TCanvas):
         sys_write(''.join(display))
         sys_flush()
 
-        self._screenBuffer = list(self._screenPixels)
+        self._screen_buffer = list(self._screen_pixels)
         self._buffered = True
 
     def clear(self) -> None:
@@ -1133,7 +1133,7 @@ class TCanvasUI(TCanvas):
         Clears the canvas. More specifically, it fills the entire canvas with the current background color.
         """
 
-        self._screenPixels = [self._bgColor + (' ',) + self._bgColor] * self.totalPixels
+        self._screen_pixels = [self._background_color + (' ',) + self._background_color] * self.total_pixels
 
     def resize(self, width: int = None, height: int = None) -> None:
         """
@@ -1153,13 +1153,13 @@ class TCanvasUI(TCanvas):
         self.width = tw if width is None else width
         self.height = th if height is None else height
 
-        self.totalPixels = self.width * self.height
+        self.total_pixels = self.width * self.height
 
-        self.wCenter = self.width//2
-        self.hCenter = self.height//2
+        self.width_center = self.width//2
+        self.height_center = self.height//2
 
-        self._screenPixels = []
+        self._screen_pixels = []
         self.clear()
-        self._screenBuffer = self._screenPixels
+        self._screen_buffer = self._screen_pixels
 
         self._buffered = False

@@ -70,22 +70,22 @@ class BaseObject:
 
     # Object transformation
 
-    def move(self, xShift: int, yShift: int) -> None:
+    def move(self, x_shift: int, y_shift: int) -> None:
         self.data = [
-            [x + xShift, y + yShift, color, *_]
+            [x + x_shift, y + y_shift, color, *_]
             for x, y, color, *_ in self.data
         ]
 
     def scale(self, amount: int) -> None:
-        xAnchor = (self.right - self.left) // 2
-        yAnchor = (self.bottom - self.top) // 2
+        x_anchor = (self.right - self.left) // 2
+        y_anchor = (self.bottom - self.top) // 2
         scaled = []
         for x, y, color, *_ in self.data:
-            xShift = (x - xAnchor) * (amount - 1)
-            yShift = (y - yAnchor) * (amount - 1)
+            x_shift = (x - x_anchor) * (amount - 1)
+            y_shift = (y - y_anchor) * (amount - 1)
             for i in range(amount):
                 for j in range(amount):
-                    scaled.append([x + i + xShift, y + j + yShift, color, *_])
+                    scaled.append([x + i + x_shift, y + j + y_shift, color, *_])
         self.data = scaled
 
     def set_color(self, color: tuple[int, int, int, int]) -> None:

@@ -13,7 +13,7 @@ class Camera:
             self,
             x: float = 0.0, y: float = 0.0, z: float = 0.0,
             ax: float = 0.0, ay: float = 0.0, az: float = 0.0,
-            viewportDistance: float = 1.0,
+            viewport_distance: float = 1.0,
             hFOV: int = 90, vFOV: int = 90
     ) -> None:
 
@@ -21,11 +21,11 @@ class Camera:
         self.angle = np.array([ax, ay, az])
 
         self._prev_angle = self.angle
-        self._getRotationMatrix()
+        self._get_rotation_matrix()
 
-        self.viewportDistance = viewportDistance
+        self.viewport_distance = viewport_distance
 
-        self._getClippingPlanes(
+        self._get_clipping_planes(
             hFOV = clamp(hFOV, 1, 179),
             vFOV = clamp(vFOV, 1, 179)
         )
@@ -44,11 +44,11 @@ class Camera:
     def rotate(self, ax: float = 0.0, ay: float = 0.0, az: float = 0.0) -> None:
         self.angle += np.array([ax, ay, az])
 
-    def detectInput(
+    def detect_input(
             self,
             canvas: TCanvas,
-            movementSpeed: float = 0.1,
-            rotationSpeed: float = pi/120,
+            movement_speed: float = 0.1,
+            rotation_speed: float = pi/120,
             keymap: dict = None,
     ) -> None:
         yaw = self.angle[1]
@@ -73,37 +73,37 @@ class Camera:
                 "clockwise": "O",
             }
         
-        if canvas.keyPressed(keymap["forward"]):
-            self.position += forward * movementSpeed
-        if canvas.keyPressed(keymap["backward"]):
-            self.position -= forward * movementSpeed
+        if canvas.key_pressed(keymap["forward"]):
+            self.position += forward * movement_speed
+        if canvas.key_pressed(keymap["backward"]):
+            self.position -= forward * movement_speed
 
-        if canvas.keyPressed(keymap["left"]):
-            self.position -= right * movementSpeed
-        if canvas.keyPressed(keymap["right"]):
-            self.position += right * movementSpeed
+        if canvas.key_pressed(keymap["left"]):
+            self.position -= right * movement_speed
+        if canvas.key_pressed(keymap["right"]):
+            self.position += right * movement_speed
 
-        if canvas.keyPressed(keymap["up"]):
-            self.position[1] += movementSpeed
-        if canvas.keyPressed(keymap["down"]):
-            self.position[1] -= movementSpeed
+        if canvas.key_pressed(keymap["up"]):
+            self.position[1] += movement_speed
+        if canvas.key_pressed(keymap["down"]):
+            self.position[1] -= movement_speed
 
         ax = ay = az = 0
 
-        if canvas.keyPressed(keymap["lookup"]):
-            ax = rotationSpeed
-        if canvas.keyPressed(keymap["lookdown"]):
-            ax = -rotationSpeed
+        if canvas.key_pressed(keymap["lookup"]):
+            ax = rotation_speed
+        if canvas.key_pressed(keymap["lookdown"]):
+            ax = -rotation_speed
 
-        if canvas.keyPressed(keymap["turnleft"]):
-            ay = rotationSpeed
-        if canvas.keyPressed(keymap["turnright"]):
-            ay = -rotationSpeed
+        if canvas.key_pressed(keymap["turnleft"]):
+            ay = rotation_speed
+        if canvas.key_pressed(keymap["turnright"]):
+            ay = -rotation_speed
 
-        if canvas.keyPressed(keymap["counterclockwise"]):
-            az = rotationSpeed
-        if canvas.keyPressed(keymap["clockwise"]):
-            az = -rotationSpeed
+        if canvas.key_pressed(keymap["counterclockwise"]):
+            az = rotation_speed
+        if canvas.key_pressed(keymap["clockwise"]):
+            az = -rotation_speed
 
         self.rotate(ax, ay, az)
 
@@ -114,17 +114,17 @@ class Camera:
             raise TypeError(f"{type(object)} is not a 3D object, thus cannot be used with Camera.")
 
         width, height = canvas.width, canvas.height
-        wCenter, hCenter = canvas.wCenter, canvas.hCenter
-        scale = max(width, height) * self.scaleMult
+        width_center, height_center = canvas.width_center, canvas.height_center
+        scale = max(width, height) * self.scale_mult
 
         pos = self.position
 
-        d = self.viewportDistance
-        clippingPlanes = zip(self.clippingNormals, self.clippingDistances)       
+        d = self.viewport_distance
+        clipping_planes = zip(self.clipping_normals, self.clipping_distances)       
 
         if not np.array_equal(self._prev_angle, self.angle):
-            self._getRotationMatrix()
-        rotMatrix = self._rotationMatrix
+            self._get_rotation_matrix()
+        rotation_matrix = self._rotation_matrix
 
         has_p2 = hasattr(object, "p2")
         has_p3 = hasattr(object, "p3")
@@ -135,30 +135,30 @@ class Camera:
         if has_multipoints:
             points = []
             for point in object.points:
-                new_point = (point - pos) @ rotMatrix
+                new_point = (point - pos) @ rotation_matrix
                 points.append(new_point)
         else:
             points = []
 
-            new_point1 = (object.p1 - pos) @ rotMatrix
+            new_point1 = (object.p1 - pos) @ rotation_matrix
             points.append(new_point1)
 
             if has_p2:
-                new_point2 = (object.p2 - pos) @ rotMatrix
+                new_point2 = (object.p2 - pos) @ rotation_matrix
                 points.append(new_point2)
 
             if has_p3:
-                new_point3 = (object.p3 - pos) @ rotMatrix
+                new_point3 = (object.p3 - pos) @ rotation_matrix
                 points.append(new_point3)            
 
         # Backface culling
 
-        backfaceCulling = getattr(object, 'backfaceCulling', False)
-        if backfaceCulling and self._normal(*points) <= 0: return
+        backface_culling = getattr(object, 'backface_culling', False)
+        if backface_culling and self._normal(*points) <= 0: return
 
         # Clip
 
-        for normal, distance in clippingPlanes:
+        for normal, distance in clipping_planes:
             # Point-to-Plane distance
             p2pd = list(
                 np.dot(normal, point) + distance
@@ -219,26 +219,26 @@ class Camera:
 
         # Drawing and finalising
 
-        temp_xOff, temp_yOff = canvas._xOff, canvas._yOff
-        canvas.translate(wCenter, hCenter)
+        temp_xOff, temp_yOff = canvas._x_off, canvas._y_off
+        canvas.translate(width_center, height_center)
         canvas.draw(new_obj)
         canvas.translate(temp_xOff, temp_yOff)
 
     def fov(self, hFOV: int = 90, vFOV: int = 90) -> None:
-        self._getClippingPlanes(
+        self._get_clipping_planes(
             hFOV = clamp(hFOV, 1, 179),
             vFOV = clamp(vFOV, 1, 179)
         )
 
     # Other methods
 
-    def _getRotationMatrix(self) -> None:
+    def _get_rotation_matrix(self) -> None:
         ax, ay, az = self.angle
 
         sx, sy, sz = sin(ax), sin(ay), sin(az)
         cx, cy, cz = cos(ax), cos(ay), cos(az)
 
-        self._rotationMatrix = np.array([
+        self._rotation_matrix = np.array([
             [ cy*cz, cx*sz + sx*sy*cz, sx*sz - cx*sy*cz],
             [-cy*sz, cx*cz - sx*sy*sz, sx*cz - cx*sy*sz],
             [ sy   ,-sx*cy           , cx*cy           ]
@@ -246,7 +246,7 @@ class Camera:
 
         self._prev_angle = np.array([ax, ay, az])
 
-    def _getClippingPlanes(self, hFOV: int = 90, vFOV: int = 90) -> None:
+    def _get_clipping_planes(self, hFOV: int = 90, vFOV: int = 90) -> None:
         hFOV_half, vFOV_half = hFOV / 2, vFOV / 2
 
         hFOV_r = hFOV_half * pi / 180
@@ -255,7 +255,7 @@ class Camera:
         hx, hz = cos(hFOV_r), sin(hFOV_r)
         vy, vz = cos(vFOV_r), sin(vFOV_r)
 
-        d = self.viewportDistance
+        d = self.viewport_distance
 
         nearPlane   = np.array([0.0, 0.0, 1.0])
         leftPlane   = np.array([ hx, 0.0, hz])
@@ -263,15 +263,10 @@ class Camera:
         bottomPlane = np.array([0.0,  vy, vz])
         topPlane    = np.array([0.0, -vy, vz])
 
-        self.clippingNormals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
-        self.clippingDistances = (-d, 0.0, 0.0, 0.0, 0.0)
+        self.clipping_normals = (nearPlane, leftPlane, rightPlane, bottomPlane, topPlane)
+        self.clipping_distances = (-d, 0.0, 0.0, 0.0, 0.0)
 
-        '''
-        viewportWidth = d * tan(hFOV_r) * 2
-        viewportHeight = d * tan(vFOV_r) * 2
-        '''
-
-        self.scaleMult = tan(vFOV_r) / tan(hFOV_r)
+        self.scale_mult = tan(vFOV_r) / tan(hFOV_r)
 
     def _intersect(self, p1, p2, normal, distance):
         num = - (distance + np.dot(normal, p1))
@@ -296,5 +291,5 @@ class Camera:
             width = self.width, height = self.height,
             x = self.position[0], y = self.position[1], z = self.position[2],
             ax = self.angle[0], ay = self.angle[1], az = self.angle[2],
-            viewportDistance = self.viewportDistance
+            viewport_distance = self.viewport_distance
         )

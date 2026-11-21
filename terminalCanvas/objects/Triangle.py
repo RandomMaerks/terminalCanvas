@@ -46,13 +46,13 @@ class Triangle(BaseObject):
         x123 = x12 + x23
 
         m = len(x123) // 2
-        if x13[m] < x123[m]: xLeft, xRight = x13, x123
-        else: xLeft, xRight = x123, x13
+        if x13[m] < x123[m]: x_left, x_right = x13, x123
+        else: x_left, x_right = x123, x13
 
         for y in range(y1, y3 + 1):
             i = y - y1
-            left = xLeft[i]
-            right = xRight[i]
+            left = x_left[i]
+            right = x_right[i]
             for x in range(left, right + 1):
                 self._add([x, y, color])
 

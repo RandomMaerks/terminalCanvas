@@ -47,12 +47,12 @@ def map(v, old_lo, old_hi, new_lo, new_hi):
     else:
         return new_lo
 
-def roundInt(x: float) -> int:
+def round_int(x: float) -> int:
     """
     Rounds a float to the nearest whole integer.
 
-    For example, `roundInt(0.1)` returns 0, while `roundInt(0.7)` returns 1.
-    `roundInt(0.5)` returns 1.
+    For example, `round_int(0.1)` returns 0, while `round_int(0.7)` returns 1.
+    `round_int(0.5)` returns 1.
 
     Parameters:
     - x: float
@@ -67,7 +67,7 @@ def roundInt(x: float) -> int:
         raise TypeError(repr(e) + f" (offender: {x})")
 
 def interpolate(i0, d0, i1, d1, round=True) -> list:
-    r = roundInt if round else lambda x: x
+    r = round_int if round else lambda x: x
 
     if i0 == i1:
         return [r(d0)]

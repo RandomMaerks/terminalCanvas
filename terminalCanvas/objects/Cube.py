@@ -59,7 +59,7 @@ class Cube(BaseCompoundObject):
                     *(p1 + vertices[tri1[1]]),
                     *(p1 + vertices[tri1[2]]),
                     color = color,
-                    backfaceCulling = True,
+                    backface_culling = True,
                 ))
 
                 self._add(Triangle3D(
@@ -67,7 +67,7 @@ class Cube(BaseCompoundObject):
                     *(p1 + vertices[tri2[1]]),
                     *(p1 + vertices[tri2[2]]),
                     color = color,
-                    backfaceCulling = True,
+                    backface_culling = True,
                 ))
             
             elif mode == "frame":

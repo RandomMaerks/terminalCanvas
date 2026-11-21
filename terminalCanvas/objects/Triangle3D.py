@@ -9,7 +9,7 @@ class Triangle3D(BaseObject):
             x2: int | float = 0, y2: int | float = 0, z2: float = 0, 
             x3: int | float = 0, y3: int | float = 0, z3: float = 0, 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
-            backfaceCulling: bool = False
+            backface_culling: bool = False
     ) -> None:
 
         super().__init__()
@@ -18,7 +18,7 @@ class Triangle3D(BaseObject):
         self.p2 = Coord(x2, y2, z2)
         self.p3 = Coord(x3, y3, z3)
         self.color = color
-        self.backfaceCulling = backfaceCulling
+        self.backface_culling = backface_culling
         self._build()
 
     def _build(self):
@@ -59,19 +59,19 @@ class Triangle3D(BaseObject):
 
         m = len(x123) // 2
         if x13[m] < x123[m]:
-            xLeft, xRight = x13, x123
-            zLeft, zRight = z13, z123
+            x_left, x_right = x13, x123
+            z_left, z_right = z13, z123
         else:
-            xLeft, xRight = x123, x13
-            zLeft, zRight = z123, z13
+            x_left, x_right = x123, x13
+            z_left, z_right = z123, z13
 
         for y in range(y1, y3 + 1):
             i = y - y1
-            left = xLeft[i]
-            right = xRight[i]
-            zSegment = interpolate(left, zLeft[i], right, zRight[i], round=False)
+            left = x_left[i]
+            right = x_right[i]
+            z_segment = interpolate(left, z_left[i], right, z_right[i], round=False)
             for x in range(left, right + 1):
-                z = zSegment[x-left]
+                z = z_segment[x-left]
                 self._add([x, y, color, z])
 
     def set_points(self, x1, y1, z1, x2, y2, z2, x3, y3, z3):
@@ -80,8 +80,8 @@ class Triangle3D(BaseObject):
         self.p3 = Coord(x3, y3, z3)
         self._modified = True
 
-    def set_backfaceCulling(self, backfaceCulling):
-        self.backfaceCulling = backfaceCulling
+    def set_backface_culling(self, backface_culling):
+        self.backface_culling = backface_culling
 
     def __copy__(self):
         return Triangle3D(

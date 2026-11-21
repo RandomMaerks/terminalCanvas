@@ -71,7 +71,7 @@ class Coord:
         )
 
     def __round__(self):
-        return Coord(roundInt(self.x), roundInt(self.y), self.z)
+        return Coord(round_int(self.x), round_int(self.y), self.z)
 
     # Comparisons
 

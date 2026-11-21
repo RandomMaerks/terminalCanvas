@@ -38,20 +38,20 @@ class Text(BaseObject):
         if font is None:
             font = font_5x7
 
-        kerningInfo = font.get("kerning", dict())
+        kerning_info = font.get("kerning", dict())
         
-        xCurrent = x1
-        yCurrent = y1
+        x_curr = x1
+        y_curr = y1
         
         for message in messages:
-            textLines = []
-            totalWidth = 0
+            text_lines = []
+            total_width = 0
             glyph = []
 
             for index, char in enumerate(message):
                 if char not in font:
-                    xCurrent += 4 + spacing
-                    totalWidth += 4 + spacing
+                    x_curr += 4 + spacing
+                    total_width += 4 + spacing
                     continue
 
                 glyph_data = font.get(char)
@@ -63,34 +63,36 @@ class Text(BaseObject):
                 
                 charWidth = len(glyph[0])
 
-                kern = kerningInfo.get(f"{message[index-1]}{char}", 0) if index > 0 else 0
+                kern = kerning_info.get(f"{message[index-1]}{char}", 0) if index > 0 else 0
 
                 for y, row in enumerate(glyph):
                     line = []
                     for x, data in enumerate(row):
                         line.append([
                             data, 
-                            xCurrent + x + kern + offset_x, 
-                            yCurrent + y + offset_y,
+                            x_curr + x + kern + offset_x, 
+                            y_curr + y + offset_y,
                             color
                         ])
-                    textLines.append(line)
+                    text_lines.append(line)
 
-                xCurrent += charWidth + spacing + kern + next_x + offset_x
-                totalWidth += charWidth + spacing + kern + next_x + offset_x
+                total_offset = charWidth + spacing + kern + next_x + offset_x
+                
+                x_curr += total_offset
+                total_width += total_offset
             
-            xCurrent = x1
-            yCurrent += len(glyph)
+            x_curr = x1
+            y_curr += len(glyph)
 
             if anchor_x == "left": xOff = 0
-            elif anchor_x == "center": xOff = -(totalWidth)//2
-            elif anchor_x == "right": xOff = -(totalWidth)
+            elif anchor_x == "center": xOff = -(total_width)//2
+            elif anchor_x == "right": xOff = -(total_width)
 
             if anchor_y == "top": yOff = 0
-            elif anchor_y == "center": yOff = -len(textLines[0])//2
-            elif anchor_y == "bottom": yOff = -len(textLines[0])
+            elif anchor_y == "center": yOff = -len(text_lines[0])//2
+            elif anchor_y == "bottom": yOff = -len(text_lines[0])
 
-            for line in textLines:
+            for line in text_lines:
                 for data, x, y, color in line:
                     if data == "1": self._add([x + xOff, y + yOff, color])
 

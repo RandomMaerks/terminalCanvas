@@ -3,7 +3,7 @@ from .objects import *
 from .Coord import Coord
 from .Camera import Camera
 from . import fonts
-from .helper import roundInt, clamp, map
+from .helper import round_int, clamp, map
 from .vk import VK_WINDOWS, VK_UNIX
 
 __all__ = [
@@ -35,7 +35,7 @@ __all__ = [
     "VK_WINDOWS",
     "VK_UNIX",
 
-    "roundInt",
+    "round_int",
     "clamp",
     "map",
 ]

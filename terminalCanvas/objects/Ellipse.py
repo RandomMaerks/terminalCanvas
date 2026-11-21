@@ -45,7 +45,7 @@ class Ellipse(BaseObject):
                 return
 
             for y in range(-ry, ry + 1):
-                xMax = roundInt(rx * (1 - (y*y)/(ry2))**0.5)
+                xMax = round_int(rx * (1 - (y*y)/(ry2))**0.5)
 
                 for x in range(-xMax, xMax+1):
                     self._add([cx + x, cy + y, color])

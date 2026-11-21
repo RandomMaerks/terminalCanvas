@@ -13,7 +13,7 @@ class TextUI(BaseObject):
             max_height: int = None,
             cutoff: str = "whole",
             color: tuple[int, int, int, int] = (255, 255, 255, 255),
-            bgcolor: tuple[int, int, int, int] = (0, 0, 0, 0),
+            background_color: tuple[int, int, int, int] = (0, 0, 0, 0),
     ) -> None:
 
         super().__init__()
@@ -22,7 +22,7 @@ class TextUI(BaseObject):
         self.message = message
         self.anchor_x = anchor_x
         self.color = color
-        self.bgcolor = bgcolor
+        self.background_color = background_color
         self.max_width = max_width
         self.max_height = max_height
         self.cutoff = cutoff
@@ -36,7 +36,7 @@ class TextUI(BaseObject):
         messages = self.message.split("\n")
         anchor_x = self.anchor_x
         color = self.color
-        bgcolor = self.bgcolor
+        background_color = self.background_color
         max_width = self.max_width
         max_height = self.max_height
         cutoff = self.cutoff
@@ -82,7 +82,7 @@ class TextUI(BaseObject):
             elif anchor_x == "right": xOff = -(totalWidth)
 
             for x, char in enumerate(message):
-                self._add([x1 + x + xOff, y1 + y, color, char, bgcolor])
+                self._add([x1 + x + xOff, y1 + y, color, char, background_color])
 
             y += 1
 
@@ -90,8 +90,8 @@ class TextUI(BaseObject):
         self.p1 = Coord(x1, y1)
         self._modified = True
 
-    def set_bgcolor(self, bgcolor: tuple[int, int, int, int]):
-        self.bgcolor = bgcolor
+    def set_background_color(self, background_color: tuple[int, int, int, int]):
+        self.background_color = background_color
         self._modified = True
 
     def set_message(self, message):
@@ -122,5 +122,5 @@ class TextUI(BaseObject):
             max_width = self.max_width, max_height = self.max_height,
             cutoff = self.cutoff,
             color = self.color,
-            bgcolor = self.bgcolor
+            background_color = self.background_color
         )
