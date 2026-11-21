@@ -24,10 +24,6 @@ class Polygon(BaseObject):
         n = len(points)
         if n <= 1: return
 
-        all_y = {p[1] for p in points}
-        ys = min(all_y)
-        yx = max(all_y)
-
         lines = {}
 
         for i in range(n):
