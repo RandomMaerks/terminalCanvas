@@ -1,5 +1,8 @@
 # terminalCanvas
 
+![GitHub Release](https://img.shields.io/github/v/release/RandomMaerks/terminalCanvas)
+![GitHub Repo stars](https://img.shields.io/github/stars/RandomMaerks/terminalCanvas?style=flat&logo=github)
+
 **terminalCanvas** is a Python library intended for creating and displaying raster graphics on the terminal, capable of rendering 2D and 3D scenes.
 
 ![Low-poly terrain, made with built-in 3D rendering](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_terrain.png)
