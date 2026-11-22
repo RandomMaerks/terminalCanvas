@@ -5,7 +5,9 @@
 ![GitHub Repo stars](https://img.shields.io/github/stars/RandomMaerks/terminalCanvas?style=flat&logo=github)
 ![PyPI Downloads](https://img.shields.io/pypi/dm/terminalCanvas)
 
-**terminalCanvas** is a Python library intended for creating and displaying raster graphics on the terminal, capable of rendering 2D and 3D scenes.
+**terminalCanvas** is a beginner-friendly Python library which provides a canvas for creating and displaying raster graphics directly on the terminal, as well as a powerful 2D and 3D graphics engine with an easy-to-use interface.
+
+The library is intended for creative individuals and programmers alike. It is designed to be as straightforward as possible for non-advanced users who just want to draw simple graphics and have immediate visual feedback, but not authoritative in a way that removes the freedom and control for more advanced users.
 
 ![Spinning cube demo](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/spinning_cube.gif)
 ![Low-poly terrain, made with built-in 3D rendering](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_terrain.png)
@@ -13,10 +15,22 @@
 > [!WARNING]
 > Until version 1.0 arrives, do not expect the public API to be stable.
 
-> [!NOTE]
-> This library is mainly developed and tested on **Windows**, with all the quirks of the Windows command prompt in mind. Support for Linux terminals is extremely limited.
+## OS & terminal support
 
-## Installation & Requirements
+`terminalCanvas` is developed mainly on Windows with all the Windows-related terminal functionalities in mind. Support on Linux is still limited.
+
+| | Windows Console Host | Windows Terminal | Other<sup>1</sup> |
+| --- | :---: | :---: | :---: |
+| Show canvas on terminal, like at all | **Yes** | **Yes** | **Yes** |
+| True colour (24-bit) | **Yes** | **Yes** | Not tested |
+| Key press detection | **Yes** | **Yes** | Maybe (works differently than intended) |
+| Mouse detection | **Yes** | No | No |
+
+_<sup>1</sup> "Other" just means any other terminals I've tested this on, and it is not representative of non-Windows terminals. Places I've tested this library on: Acode (Alpine Linux), Termux, Linux Mint._
+
+## Installation
+
+The `terminalCanvas` module currently requires Python of **version 3.11 and up**.
 
 Install `terminalCanvas` through PyPI (change the `py` alias if needed):
 
@@ -30,17 +44,7 @@ Or, if you want to install it using Git:
 py -m pip install git+https://github.com/RandomMaerks/terminalCanvas.git
 ```
 
-The `terminalCanvas` module currently requires Python of **version 3.11 and up**.
-
-The module uses `Pillow` for image processing, as well as `NumPy` for image-to-array conversion and other array-related operations. They should automatically install along with the main installation.
-
-## How it works
-
-Because most monospaced fonts are quite narrow (*width:height ratio is about 1:2*), we can use the half-box character `▀` to represent one squarish pixel, along with the other empty half to represent another pixel below it.
-
-Additionally, some terminal support changing colours independently for a character (called the *foreground*) and its own background using [ANSI escape sequences](https://en.wikipedia.org/wiki/ANSI_escape_code), so we're able to fully simulate two whole pixels whose colours can be independently changed.
-
-To create an entire canvas, we just need to fill up every space in the terminal with this character. Since one single character is able to represent two pixels, the total number of characters used should be `width * (height // 2)`, where `width` and `height` are the possible number of lines and columns respectively to write text for any given window size.
+Two dependencies of `terminalCanvas`, namely `Pillow` and `NumPy`, will also be downloaded.
 
 ## Basic usage
 
