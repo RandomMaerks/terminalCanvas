@@ -1,9 +1,20 @@
-# terminalCanvas
+<h1 align="center">
+    terminalCanvas
+</h1>
 
-![PyPI Version](https://img.shields.io/pypi/v/terminalCanvas)
-![GitHub Release](https://img.shields.io/github/v/release/RandomMaerks/terminalCanvas?label=github%20release&color=red)
-![GitHub Repo stars](https://img.shields.io/github/stars/RandomMaerks/terminalCanvas?style=flat&logo=github)
-![PyPI Downloads](https://img.shields.io/pypi/dm/terminalCanvas)
+<p align="center">
+    <img src="https://img.shields.io/badge/python-%3E%3D3.11-blue" alt="Python" />
+    <a href="https://pypi.org/project/terminalCanvas/" target="_blank">
+        <img src="https://img.shields.io/pypi/v/terminalCanvas" alt="PyPI Version">
+    </a>
+    <a href="https://github.com/RandomMaerks/terminalCanvas/blob/main/LICENSE" target="_blank">
+        <img src="https://img.shields.io/github/license/RandomMaerks/terminalCanvas?color=red" alt="License">
+    </a>
+    <img src="https://img.shields.io/github/stars/RandomMaerks/terminalCanvas?style=flat&logo=github" alt="GitHub Repo stars">
+    <a href="https://pypi.org/project/terminalCanvas/" target="_blank">
+        <img src="https://img.shields.io/pypi/dm/terminalCanvas" alt="PyPI Downloads">
+    </a>
+</p>
 
 **terminalCanvas** is a beginner-friendly Python library which provides a canvas for creating and displaying raster graphics directly on the terminal, as well as a powerful 2D and 3D graphics engine with an easy-to-use interface.
 
