@@ -269,6 +269,7 @@ class TCanvas:
         - None
         """
 
+        # In case of a compound object: draw its components
         if getattr(object, '_compound', False):
             if object._modified:
                 object._build()
@@ -279,11 +280,13 @@ class TCanvas:
 
             return
 
+        # In case that a camera is passed through: translate the object through camera view
         if camera is not None:
             camera._draw(object, self)
 
             return
-        
+
+        # In case of all graphical objects: regular draw
         plot = self._plot
 
         if object._modified:
