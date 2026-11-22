@@ -77,3 +77,15 @@ class Cube(BaseCompoundObject):
                         *(p1 + vertices[face[i+1 if i+1 < 4 else 0]]),
                         color = color,
                     ))
+
+    def set_point(x1: int | float, y1: int | float, z1: float):
+        self.p1 = Coord(x1, y1, z1)
+        self._build()
+
+    def set_length(length: int | float):
+        self.length = length
+        self._build()
+
+    def set_mode(mode: str):
+        self.mode = mode
+        self._build()
