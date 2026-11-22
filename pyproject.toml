@@ -13,7 +13,7 @@ requires-python = ">= 3.11"
 authors = [
     {name = "RandomMaerks", email = "rmforbusiness@gmail.com"},
 ]
-descrption = "A module for creating a canvas and displaying text-based graphics in the terminal"
+description = "A module for creating a canvas and displaying text-based graphics in the terminal"
 readme = "README.md"
 license = "GPL-3.0-only"
 license-files = ["LICENSE"]
