@@ -567,8 +567,8 @@ class TCanvas:
         - None
         """
 
-        if x2 is None: x2 = self.width - 1
-        if y2 is None: y2 = self.height - 1
+        if x2 is None: x2 = self.width
+        if y2 is None: y2 = self.height
 
         width = self.width
 
@@ -605,8 +605,8 @@ class TCanvas:
         - None
         """
 
-        if x2 is None: x2 = self.width - 1
-        if y2 is None: y2 = self.height - 1
+        if x2 is None: x2 = self.width
+        if y2 is None: y2 = self.height
 
         width = self.width
         height = self.height
