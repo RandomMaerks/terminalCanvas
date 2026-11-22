@@ -7,7 +7,9 @@
 
 **terminalCanvas** is a Python library intended for creating and displaying raster graphics on the terminal, capable of rendering 2D and 3D scenes.
 
-![Low-poly terrain, made with built-in 3D rendering](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_terrain.png)
+![Spinning cube demo](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/spinning_cube.mp4)
+
+![Low-poly terrain, made with built-in 3D rendering](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_terrain.png)
 
 > [!WARNING]
 > Until version 1.0 arrives, do not expect the public API to be stable.
@@ -115,7 +117,7 @@ canvas.show()
 
 This will print everything in our canvas to the terminal.
 
-![An example of the line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_lineExample.png)
+![An example of the line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_lineExample.png)
 
 However, `canvas.show()` only shows the canvas once. You can put it in a loop to keep it running, along with `key_pressed()` to stop the loop using keyboard input:
 
@@ -176,7 +178,7 @@ line = tc.Line3D(0, 0, 0, canvas.width, canvas.height, 1, color=(255, 0, 0))
 
 However, when we draw this on the canvas, it does not look very impressive.
 
-![An example of a "3D" line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_line3Dexample.png)
+![An example of a "3D" line being drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_line3Dexample.png)
 
 `TCanvas` interprets the "third dimension" as an indicator for "distance". Basically, the lower the z-value, the "closer" the object, and the higher the z-value, the "further".
 
@@ -216,7 +218,7 @@ The camera will transform and project our 3D line, then it will feed the project
 
 Now, do this for the other lines. When we set the camera at position `(2.0, 2.0, 2.0)` and with an angle of `(-0.6, 2.35, 0.0)`, we should have:
 
-![All 3 axes drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_3Daxis.png)
+![All 3 axes drawn on the canvas](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_3Daxis.png)
 
 Remember the `while` loop from before? After our `escape` key press check, let's add:
 
@@ -267,7 +269,7 @@ canvas.end()
 
 Here's an example of a voxel-based world drawn using the 3D renderer (ignore the abysmal performance):
 
-![Voxelate, a voxel-based Minecraft wannabe](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/images/readme_voxelate.png)
+![Voxelate, a voxel-based Minecraft wannabe](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_voxelate.png)
 
 > [!NOTE]
 > The colour banding effect is purely an aesthetic choice, caused by two attributes of `TCanvas`: `depth_intensity` and `depth_accuracy`.
