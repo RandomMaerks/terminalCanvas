@@ -76,6 +76,7 @@ class BaseCompoundObject:
         for obj in self.objects:
             obj.color = color
             obj._modified = True
+        self._modified = True
 
     # Collision detection
 

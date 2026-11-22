@@ -80,12 +80,20 @@ class Cube(BaseCompoundObject):
 
     def set_point(self, x1: int | float, y1: int | float, z1: float):
         self.p1 = Coord(x1, y1, z1)
-        self._build()
+        self._modified = True
 
     def set_length(self, length: int | float):
         self.length = length
-        self._build()
+        self._modified = True
 
     def set_mode(self, mode: str):
         self.mode = mode
-        self._build()
+        self._modified = True
+
+    def __copy__(self):
+        return Cube(
+            *self.p1,
+            length = self.length,
+            mode = self.mode,
+            color = self.color
+        )
