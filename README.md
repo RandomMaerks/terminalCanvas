@@ -20,8 +20,16 @@
 
 The library is intended for creative individuals and programmers alike. It is designed to be as straightforward as possible for non-advanced users who just want to draw simple graphics and have immediate visual feedback, but not authoritative in a way that removes the freedom and control for more advanced users.
 
-![Spinning cube demo](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/spinning_cube.gif)
-![Low-poly terrain, made with built-in 3D rendering](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_terrain.png)
+<img
+  src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/spinning_cube.gif"
+  alt="Spinning cube demo"
+  width="100%"
+/>
+<img
+  src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_terrain.png"
+  alt="Low-poly terrain, made with built-in 3D rendering"
+  width="100%"
+/>
 
 > [!WARNING]
 > Until version 1.0 arrives, do not expect the public API to be stable.
