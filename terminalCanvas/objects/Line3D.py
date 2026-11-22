@@ -25,17 +25,17 @@ class Line3D(BaseObject):
         color = self.color
      
         dx = abs(x2 - x1)
-        sx = 1 if x1 < x2 else -1
-
         dy = abs(y2 - y1)
-        sy = 1 if y1 < y2 else -1
-
         dz = abs(z2 - z1)
-        sz = 1 if z1 < z2 else -1
 
         dm = max(dx, dy, dz)
-        
         ex = ey = ez = dm/2
+
+        sx = 1 if x1 < x2 else -1
+        sy = 1 if y1 < y2 else -1
+        sz = dz/dm if z1 < z2 else -dz/dm
+        #sz = 1 if z1 < z2 else -1
+        
         for _ in range(int(dm) + 1):
             self._add([x1, y1, color, z1])
 
