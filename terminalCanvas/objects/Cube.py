@@ -9,7 +9,7 @@ from ..helper import *
 class Cube(BaseCompoundObject):
     def __init__(
             self,
-            x1: int | float, y1: int | float, z1: float,
+            x1: int | float = 0, y1: int | float = 0, z1: float = 0,
             length: int | float = 1.0,
             mode: str = "solid",
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
