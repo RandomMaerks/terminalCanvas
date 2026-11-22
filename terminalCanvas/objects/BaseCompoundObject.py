@@ -41,7 +41,7 @@ class BaseCompoundObject:
         """
         Initialises `BaseCompoundObject`.
         """
-        self._modified = True
+        self._modified = False
         self._compound = True
         self._empty()
 
@@ -73,9 +73,7 @@ class BaseCompoundObject:
             obj.scale(amount)
 
     def set_color(self, color: tuple[int, int, int, int]) -> None:
-        for obj in self.objects:
-            obj.color = color
-            obj._modified = True
+        self.color = color
         self._modified = True
 
     # Collision detection
