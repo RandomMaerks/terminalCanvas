@@ -78,14 +78,14 @@ class Cube(BaseCompoundObject):
                         color = color,
                     ))
 
-    def set_point(x1: int | float, y1: int | float, z1: float):
+    def set_point(self, x1: int | float, y1: int | float, z1: float):
         self.p1 = Coord(x1, y1, z1)
         self._build()
 
-    def set_length(length: int | float):
+    def set_length(self, length: int | float):
         self.length = length
         self._build()
 
-    def set_mode(mode: str):
+    def set_mode(self, mode: str):
         self.mode = mode
         self._build()
