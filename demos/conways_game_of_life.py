@@ -28,6 +28,7 @@ clock = Clock(20)
 
 canvas = tc.TCanvas()
 width, height = canvas.width, canvas.height
+canvas.background((0, 0, 0))
 
 grid = [
     [random.randint(0, 1) for _ in range(width)]
@@ -98,7 +99,7 @@ while clock.tick():
                 live_cell.set_points(x, y)
 
                 life = life_duration[y][x]
-                new_color = hsv_to_rgb((4 * life) / 360, 1, 1 / (0.05 * life + 1))
+                new_color = hsv_to_rgb((4 * life) / 360, 1, 1 - 1 / (0.05 * life + 1))
                 live_cell.set_color(tuple(_ * 255 for _ in new_color))
 
                 canvas.draw(live_cell)
