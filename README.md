@@ -36,7 +36,8 @@ The library is intended for creative individuals and programmers alike. It is de
   width="100%"
 />
 
-> [!WARNING]
+> ⚠️ **Warning**
+> 
 > Until version 1.0 arrives, do not expect the public API to be stable.
 
 ## OS & terminal support
@@ -104,7 +105,8 @@ Some properties of the canvas can be changed. For example, to change the backgro
 canvas.background((125, 170, 245))
 ```
 
-> [!NOTE]
+> ℹ️ **Note**
+> 
 > Using a *method* of a *class* means using the syntax `<instance_of_class>.<method_name>()`.
 > 
 > The class `TCanvas` has a method called `background()`. When we created our `TCanvas` instance, which is `canvas`, it also includes that method. So, we should write `canvas.background()`.
@@ -129,7 +131,8 @@ This will create an instance of the `Line` class with:
 
 There are other geometric shapes like `Triangle` and `Rectangle`, as well as other useful objects such as `Text` or `Image`.
 
-> [!NOTE]
+> ℹ️ **Note**
+> 
 > In this example, certain *arguments* are included inside the parentheses of `tc.Line()`. These are the arguments that define the attributes of this particular instance of `Line`.
 >
 > However, these parameters all have a default value, and you can simply write `line = tc.Line()` without any arguments. This is by design, and you can easily change its attributes later with *setter methods*, like `set_points()`.
@@ -304,7 +307,8 @@ Here's an example of a voxel-based world drawn using the 3D renderer (ignore the
 
 ![Voxelate, a voxel-based Minecraft wannabe](https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_voxelate.png)
 
-> [!NOTE]
+> ℹ️ **Note**
+> 
 > The colour banding effect is purely an aesthetic choice, caused by two attributes of `TCanvas`: `depth_intensity` and `depth_accuracy`.
 > 
 > `depth_intensity` changes how dark far objects get; the higher the value, the darker. Usually, this value goes between 0 and 0.1.
@@ -336,7 +340,8 @@ tc.RectangleUI(
 
 `TCanvasUI` also has all the essential methods like `draw()` and `show()`.
 
-> [!NOTE]
+> ℹ️ **Note**
+> 
 > `TCanvasUI` fundamentally changes what a "pixel" is on the canvas and how each pixel is represented and displayed on the terminal. So, while non-UI objects are usable (to some extent) in `TCanvasUI`, they will not be displayed in the same manner as in `TCanvas`.
 
 ## Credits & honourable mentions
