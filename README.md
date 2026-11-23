@@ -26,6 +26,11 @@ The library is intended for creative individuals and programmers alike. It is de
   width="100%"
 />
 <img
+  src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/conways_game_of_life.gif"
+  alt="Conway's Game of Life demo"
+  width="100%"
+/>
+<img
   src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_terrain.png"
   alt="Low-poly terrain, made with built-in 3D rendering"
   width="100%"
