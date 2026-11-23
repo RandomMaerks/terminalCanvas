@@ -63,6 +63,12 @@ Or, if you want to install it using Git:
 py -m pip install git+https://github.com/RandomMaerks/terminalCanvas.git
 ```
 
+Note that the `main` branch is **not** stable, so it's recommended to use a specific tag when installing with Git. For example, to download the `v0.6.1` tag:
+
+```
+py -m pip install git+https://github.com/RandomMaerks/terminalCanvas.git@v0.6.1
+```
+
 Two dependencies of `terminalCanvas`, namely `Pillow` and `NumPy`, will also be downloaded.
 
 ## Basic usage
