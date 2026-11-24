@@ -35,6 +35,11 @@ The library is intended for creative individuals and programmers alike. It is de
   width="100%"
 />
 <img
+  src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/quick_sort.gif"
+  alt="Quick sort visualisation demo"
+  width="100%"
+/>
+<img
   src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_terrain.png"
   alt="Low-poly terrain, made with built-in 3D rendering"
   width="100%"
