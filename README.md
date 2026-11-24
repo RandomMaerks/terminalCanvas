@@ -20,6 +20,10 @@
 
 The library is intended for creative individuals and programmers alike. It is designed to be as straightforward as possible for non-advanced users who just want to draw simple graphics and have immediate visual feedback, but not authoritative in a way that removes the freedom and control for more advanced users.
 
+> ⚠️ **Warning**
+> 
+> Until version 1.0 arrives, do not expect the public API to be stable.
+
 <img
   src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/spinning_cube.gif"
   alt="Spinning cube demo"
@@ -35,10 +39,6 @@ The library is intended for creative individuals and programmers alike. It is de
   alt="Low-poly terrain, made with built-in 3D rendering"
   width="100%"
 />
-
-> ⚠️ **Warning**
-> 
-> Until version 1.0 arrives, do not expect the public API to be stable.
 
 ## OS & terminal support
 
