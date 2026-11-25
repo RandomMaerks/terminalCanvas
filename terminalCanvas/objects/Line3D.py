@@ -28,7 +28,7 @@ class Line3D(BaseObject):
         dy = abs(y2 - y1)
         dz = abs(z2 - z1)
 
-        dm = max(dx, dy, dz)
+        dm = max(dx, dy, dz, 0.01)
         ex = ey = ez = dm/2
 
         sx = 1 if x1 < x2 else -1
