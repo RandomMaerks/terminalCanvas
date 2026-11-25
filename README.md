@@ -40,8 +40,8 @@ The library is intended for creative individuals and programmers alike. It is de
   width="100%"
 />
 <img
-  src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/readme_terrain.png"
-  alt="Low-poly terrain, made with built-in 3D rendering"
+  src="https://raw.githubusercontent.com/RandomMaerks/terminalCanvas/main/gallery/perlin_terrain.gif"
+  alt="Low-poly terrain demo"
   width="100%"
 />
 
