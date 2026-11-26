@@ -46,88 +46,80 @@ def show_numbers(
 
     cached_arr = arr.copy()
 
-def main():
-    # ----------
-    # SETTING UP
-    # ----------
+canvas = tc.TCanvas()
+canvas.background((0, 0, 0))
+canvas.title("Quick sort demo")
 
-    global canvas
-    canvas = tc.TCanvas()
-    canvas.background((0, 0, 0))
-    canvas.title("Quick sort demo")
+elements = canvas.width
 
-    global elements
-    elements = canvas.width
+arr = [x+1 for x in range(elements)]
+sorted_arr = sorted(arr)
+cached_arr = arr.copy()
 
-    global arr, sorted_arr, cached_arr
-    arr = [x+1 for x in range(elements)]
-    sorted_arr = sorted(arr)
-    cached_arr = arr.copy()
+# -----------------
+# MAIN DRAW PROCESS
+# -----------------
 
-    # -----------------
-    # MAIN DRAW PROCESS
-    # -----------------
+# First display
+show_numbers()
+time.sleep(0.5)
 
-    # First display
-    show_numbers()
-    time.sleep(0.5)
+# Shuffle the list
+iterations = elements * 2
+for _ in range(iterations):
+    index1 = random.randrange(0, elements)
+    index2 = random.randrange(0, elements)
 
-    # Shuffle the list
-    iterations = elements * 2
-    for _ in range(iterations):
-        index1 = random.randrange(0, elements)
-        index2 = random.randrange(0, elements)
-
-        arr[index1], arr[index2] = arr[index2], arr[index1]
-        show_numbers(
-            color = (255, 255, 255),
-            highlight = [index1, index2]
-        )
-    show_numbers()
-    time.sleep(0.5)
-
-    # Put list through the sorting algorithm
-    def quick_sort(start: int, end: int):
-        """
-        This implementation of Quicksort prioritise
-        the "good-lookingness" of the visualisation
-        rather than speed or efficiency.
-        """
-
-        if start >= end - 1: return
-
-        small_arr = arr[start:end]
-        pivot = small_arr[-1]
-
-        left = [x for x in small_arr if x < pivot]
-        right = [x for x in small_arr if x > pivot]
-
-        new_arr = left + [pivot] + right
-
-        for i in range(start, end):
-            arr[i] = new_arr[i - start]
-            show_numbers(
-                highlight = [i]
-            )
-
-        quick_sort(start, start + len(left))
-        quick_sort(end - len(right), end)
-
-        show_numbers()
-
-    quick_sort(0, elements)
-
-    # Color all correctly sorted elements GREEN for an amazing reason
+    arr[index1], arr[index2] = arr[index2], arr[index1]
     show_numbers(
-        color = (0, 255, 0),
-        highlight = get_matches(arr, sorted_arr),
-        delay = 0.01,
-        clear = False,
-        use_cache = False,
+        color = (255, 255, 255),
+        highlight = [index1, index2]
     )
+show_numbers()
+time.sleep(0.5)
 
-    time.sleep(1)
+# Put list through the sorting algorithm
+def quick_sort(start: int, end: int):
+    """
+    This implementation of Quicksort prioritises
+    the "good-lookingness" of the visualisation
+    rather than speed or efficiency.
+    """
+    
+    global arr
 
-    canvas.end()
+    if start >= end - 1: return
 
-main()
+    small_arr = arr[start:end]
+    pivot = small_arr[-1]
+
+    left = [x for x in small_arr if x < pivot]
+    right = [x for x in small_arr if x > pivot]
+
+    new_arr = left + [pivot] + right
+
+    for i in range(start, end):
+        arr[i] = new_arr[i - start]
+        show_numbers(
+            highlight = [i]
+        )
+
+    quick_sort(start, start + len(left))
+    quick_sort(end - len(right), end)
+
+    show_numbers()
+
+quick_sort(0, elements)
+
+# Color all correctly sorted elements GREEN for an amazing reason
+show_numbers(
+    color = (0, 255, 0),
+    highlight = get_matches(arr, sorted_arr),
+    delay = 0.01,
+    clear = False,
+    use_cache = False,
+)
+
+time.sleep(1)
+
+canvas.end()
