@@ -436,10 +436,10 @@ class TCanvas:
         This implementation of `space()` iterates through every value of x before iterating to the next value of y.
         """
 
-        xMin, xMax = 0 - self._x_off, self.width - self._x_off
-        yMin, yMax = 0 - self._y_off, self.height - self._y_off
-        for y in range(yMin, yMax):
-            for x in range(xMin, xMax):
+        x_min, x_max = 0 - self._x_off, self.width - self._x_off
+        y_min, y_max = 0 - self._y_off, self.height - self._y_off
+        for y in range(y_min, y_max):
+            for x in range(x_min, x_max):
                 yield (x, y)
 
     def resize(self, width: int = None, height: int = None) -> None:
