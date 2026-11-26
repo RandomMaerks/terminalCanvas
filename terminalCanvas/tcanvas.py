@@ -179,7 +179,7 @@ class TCanvas:
         self._x_off = 0
         self._y_off = 0
 
-        self._background_color = (255, 255, 255)
+        self.background_color = (255, 255, 255)
 
         self.clear()
         self._screen_buffer = self._screen_pixels
@@ -401,7 +401,7 @@ class TCanvas:
         - None
         """
 
-        self._background_color = color
+        self.background_color = color
         if clear:
             self.clear()
 
@@ -410,7 +410,7 @@ class TCanvas:
         Clears the canvas. More specifically, it fills the entire canvas with the current background color.
         """
 
-        self._screen_pixels = [self._background_color] * self.total_pixels
+        self._screen_pixels = [self.background_color] * self.total_pixels
         self.reset_depth_buffer()
 
     def end(self, clear_all: bool = False) -> None:
@@ -985,7 +985,7 @@ class TCanvasUI(TCanvas):
         self._x_off = 0
         self._y_off = 0
 
-        self._background_color = (0, 0, 0)
+        self.background_color = (0, 0, 0)
 
         #print(_SCREEN_CLEAR)
         self.clear()
@@ -1136,7 +1136,7 @@ class TCanvasUI(TCanvas):
         Clears the canvas. More specifically, it fills the entire canvas with the current background color.
         """
 
-        self._screen_pixels = [self._background_color + (' ',) + self._background_color] * self.total_pixels
+        self._screen_pixels = [self.background_color + (' ',) + self.background_color] * self.total_pixels
 
     def resize(self, width: int = None, height: int = None) -> None:
         """
