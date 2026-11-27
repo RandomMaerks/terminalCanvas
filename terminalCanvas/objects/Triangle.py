@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .BaseObject import BaseObject
 from ..Coord import Coord
 from ..helper import *
@@ -8,7 +10,8 @@ class Triangle(BaseObject):
             x1: int | float = 0, y1: int | float = 0,
             x2: int | float = 0, y2: int | float = 0,
             x3: int | float = 0, y3: int | float = 0,
-            color: tuple[int, int, int, int] = (0, 0, 0, 255)
+            color: tuple[int, int, int, int] = (0, 0, 0, 255),
+            texture: Texture = None,
     ) -> None:
 
         super().__init__()
@@ -17,6 +20,7 @@ class Triangle(BaseObject):
         self.p2 = Coord(x2, y2)
         self.p3 = Coord(x3, y3)
         self.color = color
+        self.texture = texture
         self._build()
 
     def _build(self):
@@ -27,6 +31,7 @@ class Triangle(BaseObject):
         x3, y3 = round(self.p3)
 
         color = self.color
+        texture = self.texture
 
         if y2 < y1:
             x1, x2 = x2, x1
@@ -54,12 +59,23 @@ class Triangle(BaseObject):
             left = x_left[i]
             right = x_right[i]
             for x in range(left, right + 1):
-                self._add([x, y, color])
+                if texture is None:
+                    self._add([x, y, color])
+                else:
+                    texture_color = texture.get_color_at(
+                        (x - left) / max(right - left, 1),
+                        (y - y1) / max(y3 - y1, 1)
+                    )
+                    self._add([x, y, texture_color])
 
     def set_points(self, x1, y1, x2, y2, x3, y3):
         self.p1 = Coord(x1, y1)
         self.p2 = Coord(x2, y2)
         self.p3 = Coord(x3, y3)
+        self._modified = True
+
+    def set_texture(self, texture: Texture):
+        self.texture = texture
         self._modified = True
 
     def __copy__(self):

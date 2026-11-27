@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .BaseObject import BaseObject
 from ..Coord import Coord
 from ..helper import *
@@ -10,6 +12,7 @@ class Rectangle(BaseObject):
             mode: str = "solid", 
             color: tuple[int, int, int, int] = (0, 0, 0, 255),
             thickness: int = 1,
+            texture: Texture = None,
     ) -> None:
 
         super().__init__()
@@ -19,6 +22,7 @@ class Rectangle(BaseObject):
         self.color = color
         self.mode = mode
         self.thickness = clamp(thickness, 0, min(x2 - x1, y2 - y1))
+        self.texture = texture
         self._build()
 
     def _build(self):
@@ -30,6 +34,7 @@ class Rectangle(BaseObject):
         color = self.color
         mode = self.mode
         thickness = self.thickness
+        texture = self.texture
 
         if x1 > x2: x1, x2 = x2, x1
         if y1 > y2: y1, y2 = y2, y1
@@ -37,7 +42,14 @@ class Rectangle(BaseObject):
         if mode == "solid":
             for y in range(y1, y2 + 1):
                 for x in range(x1, x2 + 1):
-                    self._add([x, y, color])
+                    if texture is None:
+                        self._add([x, y, color])
+                    else:
+                        texture_color = texture.get_color_at(
+                            (x - x1) / max(x2 - x1, 1),
+                            (y - y1) / max(y2 - y1, 1)
+                        )
+                        self._add([x, y, texture_color])
 
         elif mode == "outline":
             for t in range(thickness):
@@ -60,6 +72,10 @@ class Rectangle(BaseObject):
 
     def set_thickness(self, thickness):
         self.thickness = clamp(thickness, 0, min(x2 - x1, y2 - y1))
+        self._modified = True
+
+    def set_texture(self, texture: Texture):
+        self.texture = texture
         self._modified = True
 
     def __copy__(self):

@@ -21,3 +21,5 @@ from .RectangleUI import RectangleUI
 from .TextUI import TextUI
 
 from .Cube import Cube
+
+from .Texture import Texture
